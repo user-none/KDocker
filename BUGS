@@ -1,0 +1,9 @@
+Bugs and wishes to https://bugs.launchpad.net/kdocker
+
+
+Known issues:
+---
+* Qt 4 port is in progress
+  * Not all features have been implemented.
+  * Error reporting has not been completed.
+

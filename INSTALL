@@ -1,0 +1,19 @@
+Prerequisites
+1. Make sure you have Qt 4 installed and working. If you dont know what Qt is,
+you must be out from a cave just now. You will need qmake to compile.
+
+Building
+1. edit kdocker.pro as necessary. you should be ready to go with no change.
+2. qmake
+3. make 
+4. run "make install" (optional)
+5. if you did not do a "make install" make sure kdocker is in your $PATH. This
+   is required for session management to work.
+6. While making shortcuts, use the icons in /usr/local/share/kdocker/icons or
+   the ones in /icons in the tar ball.
+
+Please see README for tips and general information
+
+IMPORTANT: Kill all previous instances of KDocker that are running before trying
+out this version
+
