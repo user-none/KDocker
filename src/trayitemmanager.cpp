@@ -138,7 +138,7 @@ void TrayItemManager::processCommand(const QStringList &args) {
             case 'f':
                 window = activeWindow(QX11Info::display());
                 if (!window) {
-                    // error no window active
+                    QMessageBox::critical(0, tr("KDocker"), tr("Cannot dock the active window because no window has focus."));
                     checkCount();
                     return;
                 }
@@ -172,7 +172,7 @@ void TrayItemManager::processCommand(const QStringList &args) {
                 else
                     window = (Window) atoi(optarg);
                 if (!isValidWindowId(QX11Info::display(), window)) {
-                    //qDebug() << QString("Window 0x%x invalid").arg((unsigned) w);
+                    QMessageBox::critical(0, tr("KDocker"), tr("Invalid window id."));
                     checkCount();
                     return;
                 }
@@ -214,14 +214,14 @@ Window TrayItemManager::userSelectWindow() {
     Window window = selectWindow(QX11Info::display(), &error);
     if (!window) {
         if (error) {
-            QMessageBox::critical(NULL, tr("KDocker"), tr(error));
+            QMessageBox::critical(0, tr("KDocker"), tr(error));
         }
         checkCount();
         return 0;
     }
 
     if (!isNormalWindow(QX11Info::display(), window)) {
-        if (QMessageBox::warning(NULL, tr("KDocker"), tr("The window you are attempting to dock does not seem to be a normal window."), QMessageBox::Abort) == QMessageBox::Abort) {
+        if (QMessageBox::warning(0, tr("KDocker"), tr("The window you are attempting to dock does not seem to be a normal window."), QMessageBox::Abort) == QMessageBox::Abort) {
             checkCount();
             return 0;
         }
@@ -298,7 +298,7 @@ void TrayItemManager::printHelp() {
     out << tr("Options") << endl;
     out << tr("-a     \tShow author information") << endl;
     out << tr("-b     \tDont warn about non-normal windows (blind mode)") << endl;
-    out << tr("-f     \tDock window that has the focus(active window)") << endl;
+    out << tr("-f     \tDock window that has the focus (active window)") << endl;
     out << tr("-h     \tDisplay this help") << endl;
     out << tr("-m     \tKeep application window mapped (dont hide on dock)") << endl;
     out << tr("-o     \tDock when obscured") << endl;
