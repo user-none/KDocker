@@ -19,11 +19,12 @@
  */
 
 #include <QCoreApplication>
+#include <QFile>
+#include <QFileInfo>
 #include <QMessageBox>
 #include <QStringList>
 #include <QTextStream>
 #include <QX11Info>
-#include <QDebug>
 
 #include "constants.h"
 #include "kdocker.h"
@@ -74,9 +75,37 @@ bool KDocker::x11EventFilter(XEvent *ev) {
     if (ev->type == ClientMessage) {
         // look for requests from a new instance of kdocker
         XClientMessageEvent *client = (XClientMessageEvent *) ev;
-        if (!(client->message_type == 0x220679 && client->data.l[0] == 0xBABE))
+        if (!(client->message_type == 0x220679 && client->data.l[0] == 0xBABE)) {
             return false;
-        trayItemManager()->processCommand(QStringList());
+        }
+
+        QString argsPath = TMPFILE_PREFIX + QString().setNum(client->data.l[1]);
+        QFileInfo fileInfo(argsPath);
+        if (getuid() != fileInfo.ownerId()) {
+            /*
+             * We make sure that the owner of this process and the owner of the file
+             * are the same. This will prevent someone from executing arbitrary
+             * programs by sending client message. Of course, you can send a message
+             * only if you are authenticated to the X session and have permission to
+             * create files in TMPFILE_PREFIX. So this code is there just for the
+             * heck of it.
+             */
+            QFile::remove(argsPath);
+            return true;
+        }
+        QFile argsFile(argsPath);
+        if (!argsFile.open(QIODevice::ReadOnly)) {
+            return true;
+        }
+        QTextStream argsStream(&argsFile);
+        QStringList args;
+        while (!argsStream.atEnd()) {
+            args << argsStream.readLine();
+        }
+        argsFile.close();
+        QFile::remove(argsPath); // delete the tmp file
+
+        trayItemManager()->processCommand(args);
         return true;
     } else {
         return trayItemManager()->x11EventFilter(ev);
@@ -85,6 +114,18 @@ bool KDocker::x11EventFilter(XEvent *ev) {
 
 void KDocker::notifyPreviousInstance(Window prevInstance) {
     Display *display = QX11Info::display();
+
+    // Dump all arguments in temporary file
+    QFile argsFile(TMPFILE_PREFIX + QString().setNum(getpid()));
+    if (!argsFile.open(QIODevice::WriteOnly)) {
+        return;
+    }
+    QTextStream argsStream(&argsFile);
+
+    Q_FOREACH(QString arg, QCoreApplication::arguments()) {
+        argsStream << arg << endl;
+    }
+    argsFile.close();
 
     /*
      * Tell our previous instance that we came to pass. Actually, it can

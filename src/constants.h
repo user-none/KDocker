@@ -20,10 +20,14 @@
 #ifndef _CONSTANTS_H
 #define	_CONSTANTS_H
 
+#include <QDir>
+
 #define ORG_NAME "net.launchpad.kdocker"
 #define DOM_NAME "launchpad.net/kdocker"
 #define APP_NAME "KDocker"
 #define APP_VERSION "4.0-Preview-1"
+
+#define TMPFILE_PREFIX QDir::homePath() + "/.kdocker."
 
 #endif	/* _CONSTANTS_H */
 
