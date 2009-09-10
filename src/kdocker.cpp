@@ -18,11 +18,14 @@
  * USA.
  */
 
+#include <QCoreApplication>
 #include <QMessageBox>
+#include <QStringList>
 #include <QTextStream>
 #include <QX11Info>
 #include <QDebug>
 
+#include "constants.h"
 #include "kdocker.h"
 #include "trayitemmanager.h"
 #include "util.h"
@@ -50,7 +53,7 @@ KDocker::KDocker(int &argc, char **argv) : QApplication(argc, argv) {
         Window selectionOwner = XCreateSimpleWindow(display, QX11Info::appRootWindow(), 1, 1, 1, 1, 1, 1, 1);
         XSetSelectionOwner(display, kdocker, selectionOwner, CurrentTime);
         m_trayItemManager = TrayItemManager::instance();
-        trayItemManager()->selectAndIconify();
+        trayItemManager()->processCommand(QCoreApplication::arguments());
     } else {
         notifyPreviousInstance(prevInstance); // does not return
     }
@@ -73,7 +76,7 @@ bool KDocker::x11EventFilter(XEvent *ev) {
         XClientMessageEvent *client = (XClientMessageEvent *) ev;
         if (!(client->message_type == 0x220679 && client->data.l[0] == 0xBABE))
             return false;
-        trayItemManager()->selectAndIconify();
+        trayItemManager()->processCommand(QStringList());
         return true;
     } else {
         return trayItemManager()->x11EventFilter(ev);
@@ -101,39 +104,4 @@ void KDocker::notifyPreviousInstance(Window prevInstance) {
     XSync(display, False);
 
     ::exit(0);
-}
-
-void KDocker::printVersion() {
-    QTextStream out(stdout);
-    out << "KDocker version: " << APP_VERSION << endl;
-    out << "Using Qt version: " << qVersion() << endl;
-}
-
-void KDocker::printUsage() {
-    QTextStream out(stdout);
-    out << QString("%1: invalid option -- %2").arg(APP_NAME).arg(optopt) << endl;
-    out << tr("Try `%1 -h' for more information").arg(QString(APP_NAME).toLower()) << endl;
-}
-
-void KDocker::printHelp() {
-    QTextStream out(stdout);
-
-    out << tr("Usage: %1 [options] command\n").arg(QString(APP_NAME).toLower()) << endl;
-    out << tr("Docks any application into the system tray\n") << endl;
-    out << tr("command \tCommand to execute\n") << endl;
-    out << tr("Options") << endl;
-    out << tr("-a     \tShow author information") << endl;
-    out << tr("-b     \tDont warn about non-normal windows (blind mode)") << endl;
-    out << tr("-f     \tDock window that has the focus(active window)") << endl;
-    out << tr("-h     \tDisplay this help") << endl;
-    out << tr("-m     \tKeep application window mapped (dont hide on dock)") << endl;
-    out << tr("-o     \tDock when obscured") << endl;
-    out << tr("-p secs\tSet ballooning timeout (popup time)") << endl;
-    out << tr("-q     \tDisable ballooning title changes (quiet)") << endl;
-    out << tr("-t     \tRemove this application from the task bar") << endl;
-    out << tr("-v     \tDisplay version") << endl;
-    out << tr("-w wid \tWindow id of the application to dock\n") << endl;
-    out << endl;
-    out << tr("Bugs and wishes to ") << endl;
-    out << tr("Project information at ") << endl;
 }

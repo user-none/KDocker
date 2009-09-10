@@ -22,6 +22,7 @@
 #define	_TRAYITEMMANAGER_H
 
 #include <QObject>
+#include <QStringList>
 
 #include "trayitem.h"
 
@@ -38,22 +39,32 @@ public:
     bool x11EventFilter(XEvent *ev);
     void restoreAllWindows();
 
+    void processCommand(const QStringList &args);
+
 public slots:
-    bool selectAndIconify();
+    Window userSelectWindow();
     void itemClosed(TrayItem *trayItem);
 
 signals:
     void systemTrayDestroyEvent();
 
 private slots:
+    void selectAndIconify();
     void checkSystemTray();
 
 private:
     void checkCount();
     bool isWindowDocked(Window window);
+
+    void printAbout();
+    void printHelp();
+    void printUsage();
+    void printVersion();
+
     Window m_systemTray;
     QList<TrayItem*> m_trayItems;
 
+    static const char *m_optionString;
     static TrayItemManager *g_trayItemManager;
 };
 

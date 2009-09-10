@@ -1,6 +1,5 @@
 /*
  *  Copyright (C) 2009 John Schember <john@nachtimwald.com>
- *  Copyright (C) 2004 Girish Ramakrishnan All Rights Reserved.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,27 +17,13 @@
  * USA.
  */
 
-#ifndef _KDOCKER_H
-#define	_KDOCKER_H
+#ifndef _CONSTANTS_H
+#define	_CONSTANTS_H
 
-#include <QApplication>
-#include "trayitemmanager.h"
+#define ORG_NAME "net.launchpad.kdocker"
+#define DOM_NAME "launchpad.net/kdocker"
+#define APP_NAME "KDocker"
+#define APP_VERSION "4.0-Preview-1"
 
-class KDocker : public QApplication {
-    Q_OBJECT
+#endif	/* _CONSTANTS_H */
 
-public:
-    KDocker(int &argc, char **argv);
-    ~KDocker();
-
-    TrayItemManager *trayItemManager();
-    bool x11EventFilter(XEvent *event);
-
-private:
-    void notifyPreviousInstance(Window prevInstance);
-
-    TrayItemManager *m_trayItemManager;
-
-};
-
-#endif	/* _KDOCKER_H */
