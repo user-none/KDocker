@@ -55,14 +55,14 @@ TrayItemManager::~TrayItemManager() {
 }
 
 /*
- * The X11 Event Filter. Pass on events to the QTrayLabels that we created.
+ * The X11 Event Filter. Pass on events to the TrayItems that we created.
  * The logic and the code below is a bit fuzzy.
- *  a) Events about windows that are being docked need to be processed only by
- *     the QTrayLabel object that is docking that window.
- *  b) Events about windows that are not docked but of interest (like
- *     SystemTray) need to be passed on to all QTrayLabel objects.
- *  c) When a QTrayLabel manages to find the window that is was looking for, we
- *     need not process the event further
+ *  a) Events about windows that are not docked but of interest (like
+ *     SystemTray) are handled by the TrayItemManager.
+ *  b) Events about windows that are being docked need to be processed only by
+ *     the TrayItem object that is docking that window.
+ *  c) When a TrayItem manages to find the window that is was looking for, we
+ *     need not process the event further.
  */
 bool TrayItemManager::x11EventFilter(XEvent *ev) {
     XAnyEvent *event = (XAnyEvent *) ev;

@@ -79,7 +79,7 @@ bool KDocker::x11EventFilter(XEvent *ev) {
             return false;
         }
 
-        QString argsPath = TMPFILE_PREFIX + QString().setNum(client->data.l[1]);
+        QString argsPath = TMPFILE_PREFIX + QString::number(client->data.l[1]);
         QFileInfo fileInfo(argsPath);
         if (getuid() != fileInfo.ownerId()) {
             /*
@@ -116,7 +116,7 @@ void KDocker::notifyPreviousInstance(Window prevInstance) {
     Display *display = QX11Info::display();
 
     // Dump all arguments in temporary file
-    QFile argsFile(TMPFILE_PREFIX + QString().setNum(getpid()));
+    QFile argsFile(TMPFILE_PREFIX + QString::number(getpid()));
     if (!argsFile.open(QIODevice::WriteOnly)) {
         return;
     }
