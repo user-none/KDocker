@@ -282,15 +282,19 @@ bool TrayItemManager::isWindowDocked(Window window) {
 }
 
 void TrayItemManager::printAbout() {
+    QTextStream out(stdout);
 
+    out << tr("KDocker will help you dock any application into the system tray. This means you can dock openoffice, xmms, firefox, thunderbird, anything! Just point and click. Works for all NET WM compliant window managers - that includes KDE, GNOME, Xfce, Fluxbox and many more.") << endl;
+    out << endl;
+    out << tr("Created by Girish Ramakrishnan. Updated and maintained by John Schember.") << endl;
 }
 
 void TrayItemManager::printHelp() {
     QTextStream out(stdout);
 
-    out << tr("Usage: %1 [options] command\n").arg(QString(APP_NAME).toLower()) << endl;
-    out << tr("Docks any application into the system tray\n") << endl;
-    out << tr("command \tCommand to execute\n") << endl;
+    out << tr("Usage: %1 [options]").arg(QString(APP_NAME).toLower()) << endl;
+    out << tr("Docks any application into the system tray") << endl;
+    out << endl;
     out << tr("Options") << endl;
     out << tr("-a     \tShow author information") << endl;
     out << tr("-b     \tDont warn about non-normal windows (blind mode)") << endl;
@@ -302,7 +306,7 @@ void TrayItemManager::printHelp() {
     out << tr("-q     \tDisable ballooning title changes (quiet)") << endl;
     out << tr("-t     \tRemove this application from the task bar") << endl;
     out << tr("-v     \tDisplay version") << endl;
-    out << tr("-w wid \tWindow id of the application to dock\n") << endl;
+    out << tr("-w wid \tWindow id of the application to dock") << endl;
     out << endl;
     out << tr("Bugs and wishes to https://bugs.launchpad.net/kdocker") << endl;
     out << tr("Project information at https://launchpad.net/kdocker") << endl;
@@ -310,7 +314,7 @@ void TrayItemManager::printHelp() {
 
 void TrayItemManager::printUsage() {
     QTextStream out(stdout);
-    out << QString("%1: invalid option -- %2").arg(APP_NAME).arg(optopt) << endl;
+    out << tr("Usage: %1 [options] command").arg(QString(APP_NAME).toLower()) << endl;
     out << tr("Try `%1 -h' for more information").arg(QString(APP_NAME).toLower()) << endl;
 }
 
