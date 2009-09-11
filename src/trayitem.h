@@ -46,6 +46,11 @@ public slots:
     void iconifyWindow();
     void close(); // close the docked window
 
+    void setSkipTaskbar(bool value);
+    void setIconifyObscure(bool value);
+    void setIconifyFocusLost(bool value);
+    void setBalloonTimeout(int value);
+
 private slots:
     void toggleWindow(QSystemTrayIcon::ActivationReason reason);
     void another();
@@ -58,12 +63,19 @@ private:
     void minimizeEvent();
     void destroyEvent();
     void propertyChangeEvent(Atom property);
+    void obscureEvent();
+    void focusLostEvent();
     void updateTitle();
     void updateIcon();
     void createContextMenu();
     QIcon createIcon(Window window);
 
     bool m_withdrawn;
+    bool m_skipTaskbar;
+    bool m_iconifyObscure;
+    bool m_iconifyFocusLost;
+    int m_balloonTimeout;
+
     XSizeHints m_sizeHint; // SizeHint of m_window
     Window m_window; // The window that is associated with the tray icon.
     QMenu *m_contextMenu;

@@ -109,10 +109,10 @@ void TrayItemManager::processCommand(const QStringList &args) {
     Window window = 0;
     int balloonTimeout = 4000;
     bool iconify = true;
-    bool skipTaskbar = false;
-    bool dockObscure = false;
-    book dockFocusLost = false;
     bool checkNormality = true;
+    bool skipTaskbar = false;
+    bool iconifyObscure = false;
+    book iconifyFocusLost = false;
 
     // Turn the QStringList of arguments into something getopt can use.
     int argc = args.count();
@@ -153,13 +153,13 @@ void TrayItemManager::processCommand(const QStringList &args) {
                 checkCount();
                 return;
             case 'l':
-                dockFocusLost = true;
+                iconifyFocusLost = true;
                 break;
             case 'm':
                 iconify = false;
                 break;
             case 'o':
-                dockObscure = true;
+                iconifyObscure = true;
                 break;
             case 'p':
                 balloonTimeout = atoi(optarg) * 1000; // convert to ms
@@ -204,6 +204,10 @@ void TrayItemManager::processCommand(const QStringList &args) {
     }
 
     TrayItem *ti = new TrayItem(window);
+    ti->setBalloonTimeout(balloonTimeout)
+    ti->setSkipTaskbar(skipTaskbar);
+    ti->setIconifyObscure(iconifyObscure);
+    ti->setIconifyFocusLost(iconifyFocusLost);
     connect(ti, SIGNAL(selectAnother()), this, SLOT(selectAndIconify()));
     connect(ti, SIGNAL(itemClose(TrayItem*)), this, SLOT(itemClosed(TrayItem*)));
     ti->show();
@@ -232,9 +236,9 @@ void TrayItemManager::printHelp() {
     out << "-b     \t" << tr("Don't warn about non-normal windows (blind mode)") << endl;
     out << "-f     \t" << tr("Dock window that has focus (active window)") << endl;
     out << "-h     \t" << tr("Display this help") << endl;
-    out << "-l     \t" << tr("Dock when focus lost") << endl;
+    out << "-l     \t" << tr("Iconify when focus lost") << endl;
     out << "-m     \t" << tr("Keep application window showing (dont hide on dock)") << endl;
-    out << "-o     \t" << tr("Dock when obscured") << endl;
+    out << "-o     \t" << tr("Iconify when obscured") << endl;
     out << "-p secs\t" << tr("Set ballooning timeout (popup time)") << endl;
     out << "-q     \t" << tr("Disable ballooning title changes (quiet)") << endl;
     out << "-t     \t" << tr("Remove this application from the task bar") << endl;

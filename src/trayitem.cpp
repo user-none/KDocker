@@ -32,10 +32,14 @@ const long SYSTEM_TRAY_REQUEST_DOCK = 0;
 
 TrayItem::TrayItem(Window window, QObject *parent) : QSystemTrayIcon(parent) {
     m_withdrawn = false;
+    m_skipTaskbar = false;
+    m_iconifyObscure = false;
+    m_iconifyFocusLost = false;
+    m_balloonTimeout = 4000;
     m_window = window;
 
     // Allows events from m_window to be forwarded to the x11EventFilter.
-    subscribe(QX11Info::display(), m_window, StructureNotifyMask | PropertyChangeMask, true);
+    subscribe(QX11Info::display(), m_window, StructureNotifyMask | PropertyChangeMask | VisibilityChangeMask | FocusChangeMask, true);
 
     createContextMenu();
 
@@ -64,6 +68,12 @@ bool TrayItem::x11EventFilter(XEvent *ev) {
             destroyEvent();
         } else if (event->type == PropertyNotify) {
             propertyChangeEvent(((XPropertyEvent *) event)->atom);
+        } else if (event->type == VisibilityNotify) {
+            if (((XVisibilityEvent *) event)->state == VisibilityFullyObscured) {
+                obscureEvent();
+            }
+        } else if (event->type == FocusOut) {
+            focusLostEvent();
         } else if (event->type == MapNotify) {
             m_withdrawn = false;
         } else if (event->type == UnmapNotify) {
@@ -147,6 +157,22 @@ void TrayItem::close() {
     destroyEvent();
 }
 
+void TrayItem::setSkipTaskbar(bool value) {
+    m_skipTaskbar = value;
+}
+
+void TrayItem::setIconifyObscure(bool value) {
+    m_setIconifyObsure = value;
+}
+
+void TrayItem::setIconifyFocusLost(bool value) {
+    m_iconifyFocusLost = value;
+}
+
+void TrayItem::setBalloonTimeout(int value) {
+    m_balloonTimeout = value;
+}
+
 void TrayItem::toggleWindow(QSystemTrayIcon::ActivationReason reason) {
     if (reason == QSystemTrayIcon::Trigger) {
         if (m_withdrawn) {
@@ -197,6 +223,18 @@ void TrayItem::propertyChangeEvent(Atom property) {
     }
 }
 
+void TrayItem::obscureEvent() {
+    if (m_iconifyObscure) {
+        iconifyWindow();
+    }
+}
+
+void TrayItem::focusLostEvent() {
+    if (m_iconifyFocusLost) {
+        iconifyWindow();
+    }
+}
+
 /*
  * Update the title in the tooltip.
  */
@@ -233,7 +271,7 @@ void TrayItem::updateTitle() {
     }
 
     setToolTip(QString("%1 [%2]").arg(title).arg(className));
-    showMessage(className, title);
+    showMessage(className, title, QSystemTrayIcon::Information, m_balloonTimeout);
 }
 
 void TrayItem::updateIcon() {
