@@ -31,7 +31,7 @@
 #include <getopt.h>
 
 TrayItemManager *TrayItemManager::g_trayItemManager = 0;
-const char *TrayItemManager::m_optionString = "+abfhlmop:qtvw:";
+const char *TrayItemManager::m_optionString = "+abfhi:lmop:qtvw:";
 
 TrayItemManager *TrayItemManager::instance() {
     if (!g_trayItemManager) {
@@ -107,6 +107,7 @@ void TrayItemManager::restoreAllWindows() {
 void TrayItemManager::processCommand(const QStringList &args) {
     int option;
     Window window = 0;
+    QString customIcon;
     int balloonTimeout = 4000;
     bool iconify = true;
     bool checkNormality = true;
@@ -152,6 +153,9 @@ void TrayItemManager::processCommand(const QStringList &args) {
                 printHelp();
                 checkCount();
                 return;
+            case 'i':
+                customIcon = QString(optarg);
+                break;
             case 'l':
                 iconifyFocusLost = true;
                 break;
@@ -204,6 +208,9 @@ void TrayItemManager::processCommand(const QStringList &args) {
     }
 
     TrayItem *ti = new TrayItem(window);
+    if (!customIcon.isEmpty()) {
+        ti->setCustomIcon(customIcon);
+    }
     ti->setBalloonTimeout(balloonTimeout);
     ti->setSkipTaskbar(skipTaskbar);
     ti->setIconifyObscure(iconifyObscure);

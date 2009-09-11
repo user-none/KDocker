@@ -21,7 +21,6 @@
 #include <QApplication>
 #include <QPixmap>
 #include <QX11Info>
-#include <QDebug>
 
 #include "trayitem.h"
 #include "util.h"
@@ -32,6 +31,7 @@ const long SYSTEM_TRAY_REQUEST_DOCK = 0;
 
 TrayItem::TrayItem(Window window, QObject *parent) : QSystemTrayIcon(parent) {
     m_withdrawn = false;
+    m_customIcon = false;
     m_skipTaskbar = false;
     m_iconifyObscure = false;
     m_iconifyFocusLost = false;
@@ -82,6 +82,16 @@ bool TrayItem::x11EventFilter(XEvent *ev) {
         return true; // Dont process this again
     }
     return false;
+}
+
+void TrayItem::setCustomIcon(QString path) {
+    m_customIcon = true;
+    QPixmap customIcon;
+    if (!customIcon.load(path)) {
+        customIcon.load(":/images/question.png");
+    }
+
+    setIcon(QIcon(customIcon));
 }
 
 void TrayItem::restoreWindow() {
@@ -275,7 +285,7 @@ void TrayItem::updateTitle() {
 }
 
 void TrayItem::updateIcon() {
-    if (!m_window) {
+    if (!m_window || m_customIcon) {
         return;
     }
 

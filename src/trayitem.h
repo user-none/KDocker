@@ -24,6 +24,7 @@
 #include <QIcon>
 #include <QMenu>
 #include <QObject>
+#include <QString>
 #include <QSystemTrayIcon>
 
 #include <X11/Xlib.h>
@@ -40,6 +41,7 @@ public:
 
     // Pass on all events through this interface
     bool x11EventFilter(XEvent * event);
+    void setCustomIcon(QString path);
 
 public slots:
     void restoreWindow();
@@ -71,6 +73,7 @@ private:
     QIcon createIcon(Window window);
 
     bool m_withdrawn;
+    bool m_customIcon;
     bool m_skipTaskbar;
     bool m_iconifyObscure;
     bool m_iconifyFocusLost;
