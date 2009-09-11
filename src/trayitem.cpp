@@ -162,7 +162,7 @@ void TrayItem::setSkipTaskbar(bool value) {
 }
 
 void TrayItem::setIconifyObscure(bool value) {
-    m_setIconifyObsure = value;
+    m_iconifyObscure = value;
 }
 
 void TrayItem::setIconifyFocusLost(bool value) {

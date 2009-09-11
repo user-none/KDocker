@@ -112,7 +112,7 @@ void TrayItemManager::processCommand(const QStringList &args) {
     bool checkNormality = true;
     bool skipTaskbar = false;
     bool iconifyObscure = false;
-    book iconifyFocusLost = false;
+    bool iconifyFocusLost = false;
 
     // Turn the QStringList of arguments into something getopt can use.
     int argc = args.count();
@@ -204,7 +204,7 @@ void TrayItemManager::processCommand(const QStringList &args) {
     }
 
     TrayItem *ti = new TrayItem(window);
-    ti->setBalloonTimeout(balloonTimeout)
+    ti->setBalloonTimeout(balloonTimeout);
     ti->setSkipTaskbar(skipTaskbar);
     ti->setIconifyObscure(iconifyObscure);
     ti->setIconifyFocusLost(iconifyFocusLost);
