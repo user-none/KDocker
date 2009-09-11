@@ -47,7 +47,7 @@ public:
     static void printVersion();
 
 public slots:
-    Window userSelectWindow();
+    Window userSelectWindow(bool checkNormality=true);
     void itemClosed(TrayItem *trayItem);
 
 signals:

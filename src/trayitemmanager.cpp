@@ -31,7 +31,7 @@
 #include <getopt.h>
 
 TrayItemManager *TrayItemManager::g_trayItemManager = 0;
-const char *TrayItemManager::m_optionString = "+abfhmop:qtvw:";
+const char *TrayItemManager::m_optionString = "+abfhlmop:qtvw:";
 
 TrayItemManager *TrayItemManager::instance() {
     if (!g_trayItemManager) {
@@ -111,6 +111,7 @@ void TrayItemManager::processCommand(const QStringList &args) {
     bool iconify = true;
     bool skipTaskbar = false;
     bool dockObscure = false;
+    book dockFocusLost = false;
     bool checkNormality = true;
 
     // Turn the QStringList of arguments into something getopt can use.
@@ -151,6 +152,9 @@ void TrayItemManager::processCommand(const QStringList &args) {
                 printHelp();
                 checkCount();
                 return;
+            case 'l':
+                dockFocusLost = true;
+                break;
             case 'm':
                 iconify = false;
                 break;
@@ -185,7 +189,7 @@ void TrayItemManager::processCommand(const QStringList &args) {
     } // while (getopt)
 
     if (!window) {
-        window = userSelectWindow();
+        window = userSelectWindow(checkNormality);
     }
     // No window was selected or set.
     if (!window) {
@@ -224,17 +228,18 @@ void TrayItemManager::printHelp() {
     out << tr("Docks any application into the system tray") << endl;
     out << endl;
     out << tr("Options") << endl;
-    out << tr("-a     \tShow author information") << endl;
-    out << tr("-b     \tDont warn about non-normal windows (blind mode)") << endl;
-    out << tr("-f     \tDock window that has the focus (active window)") << endl;
-    out << tr("-h     \tDisplay this help") << endl;
-    out << tr("-m     \tKeep application window mapped (dont hide on dock)") << endl;
-    out << tr("-o     \tDock when obscured") << endl;
-    out << tr("-p secs\tSet ballooning timeout (popup time)") << endl;
-    out << tr("-q     \tDisable ballooning title changes (quiet)") << endl;
-    out << tr("-t     \tRemove this application from the task bar") << endl;
-    out << tr("-v     \tDisplay version") << endl;
-    out << tr("-w wid \tWindow id of the application to dock") << endl;
+    out << "-a     \t" << tr("Show author information") << endl;
+    out << "-b     \t" << tr("Don't warn about non-normal windows (blind mode)") << endl;
+    out << "-f     \t" << tr("Dock window that has focus (active window)") << endl;
+    out << "-h     \t" << tr("Display this help") << endl;
+    out << "-l     \t" << tr("Dock when focus lost") << endl;
+    out << "-m     \t" << tr("Keep application window showing (dont hide on dock)") << endl;
+    out << "-o     \t" << tr("Dock when obscured") << endl;
+    out << "-p secs\t" << tr("Set ballooning timeout (popup time)") << endl;
+    out << "-q     \t" << tr("Disable ballooning title changes (quiet)") << endl;
+    out << "-t     \t" << tr("Remove this application from the task bar") << endl;
+    out << "-v     \t" << tr("Display version") << endl;
+    out << "-w wid \t" << tr("Window id of the application to dock") << endl;
     out << endl;
     out << tr("Bugs and wishes to https://bugs.launchpad.net/kdocker") << endl;
     out << tr("Project information at https://launchpad.net/kdocker") << endl;
@@ -252,7 +257,7 @@ void TrayItemManager::printVersion() {
     out << "Using Qt version: " << qVersion() << endl;
 }
 
-Window TrayItemManager::userSelectWindow() {
+Window TrayItemManager::userSelectWindow(bool checkNormality) {
     QTextStream out(stdout);
     out << tr("Select the application/window to dock with the left mouse button.") << endl;
     out << tr("Click any other mouse button to abort.") << endl;
@@ -267,10 +272,12 @@ Window TrayItemManager::userSelectWindow() {
         return 0;
     }
 
-    if (!isNormalWindow(QX11Info::display(), window)) {
-        if (QMessageBox::warning(0, tr("KDocker"), tr("The window you are attempting to dock does not seem to be a normal window."), QMessageBox::Abort) == QMessageBox::Abort) {
-            checkCount();
-            return 0;
+    if (checkNormality) {
+        if (!isNormalWindow(QX11Info::display(), window)) {
+            if (QMessageBox::warning(0, tr("KDocker"), tr("The window you are attempting to dock does not seem to be a normal window."), QMessageBox::Abort) == QMessageBox::Abort) {
+                checkCount();
+                return 0;
+            }
         }
     }
 
