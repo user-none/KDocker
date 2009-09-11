@@ -22,6 +22,7 @@
 #define	_KDOCKER_H
 
 #include <QApplication>
+#include <QStringList>
 #include "trayitemmanager.h"
 
 class KDocker : public QApplication {
@@ -35,7 +36,8 @@ public:
     bool x11EventFilter(XEvent *event);
 
 private:
-    void notifyPreviousInstance(Window prevInstance);
+    void notifyPreviousInstance(Window prevInstance, QStringList args = QStringList());
+    void checkArguments(QStringList args);
 
     TrayItemManager *m_trayItemManager;
 

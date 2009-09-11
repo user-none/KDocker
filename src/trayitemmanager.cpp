@@ -121,6 +121,10 @@ void TrayItemManager::processCommand(const QStringList &args) {
     }
     argv[argc + 1] = NULL; // null terminate the array
 
+    /* Options: a, h, u, v all should not be reached as they should have been
+     * handled by the KDocker class. They are left here just in case changes
+     * are made to the KDocker class and so they aren not missed.
+     */
     optind = 0; // initialise the getopt static
     while ((option = getopt(argc, argv, m_optionString)) != -1) {
         switch (option) {
@@ -205,6 +209,49 @@ void TrayItemManager::processCommand(const QStringList &args) {
     m_trayItems.append(ti);
 }
 
+void TrayItemManager::printAbout() {
+    QTextStream out(stdout);
+
+    out << tr("KDocker will help you dock any application into the system tray. This means you can dock openoffice, xmms, firefox, thunderbird, anything! Just point and click. Works for all NET WM compliant window managers - that includes KDE, GNOME, Xfce, Fluxbox and many more.") << endl;
+    out << endl;
+    out << tr("Created by Girish Ramakrishnan. Updated and maintained by John Schember.") << endl;
+}
+
+void TrayItemManager::printHelp() {
+    QTextStream out(stdout);
+
+    out << tr("Usage: %1 [options]").arg(QString(APP_NAME).toLower()) << endl;
+    out << tr("Docks any application into the system tray") << endl;
+    out << endl;
+    out << tr("Options") << endl;
+    out << tr("-a     \tShow author information") << endl;
+    out << tr("-b     \tDont warn about non-normal windows (blind mode)") << endl;
+    out << tr("-f     \tDock window that has the focus (active window)") << endl;
+    out << tr("-h     \tDisplay this help") << endl;
+    out << tr("-m     \tKeep application window mapped (dont hide on dock)") << endl;
+    out << tr("-o     \tDock when obscured") << endl;
+    out << tr("-p secs\tSet ballooning timeout (popup time)") << endl;
+    out << tr("-q     \tDisable ballooning title changes (quiet)") << endl;
+    out << tr("-t     \tRemove this application from the task bar") << endl;
+    out << tr("-v     \tDisplay version") << endl;
+    out << tr("-w wid \tWindow id of the application to dock") << endl;
+    out << endl;
+    out << tr("Bugs and wishes to https://bugs.launchpad.net/kdocker") << endl;
+    out << tr("Project information at https://launchpad.net/kdocker") << endl;
+}
+
+void TrayItemManager::printUsage() {
+    QTextStream out(stdout);
+    out << tr("Usage: %1 [options] command").arg(QString(APP_NAME).toLower()) << endl;
+    out << tr("Try `%1 -h' for more information").arg(QString(APP_NAME).toLower()) << endl;
+}
+
+void TrayItemManager::printVersion() {
+    QTextStream out(stdout);
+    out << "KDocker version: " << APP_VERSION << endl;
+    out << "Using Qt version: " << qVersion() << endl;
+}
+
 Window TrayItemManager::userSelectWindow() {
     QTextStream out(stdout);
     out << tr("Select the application/window to dock with the left mouse button.") << endl;
@@ -279,47 +326,4 @@ bool TrayItemManager::isWindowDocked(Window window) {
     }
 
     return false;
-}
-
-void TrayItemManager::printAbout() {
-    QTextStream out(stdout);
-
-    out << tr("KDocker will help you dock any application into the system tray. This means you can dock openoffice, xmms, firefox, thunderbird, anything! Just point and click. Works for all NET WM compliant window managers - that includes KDE, GNOME, Xfce, Fluxbox and many more.") << endl;
-    out << endl;
-    out << tr("Created by Girish Ramakrishnan. Updated and maintained by John Schember.") << endl;
-}
-
-void TrayItemManager::printHelp() {
-    QTextStream out(stdout);
-
-    out << tr("Usage: %1 [options]").arg(QString(APP_NAME).toLower()) << endl;
-    out << tr("Docks any application into the system tray") << endl;
-    out << endl;
-    out << tr("Options") << endl;
-    out << tr("-a     \tShow author information") << endl;
-    out << tr("-b     \tDont warn about non-normal windows (blind mode)") << endl;
-    out << tr("-f     \tDock window that has the focus (active window)") << endl;
-    out << tr("-h     \tDisplay this help") << endl;
-    out << tr("-m     \tKeep application window mapped (dont hide on dock)") << endl;
-    out << tr("-o     \tDock when obscured") << endl;
-    out << tr("-p secs\tSet ballooning timeout (popup time)") << endl;
-    out << tr("-q     \tDisable ballooning title changes (quiet)") << endl;
-    out << tr("-t     \tRemove this application from the task bar") << endl;
-    out << tr("-v     \tDisplay version") << endl;
-    out << tr("-w wid \tWindow id of the application to dock") << endl;
-    out << endl;
-    out << tr("Bugs and wishes to https://bugs.launchpad.net/kdocker") << endl;
-    out << tr("Project information at https://launchpad.net/kdocker") << endl;
-}
-
-void TrayItemManager::printUsage() {
-    QTextStream out(stdout);
-    out << tr("Usage: %1 [options] command").arg(QString(APP_NAME).toLower()) << endl;
-    out << tr("Try `%1 -h' for more information").arg(QString(APP_NAME).toLower()) << endl;
-}
-
-void TrayItemManager::printVersion() {
-    QTextStream out(stdout);
-    out << "KDocker version: " << APP_VERSION << endl;
-    out << "Using Qt version: " << qVersion() << endl;
 }

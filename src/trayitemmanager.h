@@ -41,6 +41,11 @@ public:
 
     void processCommand(const QStringList &args);
 
+    static void printAbout();
+    static void printHelp();
+    static void printUsage();
+    static void printVersion();
+
 public slots:
     Window userSelectWindow();
     void itemClosed(TrayItem *trayItem);
@@ -55,11 +60,6 @@ private slots:
 private:
     void checkCount();
     bool isWindowDocked(Window window);
-
-    void printAbout();
-    void printHelp();
-    void printUsage();
-    void printVersion();
 
     Window m_systemTray;
     QList<TrayItem*> m_trayItems;

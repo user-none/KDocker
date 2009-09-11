@@ -22,7 +22,6 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QMessageBox>
-#include <QStringList>
 #include <QTextStream>
 #include <QX11Info>
 
@@ -41,6 +40,9 @@ KDocker::KDocker(int &argc, char **argv) : QApplication(argc, argv) {
     setOrganizationDomain(DOM_NAME);
     setApplicationName(APP_NAME);
 
+    QStringList args = QCoreApplication::arguments();
+    checkArguments(args);
+
     /*
      * Detect and transfer control to previous instance (if one exists)
      * _KDOCKER_RUNNING is a X Selection. We start out by trying to locate the
@@ -55,9 +57,9 @@ KDocker::KDocker(int &argc, char **argv) : QApplication(argc, argv) {
         Window selectionOwner = XCreateSimpleWindow(display, QX11Info::appRootWindow(), 1, 1, 1, 1, 1, 1, 1);
         XSetSelectionOwner(display, kdocker, selectionOwner, CurrentTime);
         m_trayItemManager = TrayItemManager::instance();
-        trayItemManager()->processCommand(QCoreApplication::arguments());
+        trayItemManager()->processCommand(args);
     } else {
-        notifyPreviousInstance(prevInstance); // does not return
+        notifyPreviousInstance(prevInstance, args); // does not return
     }
 }
 
@@ -113,7 +115,7 @@ bool KDocker::x11EventFilter(XEvent *ev) {
     }
 }
 
-void KDocker::notifyPreviousInstance(Window prevInstance) {
+void KDocker::notifyPreviousInstance(Window prevInstance, QStringList args) {
     Display *display = QX11Info::display();
 
     // Dump all arguments in temporary file
@@ -123,7 +125,7 @@ void KDocker::notifyPreviousInstance(Window prevInstance) {
     }
     QTextStream argsStream(&argsFile);
 
-    Q_FOREACH(QString arg, QCoreApplication::arguments()) {
+    Q_FOREACH(QString arg, args) {
         argsStream << arg << endl;
     }
     argsFile.close();
@@ -146,4 +148,30 @@ void KDocker::notifyPreviousInstance(Window prevInstance) {
     XSync(display, False);
 
     ::exit(0);
+}
+
+/*
+ * handle arguments that output information to the user. We want to handle
+ * them here so they are printed on the tty that the application is run from.
+ * If we left it up to TrayItemManager with the rest of the arguments these
+ * would be printed on the tty the instace was started on not the instance the
+ * user is calling from.
+ */
+void KDocker::checkArguments(QStringList args) {
+    if (args.contains("-a")) {
+        TrayItemManager::printAbout();
+        ::exit(0);
+    }
+    if (args.contains("-h")) {
+        TrayItemManager::printHelp();
+        ::exit(0);
+    }
+    if (args.contains("-u")) {
+        TrayItemManager::printUsage();
+        ::exit(0);
+    }
+    if (args.contains("-v")) {
+        TrayItemManager::printVersion();
+        ::exit(0);
+    }
 }
