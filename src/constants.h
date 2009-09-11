@@ -27,6 +27,7 @@
 #define APP_NAME "KDocker"
 #define APP_VERSION "4.0-Preview-1"
 
+#define OPTIONSTRING "+abfhi:lmop:qtvuw:"
 #define TMPFILE_PREFIX QDir::homePath() + "/.kdocker."
 
 #endif	/* _CONSTANTS_H */

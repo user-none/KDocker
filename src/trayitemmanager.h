@@ -41,11 +41,6 @@ public:
 
     void processCommand(const QStringList &args);
 
-    static void printAbout();
-    static void printHelp();
-    static void printUsage();
-    static void printVersion();
-
 public slots:
     Window userSelectWindow(bool checkNormality=true);
     void itemClosed(TrayItem *trayItem);
@@ -64,7 +59,6 @@ private:
     Window m_systemTray;
     QList<TrayItem*> m_trayItems;
 
-    static const char *m_optionString;
     static TrayItemManager *g_trayItemManager;
 };
 

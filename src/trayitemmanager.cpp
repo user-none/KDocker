@@ -31,7 +31,6 @@
 #include <getopt.h>
 
 TrayItemManager *TrayItemManager::g_trayItemManager = 0;
-const char *TrayItemManager::m_optionString = "+abfhi:lmop:qtvw:";
 
 TrayItemManager *TrayItemManager::instance() {
     if (!g_trayItemManager) {
@@ -123,19 +122,13 @@ void TrayItemManager::processCommand(const QStringList &args) {
     }
     argv[argc + 1] = NULL; // null terminate the array
 
-    /* Options: a, h, u, v all should not be reached as they should have been
-     * handled by the KDocker class. They are left here just in case changes
-     * are made to the KDocker class and so they aren not missed.
+    /* Options: a, h, u, v are all handled by the KDocker class because we
+     * want them to print on the tty the instance was called from.
      */
     optind = 0; // initialise the getopt static
-    while ((option = getopt(argc, argv, m_optionString)) != -1) {
+    while ((option = getopt(argc, argv, OPTIONSTRING)) != -1) {
         switch (option) {
             case '?':
-                printUsage();
-                checkCount();
-                return;
-            case 'a':
-                printAbout();
                 checkCount();
                 return;
             case 'b':
@@ -149,10 +142,6 @@ void TrayItemManager::processCommand(const QStringList &args) {
                     return;
                 }
                 break;
-            case 'h':
-                printHelp();
-                checkCount();
-                return;
             case 'i':
                 customIcon = QString(optarg);
                 break;
@@ -174,10 +163,6 @@ void TrayItemManager::processCommand(const QStringList &args) {
             case 't':
                 skipTaskbar = true;
                 break;
-            case 'v':
-                printVersion();
-                checkCount();
-                return;
             case 'w':
                 if ((optarg[1] == 'x') || (optarg[1] == 'X'))
                     sscanf(optarg, "%x", (unsigned *) & window);
@@ -222,50 +207,6 @@ void TrayItemManager::processCommand(const QStringList &args) {
         ti->iconifyWindow();
     }
     m_trayItems.append(ti);
-}
-
-void TrayItemManager::printAbout() {
-    QTextStream out(stdout);
-
-    out << tr("KDocker will help you dock any application into the system tray. This means you can dock openoffice, xmms, firefox, thunderbird, anything! Just point and click. Works for all NET WM compliant window managers - that includes KDE, GNOME, Xfce, Fluxbox and many more.") << endl;
-    out << endl;
-    out << tr("Created by Girish Ramakrishnan. Updated and maintained by John Schember.") << endl;
-}
-
-void TrayItemManager::printHelp() {
-    QTextStream out(stdout);
-
-    out << tr("Usage: %1 [options]").arg(QString(APP_NAME).toLower()) << endl;
-    out << tr("Docks any application into the system tray") << endl;
-    out << endl;
-    out << tr("Options") << endl;
-    out << "-a     \t" << tr("Show author information") << endl;
-    out << "-b     \t" << tr("Don't warn about non-normal windows (blind mode)") << endl;
-    out << "-f     \t" << tr("Dock window that has focus (active window)") << endl;
-    out << "-h     \t" << tr("Display this help") << endl;
-    out << "-l     \t" << tr("Iconify when focus lost") << endl;
-    out << "-m     \t" << tr("Keep application window showing (dont hide on dock)") << endl;
-    out << "-o     \t" << tr("Iconify when obscured") << endl;
-    out << "-p secs\t" << tr("Set ballooning timeout (popup time)") << endl;
-    out << "-q     \t" << tr("Disable ballooning title changes (quiet)") << endl;
-    out << "-t     \t" << tr("Remove this application from the task bar") << endl;
-    out << "-v     \t" << tr("Display version") << endl;
-    out << "-w wid \t" << tr("Window id of the application to dock") << endl;
-    out << endl;
-    out << tr("Bugs and wishes to https://bugs.launchpad.net/kdocker") << endl;
-    out << tr("Project information at https://launchpad.net/kdocker") << endl;
-}
-
-void TrayItemManager::printUsage() {
-    QTextStream out(stdout);
-    out << tr("Usage: %1 [options] command").arg(QString(APP_NAME).toLower()) << endl;
-    out << tr("Try `%1 -h' for more information").arg(QString(APP_NAME).toLower()) << endl;
-}
-
-void TrayItemManager::printVersion() {
-    QTextStream out(stdout);
-    out << "KDocker version: " << APP_VERSION << endl;
-    out << "Using Qt version: " << qVersion() << endl;
 }
 
 Window TrayItemManager::userSelectWindow(bool checkNormality) {

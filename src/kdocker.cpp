@@ -40,8 +40,8 @@ KDocker::KDocker(int &argc, char **argv) : QApplication(argc, argv) {
     setOrganizationDomain(DOM_NAME);
     setApplicationName(APP_NAME);
 
+    preProcessCommand(argc, argv); // this can exit the application
     QStringList args = QCoreApplication::arguments();
-    checkArguments(args);
 
     /*
      * Detect and transfer control to previous instance (if one exists)
@@ -157,21 +157,75 @@ void KDocker::notifyPreviousInstance(Window prevInstance, QStringList args) {
  * would be printed on the tty the instace was started on not the instance the
  * user is calling from.
  */
-void KDocker::checkArguments(QStringList args) {
-    if (args.contains("-a")) {
-        TrayItemManager::printAbout();
-        ::exit(0);
+void KDocker::preProcessCommand(int argc, char **argv) {
+    int option;
+    optind = 0; // initialise the getopt static
+    while ((option = getopt(argc, argv, OPTIONSTRING)) != -1) {
+        switch (option) {
+            case '?':
+                printUsage();
+                ::exit(0);
+                break;
+            case 'a':
+                printAbout();
+                ::exit(0);
+                break;
+            case 'h':
+                printHelp();
+                ::exit(0);
+                break;
+            case 'u':
+                printUsage();
+                ::exit(0);
+                break;
+            case 'v':
+                printVersion();
+                ::exit(0);
+                break;
+        }
     }
-    if (args.contains("-h")) {
-        TrayItemManager::printHelp();
-        ::exit(0);
-    }
-    if (args.contains("-u")) {
-        TrayItemManager::printUsage();
-        ::exit(0);
-    }
-    if (args.contains("-v")) {
-        TrayItemManager::printVersion();
-        ::exit(0);
-    }
+}
+
+void KDocker::printAbout() {
+    QTextStream out(stdout);
+
+    out << tr("KDocker will help you dock any application into the system tray. This means you can dock openoffice, xmms, firefox, thunderbird, anything! Just point and click. Works for all NET WM compliant window managers - that includes KDE, GNOME, Xfce, Fluxbox and many more.") << endl;
+    out << endl;
+    out << tr("Created by Girish Ramakrishnan. Updated and maintained by John Schember.") << endl;
+}
+
+void KDocker::printHelp() {
+    QTextStream out(stdout);
+
+    out << tr("Usage: %1 [options]").arg(QString(APP_NAME).toLower()) << endl;
+    out << tr("Docks any application into the system tray") << endl;
+    out << endl;
+    out << tr("Options") << endl;
+    out << "-a     \t" << tr("Show author information") << endl;
+    out << "-b     \t" << tr("Don't warn about non-normal windows (blind mode)") << endl;
+    out << "-f     \t" << tr("Dock window that has focus (active window)") << endl;
+    out << "-h     \t" << tr("Display this help") << endl;
+    out << "-l     \t" << tr("Iconify when focus lost") << endl;
+    out << "-m     \t" << tr("Keep application window showing (dont hide on dock)") << endl;
+    out << "-o     \t" << tr("Iconify when obscured") << endl;
+    out << "-p secs\t" << tr("Set ballooning timeout (popup time)") << endl;
+    out << "-q     \t" << tr("Disable ballooning title changes (quiet)") << endl;
+    out << "-t     \t" << tr("Remove this application from the task bar") << endl;
+    out << "-v     \t" << tr("Display version") << endl;
+    out << "-w wid \t" << tr("Window id of the application to dock") << endl;
+    out << endl;
+    out << tr("Bugs and wishes to https://bugs.launchpad.net/kdocker") << endl;
+    out << tr("Project information at https://launchpad.net/kdocker") << endl;
+}
+
+void KDocker::printUsage() {
+    QTextStream out(stdout);
+    out << tr("Usage: %1 [options] command").arg(QString(APP_NAME).toLower()) << endl;
+    out << tr("Try `%1 -h' for more information").arg(QString(APP_NAME).toLower()) << endl;
+}
+
+void KDocker::printVersion() {
+    QTextStream out(stdout);
+    out << "KDocker version: " << APP_VERSION << endl;
+    out << "Using Qt version: " << qVersion() << endl;
 }

@@ -37,7 +37,12 @@ public:
 
 private:
     void notifyPreviousInstance(Window prevInstance, QStringList args = QStringList());
-    void checkArguments(QStringList args);
+    void preProcessCommand(int argc, char **argv);
+
+    void printAbout();
+    void printHelp();
+    void printUsage();
+    void printVersion();
 
     TrayItemManager *m_trayItemManager;
 
