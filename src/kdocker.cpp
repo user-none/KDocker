@@ -205,7 +205,7 @@ void KDocker::printHelp() {
     out << "-b     \t" << tr("Don't warn about non-normal windows (blind mode)") << endl;
     out << "-f     \t" << tr("Dock window that has focus (active window)") << endl;
     out << "-h     \t" << tr("Display this help") << endl;
-    out << "-l     \t" << tr("Iconify when focus lost") << endl;
+    //out << "-l     \t" << tr("Iconify when focus lost") << endl;
     out << "-m     \t" << tr("Keep application window showing (dont hide on dock)") << endl;
     out << "-o     \t" << tr("Iconify when obscured") << endl;
     out << "-p secs\t" << tr("Set ballooning timeout (popup time)") << endl;

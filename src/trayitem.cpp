@@ -79,7 +79,7 @@ bool TrayItem::x11EventFilter(XEvent *ev) {
                 obscureEvent();
             }
         } else if (event->type == FocusOut) {
-            focusLostEvent();
+            //focusLostEvent();
         } else if (event->type == MapNotify) {
             m_withdrawn = false;
         } else if (event->type == UnmapNotify) {
@@ -251,7 +251,7 @@ void TrayItem::setBalloonTimeout(int value) {
         value = 0;
     }
     m_balloonTimeout = value;
-    m_actionBalloonTitleChanges->setChecked(value? true : false);
+    m_actionBalloonTitleChanges->setChecked(value ? true : false);
 }
 
 void TrayItem::setBalloonTimeout(bool value) {
@@ -415,14 +415,14 @@ void TrayItem::createContextMenu() {
     m_actionIconifyObscure->setChecked(m_iconifyObscure);
     connect(m_actionIconifyObscure, SIGNAL(toggled(bool)), this, SLOT(setIconifyObscure(bool)));
     m_optionsMenu->addAction(m_actionIconifyObscure);
-    m_actionIconifyFocusLost = new QAction(tr("Iconify when focus lost"), m_optionsMenu);
+    /*m_actionIconifyFocusLost = new QAction(tr("Iconify when focus lost"), m_optionsMenu);
     m_actionIconifyFocusLost->setCheckable(true);
     m_actionIconifyFocusLost->setChecked(m_iconifyFocusLost);
     connect(m_actionIconifyFocusLost, SIGNAL(toggled(bool)), this, SLOT(setIconifyFocusLost(bool)));
-    m_optionsMenu->addAction(m_actionIconifyFocusLost);
+    m_optionsMenu->addAction(m_actionIconifyFocusLost);*/
     m_actionBalloonTitleChanges = new QAction(tr("Balloon title changes"), m_optionsMenu);
     m_actionBalloonTitleChanges->setCheckable(true);
-    m_actionBalloonTitleChanges->setChecked(m_balloonTimeout? true : false);
+    m_actionBalloonTitleChanges->setChecked(m_balloonTimeout ? true : false);
     connect(m_actionBalloonTitleChanges, SIGNAL(toggled(bool)), this, SLOT(setBalloonTimeout(bool)));
     m_optionsMenu->addAction(m_actionBalloonTitleChanges);
     m_contextMenu->addMenu(m_optionsMenu);
