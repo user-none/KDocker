@@ -59,6 +59,7 @@ public slots:
 
 private slots:
     void toggleWindow(QSystemTrayIcon::ActivationReason reason);
+    void showOnAllDesktops();
     void doAbout();
     void doSelectAnother();
     void doUndock();
@@ -90,6 +91,7 @@ private:
 
     XSizeHints m_sizeHint; // SizeHint of m_window
     Window m_window; // The window that is associated with the tray icon.
+    long m_desktop;
     QMenu *m_contextMenu;
     QMenu *m_optionsMenu;
     QAction *m_actionSkipTaskbar;

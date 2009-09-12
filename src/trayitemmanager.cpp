@@ -244,7 +244,7 @@ Window TrayItemManager::userSelectWindow(bool checkNormality) {
 void TrayItemManager::undock(TrayItem *trayItem) {
     trayItem->restoreWindow();
     trayItem->setSkipTaskbar(false);
-    trayItem->skipTaskbar();
+    //trayItem->skipTaskbar();
     m_trayItems.removeAll(trayItem);
     delete trayItem;
     trayItem = 0;

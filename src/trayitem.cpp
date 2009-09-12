@@ -41,10 +41,13 @@ TrayItem::TrayItem(Window window, QObject *parent) : QSystemTrayIcon(parent) {
     m_iconifyFocusLost = false;
     m_balloonTimeout = 4000;
     m_window = window;
+    m_desktop = 999;
 
+    Display *display = QX11Info::display();
     // Allows events from m_window to be forwarded to the x11EventFilter.
-    subscribe(QX11Info::display(), m_window, StructureNotifyMask | PropertyChangeMask | VisibilityChangeMask | FocusChangeMask, true);
-
+    subscribe(display, m_window, StructureNotifyMask | PropertyChangeMask | VisibilityChangeMask | FocusChangeMask, true);
+    // store the desktop on which the window is being shown
+    getCardinalProperty(display, m_window, XInternAtom(display, "_NET_WM_DESKTOP", True), &m_desktop);
     createContextMenu();
 
     updateTitle();
@@ -127,6 +130,17 @@ void TrayItem::restoreWindow() {
     // make it the active window
     long l[5] = {None, CurrentTime, None, 0, 0};
     sendMessage(display, QX11Info::appRootWindow(), m_window, "_NET_ACTIVE_WINDOW", 32, SubstructureNotifyMask | SubstructureRedirectMask, l, sizeof (l));
+
+
+    if (m_desktop == -1) {
+        /*
+         * We track _NET_WM_DESKTOP changes in the x11EventFilter. Its used here.
+         * _NET_WM_DESKTOP is set by the WM to the active desktop for newly
+         * mapped windows (like this one) at some point in time. We will override
+         *  that value to -1 (all desktops) on showOnAllDesktops().
+         */
+        showOnAllDesktops();
+    }
 }
 
 void TrayItem::iconifyWindow() {
@@ -171,7 +185,7 @@ void TrayItem::skipTaskbar() {
      * unsigned long number of items?
      */
 
-    if (!m_window || m_withdrawn) {
+    if (!m_window) {
         return;
     }
 
@@ -209,7 +223,7 @@ void TrayItem::skipTaskbar() {
         }
 
         XFree(data);
-        XChangeProperty(display, m_window, _NET_WM_STATE, XA_ATOM, 32, PropModeReplace, (unsigned char *) & new_states, states.count());
+        XChangeProperty(display, m_window, _NET_WM_STATE, XA_ATOM, 32, PropModeReplace, (unsigned char *) &new_states, states.count());
     }
 }
 
@@ -226,9 +240,7 @@ void TrayItem::close() {
 void TrayItem::setSkipTaskbar(bool value) {
     m_skipTaskbar = value;
     m_actionSkipTaskbar->setChecked(value);
-    if (value) {
-        skipTaskbar();
-    }
+    //skipTaskbar();
 }
 
 void TrayItem::setIconifyMinimized(bool value) {
@@ -270,6 +282,15 @@ void TrayItem::toggleWindow(QSystemTrayIcon::ActivationReason reason) {
             iconifyWindow();
         }
     }
+}
+
+/*
+ * Sends a message to the WM to show this window on all the desktops
+ */
+void TrayItem::showOnAllDesktops() {
+    Display *display = QX11Info::display();
+    long l[5] = {-1, 0, 0, 0, 0}; // -1 = all, 0 = Desktop1, 1 = Desktop2 ...
+    sendMessage(display, QX11Info::appRootWindow(), m_window, "_NET_WM_DESKTOP", 32, SubstructureNotifyMask | SubstructureRedirectMask, l, sizeof (l));
 }
 
 void TrayItem::doAbout() {
@@ -314,11 +335,17 @@ void TrayItem::propertyChangeEvent(Atom property) {
     static Atom WM_NAME = XInternAtom(display, "WM_NAME", True);
     static Atom WM_ICON = XInternAtom(display, "WM_ICON", True);
     static Atom WM_STATE = XInternAtom(display, "WM_STATE", True);
+    static Atom _NET_WM_STATE = XInternAtom(display, "_NET_WM_STATE", True);
+    static Atom _NET_WM_DESKTOP = XInternAtom(display, "_NET_WM_DESKTOP", True);
 
     if (property == WM_NAME) {
         updateTitle();
     } else if (property == WM_ICON) {
         updateIcon();
+    } else if (property == _NET_WM_STATE) {
+        //skipTaskbar();
+    } else if (property == _NET_WM_DESKTOP) {
+        getCardinalProperty(display, m_window, _NET_WM_DESKTOP, &m_desktop);
     } else if (property == WM_STATE) {
         Atom type = None;
         int format;
@@ -329,7 +356,6 @@ void TrayItem::propertyChangeEvent(Atom property) {
             minimizeEvent();
             XFree(data);
         }
-        skipTaskbar();
     }
 }
 
@@ -403,8 +429,8 @@ void TrayItem::createContextMenu() {
     m_actionSkipTaskbar = new QAction(tr("Skip taskbar"), m_optionsMenu);
     m_actionSkipTaskbar->setCheckable(true);
     m_actionSkipTaskbar->setChecked(m_skipTaskbar);
-    connect(m_actionSkipTaskbar, SIGNAL(toggled(bool)), this, SLOT(setSkipTaskbar(bool)));
-    m_optionsMenu->addAction(m_actionSkipTaskbar);
+    //connect(m_actionSkipTaskbar, SIGNAL(toggled(bool)), this, SLOT(setSkipTaskbar(bool)));
+    //m_optionsMenu->addAction(m_actionSkipTaskbar);
     m_actionIconifyMinimized = new QAction(tr("Iconify when minimized"), m_optionsMenu);
     m_actionIconifyMinimized->setCheckable(true);
     m_actionIconifyMinimized->setChecked(m_iconifyMinimized);

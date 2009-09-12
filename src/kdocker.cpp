@@ -210,7 +210,7 @@ void KDocker::printHelp() {
     out << "-o     \t" << tr("Iconify when obscured") << endl;
     out << "-p secs\t" << tr("Set ballooning timeout (popup time)") << endl;
     out << "-q     \t" << tr("Disable ballooning title changes (quiet)") << endl;
-    out << "-t     \t" << tr("Remove this application from the task bar") << endl;
+    //out << "-t     \t" << tr("Remove this application from the task bar") << endl;
     out << "-v     \t" << tr("Display version") << endl;
     out << "-w wid \t" << tr("Window id of the application to dock") << endl;
     out << endl;
