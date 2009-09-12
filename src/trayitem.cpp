@@ -415,11 +415,11 @@ void TrayItem::createContextMenu() {
     m_actionIconifyObscure->setChecked(m_iconifyObscure);
     connect(m_actionIconifyObscure, SIGNAL(toggled(bool)), this, SLOT(setIconifyObscure(bool)));
     m_optionsMenu->addAction(m_actionIconifyObscure);
-    /*m_actionIconifyFocusLost = new QAction(tr("Iconify when focus lost"), m_optionsMenu);
+    m_actionIconifyFocusLost = new QAction(tr("Iconify when focus lost"), m_optionsMenu);
     m_actionIconifyFocusLost->setCheckable(true);
     m_actionIconifyFocusLost->setChecked(m_iconifyFocusLost);
-    connect(m_actionIconifyFocusLost, SIGNAL(toggled(bool)), this, SLOT(setIconifyFocusLost(bool)));
-    m_optionsMenu->addAction(m_actionIconifyFocusLost);*/
+    //connect(m_actionIconifyFocusLost, SIGNAL(toggled(bool)), this, SLOT(setIconifyFocusLost(bool)));
+    //m_optionsMenu->addAction(m_actionIconifyFocusLost);
     m_actionBalloonTitleChanges = new QAction(tr("Balloon title changes"), m_optionsMenu);
     m_actionBalloonTitleChanges->setCheckable(true);
     m_actionBalloonTitleChanges->setChecked(m_balloonTimeout ? true : false);
