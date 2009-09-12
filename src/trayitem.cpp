@@ -347,8 +347,8 @@ void TrayItem::updateIcon() {
 void TrayItem::createContextMenu() {
     m_contextMenu = new QMenu();
 
-    m_contextMenu->addAction(tr("Dock Another"), this, SLOT(another()));
-    m_contextMenu->addAction(tr("Close"), this, SLOT(close()));
+    m_contextMenu->addAction(QIcon(":/images/another.png"), tr("Dock Another"), this, SLOT(another()));
+    m_contextMenu->addAction(QIcon(":/images/close.png"), tr("Close"), this, SLOT(close()));
     setContextMenu(m_contextMenu);
 }
 
