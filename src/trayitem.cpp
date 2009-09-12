@@ -36,6 +36,7 @@ TrayItem::TrayItem(Window window, QObject *parent) : QSystemTrayIcon(parent) {
     m_iconified = false;
     m_customIcon = false;
     m_skipTaskbar = false;
+    m_skipPager = false;
     m_iconifyMinimized = true;
     m_iconifyObscure = false;
     m_iconifyFocusLost = false;
@@ -53,7 +54,7 @@ TrayItem::TrayItem(Window window, QObject *parent) : QSystemTrayIcon(parent) {
     readDockedAppName();
     updateTitle();
     updateIcon();
-    
+
     createContextMenu();
     updateToggleAction();
 
@@ -184,54 +185,27 @@ void TrayItem::iconifyWindow() {
     updateToggleAction();
 }
 
-void TrayItem::skipTaskbar() {
-    /*
-     * nitems is the number of properties set on the window. It is set by
-     * XGetWindowProperty as a unsigned long. QList only holds max items size
-     * of int. Does the data from XGetWindowProperty really hold size of
-     * unsigned long number of items?
-     */
-
-    if (!m_window) {
+void TrayItem::skip_NET_WM_STATE(const char *type, bool isSet) {
+    if (!m_window || m_iconified) {
         return;
     }
-
-    Atom type;
-    int format;
-    unsigned long left;
-    Atom *data = 0;
-    unsigned long nitems = 0;
     Display *display = QX11Info::display();
+    Atom atom = XInternAtom(display, type, False);
 
-    Atom _NET_WM_STATE = XInternAtom(display, "_NET_WM_STATE", True);
-    Atom skip_atom = XInternAtom(display, "_NET_WM_STATE_SKIP_TASKBAR", False);
-    int ret = XGetWindowProperty(display, m_window, _NET_WM_STATE, 0, 20, False, AnyPropertyType, &type, &format, &nitems, &left, (unsigned char **) & data);
-    Atom *old_states = (Atom *) data;
-    QList<Atom> states;
-
-    if ((ret == Success) && data) {
-        for (unsigned long i = 0; i < nitems; i++) {
-            if (old_states[i] != skip_atom) {
-                states.append(old_states[i]);
-            } else {
-                if (m_skipTaskbar) {
-                    // Skip taskbar is set and so is the skip atom.
-                    // Nothing needs to be done.
-                    return;
-                }
-            }
-        }
-        if (m_skipTaskbar) {
-            states.prepend(skip_atom);
-        }
-        Atom new_states[states.count()];
-        for (int i = 0; i < states.count(); i++) {
-            new_states[i] = states.at(i);
-        }
-
-        XFree(data);
-        XChangeProperty(display, m_window, _NET_WM_STATE, XA_ATOM, 32, PropModeReplace, (unsigned char *) & new_states, states.count());
+    int skip = 0;
+    if (isSet) {
+        skip = 1;
     }
+    long l[2] = {skip, atom};
+    sendMessage(display, QX11Info::appRootWindow(), m_window, "_NET_WM_STATE", 32, SubstructureNotifyMask, l, sizeof (l));
+}
+
+void TrayItem::skipTaskbar() {
+    skip_NET_WM_STATE("_NET_WM_STATE_SKIP_TASKBAR", m_skipTaskbar);
+}
+
+void TrayItem::skipPager() {
+    skip_NET_WM_STATE("_NET_WM_STATE_SKIP_PAGER", m_skipPager);
 }
 
 void TrayItem::close() {
@@ -247,7 +221,13 @@ void TrayItem::close() {
 void TrayItem::setSkipTaskbar(bool value) {
     m_skipTaskbar = value;
     m_actionSkipTaskbar->setChecked(value);
-    //skipTaskbar();
+    skipTaskbar();
+}
+
+void TrayItem::setSkipPager(bool value) {
+    m_skipPager = value;
+    m_actionSkipPager->setChecked(value);
+    skipPager();
 }
 
 void TrayItem::setIconifyMinimized(bool value) {
@@ -342,15 +322,12 @@ void TrayItem::propertyChangeEvent(Atom property) {
     static Atom WM_NAME = XInternAtom(display, "WM_NAME", True);
     static Atom WM_ICON = XInternAtom(display, "WM_ICON", True);
     static Atom WM_STATE = XInternAtom(display, "WM_STATE", True);
-    static Atom _NET_WM_STATE = XInternAtom(display, "_NET_WM_STATE", True);
     static Atom _NET_WM_DESKTOP = XInternAtom(display, "_NET_WM_DESKTOP", True);
 
     if (property == WM_NAME) {
         updateTitle();
     } else if (property == WM_ICON) {
         updateIcon();
-    } else if (property == _NET_WM_STATE) {
-        //skipTaskbar();
     } else if (property == _NET_WM_DESKTOP) {
         getCardinalProperty(display, m_window, _NET_WM_DESKTOP, &m_desktop);
     } else if (property == WM_STATE) {
@@ -363,6 +340,8 @@ void TrayItem::propertyChangeEvent(Atom property) {
             minimizeEvent();
             XFree(data);
         }
+        skipTaskbar();
+        skipPager();
     }
 }
 
@@ -374,6 +353,16 @@ void TrayItem::obscureEvent() {
 
 void TrayItem::focusLostEvent() {
     if (m_iconifyFocusLost) {
+        Display *display = QX11Info::display();
+        int num;
+        Atom _NET_ACTIVE_WINDOW = XInternAtom(display, "_NET_ACTIVE_WINDOW", false);
+        Atom *properties = XListProperties(display, m_window, &num);
+
+        for (int i = 0; i < num; i++) {
+            if (properties[i] == _NET_ACTIVE_WINDOW) {
+                return;
+            }
+        }
         iconifyWindow();
     }
 }
@@ -452,17 +441,22 @@ void TrayItem::createContextMenu() {
     m_actionSkipTaskbar = new QAction(tr("Skip taskbar"), m_optionsMenu);
     m_actionSkipTaskbar->setCheckable(true);
     m_actionSkipTaskbar->setChecked(m_skipTaskbar);
-    //connect(m_actionSkipTaskbar, SIGNAL(toggled(bool)), this, SLOT(setSkipTaskbar(bool)));
-    //m_optionsMenu->addAction(m_actionSkipTaskbar);
+    connect(m_actionSkipTaskbar, SIGNAL(triggered(bool)), this, SLOT(setSkipTaskbar(bool)));
+    m_optionsMenu->addAction(m_actionSkipTaskbar);
+    m_actionSkipPager = new QAction(tr("Skip pager"), m_optionsMenu);
+    m_actionSkipPager->setCheckable(true);
+    m_actionSkipPager->setChecked(m_skipPager);
+    connect(m_actionSkipPager, SIGNAL(triggered(bool)), this, SLOT(setSkipPager(bool)));
+    m_optionsMenu->addAction(m_actionSkipPager);
     m_actionIconifyMinimized = new QAction(tr("Iconify when minimized"), m_optionsMenu);
     m_actionIconifyMinimized->setCheckable(true);
     m_actionIconifyMinimized->setChecked(m_iconifyMinimized);
-    connect(m_actionIconifyMinimized, SIGNAL(toggled(bool)), this, SLOT(setIconifyMinimized(bool)));
+    connect(m_actionIconifyMinimized, SIGNAL(triggered(bool)), this, SLOT(setIconifyMinimized(bool)));
     m_optionsMenu->addAction(m_actionIconifyMinimized);
     m_actionIconifyObscure = new QAction(tr("Iconify when obscured"), m_optionsMenu);
     m_actionIconifyObscure->setCheckable(true);
     m_actionIconifyObscure->setChecked(m_iconifyObscure);
-    connect(m_actionIconifyObscure, SIGNAL(toggled(bool)), this, SLOT(setIconifyObscure(bool)));
+    connect(m_actionIconifyObscure, SIGNAL(triggered(bool)), this, SLOT(setIconifyObscure(bool)));
     m_optionsMenu->addAction(m_actionIconifyObscure);
     m_actionIconifyFocusLost = new QAction(tr("Iconify when focus lost"), m_optionsMenu);
     m_actionIconifyFocusLost->setCheckable(true);
@@ -472,7 +466,7 @@ void TrayItem::createContextMenu() {
     m_actionBalloonTitleChanges = new QAction(tr("Balloon title changes"), m_optionsMenu);
     m_actionBalloonTitleChanges->setCheckable(true);
     m_actionBalloonTitleChanges->setChecked(m_balloonTimeout ? true : false);
-    connect(m_actionBalloonTitleChanges, SIGNAL(toggled(bool)), this, SLOT(setBalloonTimeout(bool)));
+    connect(m_actionBalloonTitleChanges, SIGNAL(triggered(bool)), this, SLOT(setBalloonTimeout(bool)));
     m_optionsMenu->addAction(m_actionBalloonTitleChanges);
     m_contextMenu->addMenu(m_optionsMenu);
 

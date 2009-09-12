@@ -47,10 +47,13 @@ public:
 public slots:
     void restoreWindow();
     void iconifyWindow();
+    void skip_NET_WM_STATE(const char *type, bool isSet);
     void skipTaskbar();
+    void skipPager();
     void close(); // close the docked window
 
     void setSkipTaskbar(bool value);
+    void setSkipPager(bool value);
     void setIconifyMinimized(bool value);
     void setIconifyObscure(bool value);
     void setIconifyFocusLost(bool value);
@@ -87,6 +90,7 @@ private:
 
     bool m_customIcon;
     bool m_skipTaskbar;
+    bool m_skipPager;
     bool m_iconifyMinimized;
     bool m_iconifyObscure;
     bool m_iconifyFocusLost;
@@ -99,6 +103,7 @@ private:
     QMenu *m_contextMenu;
     QMenu *m_optionsMenu;
     QAction *m_actionSkipTaskbar;
+    QAction *m_actionSkipPager;
     QAction *m_actionIconifyMinimized;
     QAction *m_actionIconifyObscure;
     QAction *m_actionIconifyFocusLost;
