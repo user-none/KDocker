@@ -56,11 +56,15 @@ public slots:
 
 private slots:
     void toggleWindow(QSystemTrayIcon::ActivationReason reason);
-    void another();
+    void doAbout();
+    void doSelectAnother();
+    void doUndock();
+    void doUndockAll();
 
 signals:
     void selectAnother();
-    void itemClose(TrayItem*);
+    void undockAll();
+    void undock(TrayItem*);
 
 private:
     void minimizeEvent();

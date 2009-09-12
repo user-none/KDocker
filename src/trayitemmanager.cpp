@@ -201,12 +201,12 @@ void TrayItemManager::processCommand(const QStringList &args) {
     ti->setIconifyObscure(iconifyObscure);
     ti->setIconifyFocusLost(iconifyFocusLost);
     connect(ti, SIGNAL(selectAnother()), this, SLOT(selectAndIconify()));
-    connect(ti, SIGNAL(itemClose(TrayItem*)), this, SLOT(itemClosed(TrayItem*)));
+    connect(ti, SIGNAL(undock(TrayItem*)), this, SLOT(undock(TrayItem*)));
+    connect(ti, SIGNAL(undockAll()), this, SLOT(undockAll()));
     ti->show();
     if (iconify) {
         ti->iconifyWindow();
-    }
-    else {
+    } else {
         if (skipTaskbar) {
             ti->skipTaskbar();
         }
@@ -241,12 +241,22 @@ Window TrayItemManager::userSelectWindow(bool checkNormality) {
     return window;
 }
 
-void TrayItemManager::itemClosed(TrayItem *trayItem) {
+void TrayItemManager::undock(TrayItem *trayItem) {
+    trayItem->restoreWindow();
+    trayItem->setSkipTaskbar(false);
+    trayItem->skipTaskbar();
     m_trayItems.removeAll(trayItem);
     delete trayItem;
     trayItem = 0;
 
     checkCount();
+}
+
+void TrayItemManager::undockAll() {
+
+    Q_FOREACH(TrayItem *ti, m_trayItems) {
+        undock(ti);
+    }
 }
 
 void TrayItemManager::selectAndIconify() {
@@ -255,7 +265,8 @@ void TrayItemManager::selectAndIconify() {
     if (window) {
         TrayItem *ti = new TrayItem(window);
         connect(ti, SIGNAL(selectAnother()), this, SLOT(selectAndIconify()));
-        connect(ti, SIGNAL(itemClose(TrayItem*)), this, SLOT(itemClosed(TrayItem*)));
+        connect(ti, SIGNAL(undock(TrayItem*)), this, SLOT(undock(TrayItem*)));
+        connect(ti, SIGNAL(undockAll()), this, SLOT(undockAll()));
         ti->show();
         ti->iconifyWindow();
         m_trayItems.append(ti);

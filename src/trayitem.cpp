@@ -22,6 +22,7 @@
 #include <QPixmap>
 #include <QX11Info>
 
+#include "constants.h"
 #include "trayitem.h"
 #include "util.h"
 
@@ -244,8 +245,20 @@ void TrayItem::toggleWindow(QSystemTrayIcon::ActivationReason reason) {
     }
 }
 
-void TrayItem::another() {
+void TrayItem::doAbout() {
+    
+}
+
+void TrayItem::doSelectAnother() {
     emit(selectAnother());
+}
+
+void TrayItem::doUndock() {
+    emit(undock(this));
+}
+
+void TrayItem::doUndockAll() {
+    emit(undockAll());
 }
 
 void TrayItem::minimizeEvent() {
@@ -254,7 +267,7 @@ void TrayItem::minimizeEvent() {
 
 void TrayItem::destroyEvent() {
     m_window = 0;
-    emit(itemClose(this));
+    emit(undock(this));
 }
 
 void TrayItem::propertyChangeEvent(Atom property) {
@@ -347,7 +360,13 @@ void TrayItem::updateIcon() {
 void TrayItem::createContextMenu() {
     m_contextMenu = new QMenu();
 
-    m_contextMenu->addAction(QIcon(":/images/another.png"), tr("Dock Another"), this, SLOT(another()));
+    m_contextMenu->addAction(QIcon(":/images/about.png"), tr("About %1").arg(APP_NAME), this, SLOT(doAbout()));
+    m_contextMenu->addSeparator();
+    // options menu
+    m_contextMenu->addAction(QIcon(":/images/another.png"), tr("Dock Another"), this, SLOT(doSelectAnother()));
+    m_contextMenu->addAction(tr("Undock All"), this, SLOT(doUndockAll()));
+    m_contextMenu->addSeparator();
+    m_contextMenu->addAction(tr("Undock"), this, SLOT(doUndock()));
     m_contextMenu->addAction(QIcon(":/images/close.png"), tr("Close"), this, SLOT(close()));
     setContextMenu(m_contextMenu);
 }

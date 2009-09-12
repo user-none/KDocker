@@ -43,7 +43,8 @@ public:
 
 public slots:
     Window userSelectWindow(bool checkNormality=true);
-    void itemClosed(TrayItem *trayItem);
+    void undock(TrayItem *trayItem);
+    void undockAll();
 
 signals:
     void systemTrayDestroyEvent();
