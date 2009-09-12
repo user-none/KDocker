@@ -76,14 +76,14 @@ private:
     void propertyChangeEvent(Atom property);
     void obscureEvent();
     void focusLostEvent();
-    void readClassName();
+    void readDockedAppName();
     void updateTitle();
     void updateIcon();
     void updateToggleAction();
     void createContextMenu();
     QIcon createIcon(Window window);
 
-    bool m_withdrawn;
+    bool m_iconified;
     bool m_customIcon;
     bool m_skipTaskbar;
     bool m_iconifyMinimized;
@@ -94,7 +94,7 @@ private:
     XSizeHints m_sizeHint; // SizeHint of m_window
     Window m_window; // The window that is associated with the tray icon.
     long m_desktop;
-    QString m_className;
+    QString m_dockedAppName;
     QMenu *m_contextMenu;
     QMenu *m_optionsMenu;
     QAction *m_actionSkipTaskbar;

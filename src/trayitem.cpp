@@ -33,7 +33,7 @@
 const long SYSTEM_TRAY_REQUEST_DOCK = 0;
 
 TrayItem::TrayItem(Window window, QObject *parent) : QSystemTrayIcon(parent) {
-    m_withdrawn = false;
+    m_iconified = false;
     m_customIcon = false;
     m_skipTaskbar = false;
     m_iconifyMinimized = true;
@@ -42,7 +42,7 @@ TrayItem::TrayItem(Window window, QObject *parent) : QSystemTrayIcon(parent) {
     m_balloonTimeout = 4000;
     m_window = window;
     m_desktop = 999;
-    m_className = "";
+    m_dockedAppName = "";
 
     Display *display = QX11Info::display();
     // Allows events from m_window to be forwarded to the x11EventFilter.
@@ -50,7 +50,7 @@ TrayItem::TrayItem(Window window, QObject *parent) : QSystemTrayIcon(parent) {
     // store the desktop on which the window is being shown
     getCardinalProperty(display, m_window, XInternAtom(display, "_NET_WM_DESKTOP", True), &m_desktop);
 
-    readClassName();
+    readDockedAppName();
     updateTitle();
     updateIcon();
     
@@ -88,9 +88,9 @@ bool TrayItem::x11EventFilter(XEvent *ev) {
         } else if (event->type == FocusOut) {
             //focusLostEvent();
         } else if (event->type == MapNotify) {
-            m_withdrawn = false;
+            m_iconified = false;
         } else if (event->type == UnmapNotify) {
-            m_withdrawn = true;
+            m_iconified = true;
         }
         return true; // Dont process this again
     }
@@ -108,7 +108,7 @@ void TrayItem::setCustomIcon(QString path) {
 }
 
 void TrayItem::restoreWindow() {
-    m_withdrawn = false;
+    m_iconified = false;
     if (!m_window) {
         return;
     }
@@ -153,7 +153,7 @@ void TrayItem::iconifyWindow() {
         return;
     }
 
-    m_withdrawn = true;
+    m_iconified = true;
 
     Display *display = QX11Info::display();
     int screen = DefaultScreen(display);
@@ -283,7 +283,7 @@ void TrayItem::setBalloonTimeout(bool value) {
 
 void TrayItem::toggleWindow(QSystemTrayIcon::ActivationReason reason) {
     if (reason == QSystemTrayIcon::Trigger) {
-        if (m_withdrawn) {
+        if (m_iconified) {
             restoreWindow();
         } else {
             iconifyWindow();
@@ -378,14 +378,14 @@ void TrayItem::focusLostEvent() {
     }
 }
 
-void TrayItem::readClassName() {
+void TrayItem::readDockedAppName() {
     Display *display = QX11Info::display();
     XClassHint ch;
     if (XGetClassHint(display, m_window, &ch)) {
         if (ch.res_class) {
-            m_className = QString(ch.res_class);
+            m_dockedAppName = QString(ch.res_class);
         } else if (ch.res_name) {
-            m_className = QString(ch.res_name);
+            m_dockedAppName = QString(ch.res_name);
         }
 
         if (ch.res_class) {
@@ -415,8 +415,8 @@ void TrayItem::updateTitle() {
         XFree(windowName);
     }
 
-    setToolTip(QString("%1 [%2]").arg(title).arg(m_className));
-    showMessage(m_className, title, QSystemTrayIcon::Information, m_balloonTimeout);
+    setToolTip(QString("%1 [%2]").arg(title).arg(m_dockedAppName));
+    showMessage(m_dockedAppName, title, QSystemTrayIcon::Information, m_balloonTimeout);
 }
 
 void TrayItem::updateIcon() {
@@ -429,10 +429,10 @@ void TrayItem::updateIcon() {
 
 void TrayItem::updateToggleAction() {
     QString text;
-    if (m_withdrawn) {
-        text = tr("Show %1").arg(m_className);
+    if (m_iconified) {
+        text = tr("Show %1").arg(m_dockedAppName);
     } else {
-        text = tr("Hide %1").arg(m_className);
+        text = tr("Hide %1").arg(m_dockedAppName);
     }
     m_actionToggle->setIcon(icon());
     m_actionToggle->setText(text);
