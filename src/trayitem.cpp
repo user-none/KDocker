@@ -429,12 +429,15 @@ void TrayItem::updateIcon() {
 
 void TrayItem::updateToggleAction() {
     QString text;
+    QIcon icon;
     if (m_iconified) {
         text = tr("Show %1").arg(m_dockedAppName);
+        icon = QIcon(":/images/restore.png");
     } else {
         text = tr("Hide %1").arg(m_dockedAppName);
+        icon = QIcon(":/images/iconify.png");
     }
-    m_actionToggle->setIcon(icon());
+    m_actionToggle->setIcon(icon);
     m_actionToggle->setText(text);
 }
 

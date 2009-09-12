@@ -84,6 +84,7 @@ private:
     QIcon createIcon(Window window);
 
     bool m_iconified;
+
     bool m_customIcon;
     bool m_skipTaskbar;
     bool m_iconifyMinimized;
