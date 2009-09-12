@@ -23,7 +23,6 @@
 #include <QPixmap>
 #include <QX11Info>
 
-#include "constants.h"
 #include "trayitem.h"
 #include "util.h"
 
@@ -361,7 +360,7 @@ void TrayItem::updateIcon() {
 void TrayItem::createContextMenu() {
     m_contextMenu = new QMenu();
 
-    m_contextMenu->addAction(QIcon(":/images/about.png"), tr("About %1").arg(APP_NAME), this, SLOT(doAbout()));
+    m_contextMenu->addAction(QIcon(":/images/about.png"), tr("About %1").arg(qApp->applicationName()), this, SLOT(doAbout()));
     m_contextMenu->addSeparator();
     // options menu
     m_contextMenu->addAction(QIcon(":/images/another.png"), tr("Dock Another"), this, SLOT(doSelectAnother()));

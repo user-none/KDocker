@@ -39,6 +39,8 @@ KDocker::KDocker(int &argc, char **argv) : QApplication(argc, argv) {
     setOrganizationName(ORG_NAME);
     setOrganizationDomain(DOM_NAME);
     setApplicationName(APP_NAME);
+    setApplicationVersion(APP_VERSION);
+    setQuitOnLastWindowClosed(false);
 
     preProcessCommand(argc, argv); // this can exit the application
     QStringList args = QCoreApplication::arguments();
@@ -197,7 +199,7 @@ void KDocker::printAbout() {
 void KDocker::printHelp() {
     QTextStream out(stdout);
 
-    out << tr("Usage: %1 [options]").arg(QString(APP_NAME).toLower()) << endl;
+    out << tr("Usage: %1 [options]").arg(applicationName().toLower()) << endl;
     out << tr("Docks any application into the system tray") << endl;
     out << endl;
     out << tr("Options") << endl;
@@ -220,12 +222,12 @@ void KDocker::printHelp() {
 
 void KDocker::printUsage() {
     QTextStream out(stdout);
-    out << tr("Usage: %1 [options] command").arg(QString(APP_NAME).toLower()) << endl;
-    out << tr("Try `%1 -h' for more information").arg(QString(APP_NAME).toLower()) << endl;
+    out << tr("Usage: %1 [options] command").arg(applicationName().toLower()) << endl;
+    out << tr("Try `%1 -h' for more information").arg(applicationName().toLower()) << endl;
 }
 
 void KDocker::printVersion() {
     QTextStream out(stdout);
-    out << "KDocker version: " << APP_VERSION << endl;
+    out << "KDocker version: " << applicationVersion() << endl;
     out << "Using Qt version: " << qVersion() << endl;
 }
