@@ -18,10 +18,13 @@
  * USA.
  */
 
+#include <QByteArray>
+#include <QList>
 #include <QMessageBox>
 #include <QSystemTrayIcon>
 #include <QTextStream>
 #include <QX11Info>
+#include <QDebug>
 
 #include "constants.h"
 #include "trayitemmanager.h"
@@ -115,18 +118,23 @@ void TrayItemManager::processCommand(const QStringList &args) {
     bool iconifyFocusLost = false;
 
     // Turn the QStringList of arguments into something getopt can use.
-    int argc = args.count();
-    char *argv[argc + 1];
-    for (int i = 0; i < argc; i++) {
-        argv[i] = args[i].toLatin1().data();
+    QList<QByteArray> bargs;
+    Q_FOREACH(QString s, args) {
+        bargs.append(s.toLocal8Bit());
     }
-    argv[argc + 1] = NULL; // null terminate the array
+    int argc = bargs.count();
+    // Use a const char * here and a const_cast later because it is faster.
+    // Using char * will cause a deep copy.
+    const char *argv[argc + 1];
+    for (int i = 0; i < argc; i++) {
+        argv[i] = bargs[i].data();
+    }
 
     /* Options: a, h, u, v are all handled by the KDocker class because we
      * want them to print on the tty the instance was called from.
      */
     optind = 0; // initialise the getopt static
-    while ((option = getopt(argc, argv, OPTIONSTRING)) != -1) {
+    while ((option = getopt(argc, const_cast<char **>(argv), OPTIONSTRING)) != -1) {
         switch (option) {
             case '?':
                 checkCount();
@@ -143,7 +151,7 @@ void TrayItemManager::processCommand(const QStringList &args) {
                 }
                 break;
             case 'i':
-                customIcon = QString(optarg);
+                customIcon = QString::fromLocal8Bit(optarg);
                 break;
             case 'l':
                 iconifyFocusLost = true;
