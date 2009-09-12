@@ -23,6 +23,7 @@
 #include <QPixmap>
 #include <QX11Info>
 
+#include "constants.h"
 #include "trayitem.h"
 #include "util.h"
 
@@ -246,7 +247,13 @@ void TrayItem::toggleWindow(QSystemTrayIcon::ActivationReason reason) {
 }
 
 void TrayItem::doAbout() {
-    QMessageBox::about(0, tr("About KDocker"), tr("KDocker will help you dock any application into the system tray. This means you can dock openoffice, xmms, firefox, thunderbird, anything! Just point and click. Works for all NET WM compliant window managers - that includes KDE, GNOME, Xfce, Fluxbox and many more.\n\nCreated by Girish Ramakrishnan. Updated and maintained by John Schember.\n\nSee https://launchpad.com/kdocker for more information."));
+    QMessageBox aboutBox;
+    aboutBox.setIconPixmap(QPixmap(":/images/kdocker.png"));
+    aboutBox.setWindowTitle(tr("About %1").arg(qApp->applicationName()));
+    aboutBox.setText(ABOUT);
+    aboutBox.setInformativeText(tr("See <a href=\"https://launchpad.net/kdocker\">https://launchpad.net/kdocker</a> for more information."));
+    aboutBox.setStandardButtons(QMessageBox::Ok);
+    aboutBox.exec();
 }
 
 void TrayItem::doSelectAnother() {

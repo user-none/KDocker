@@ -191,9 +191,7 @@ void KDocker::preProcessCommand(int argc, char **argv) {
 void KDocker::printAbout() {
     QTextStream out(stdout);
 
-    out << tr("KDocker will help you dock any application into the system tray. This means you can dock openoffice, xmms, firefox, thunderbird, anything! Just point and click. Works for all NET WM compliant window managers - that includes KDE, GNOME, Xfce, Fluxbox and many more.") << endl;
-    out << endl;
-    out << tr("Created by Girish Ramakrishnan. Updated and maintained by John Schember.") << endl;
+    out << ABOUT << endl;
 }
 
 void KDocker::printHelp() {
@@ -228,6 +226,6 @@ void KDocker::printUsage() {
 
 void KDocker::printVersion() {
     QTextStream out(stdout);
-    out << "KDocker version: " << applicationVersion() << endl;
-    out << "Using Qt version: " << qVersion() << endl;
+    out << tr("%1 version: %2").arg(applicationName()).arg(applicationVersion()) << endl;
+    out << tr("Using Qt version: %1").arg(qVersion()) << endl;
 }
