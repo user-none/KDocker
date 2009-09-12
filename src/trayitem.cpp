@@ -42,16 +42,20 @@ TrayItem::TrayItem(Window window, QObject *parent) : QSystemTrayIcon(parent) {
     m_balloonTimeout = 4000;
     m_window = window;
     m_desktop = 999;
+    m_className = "";
 
     Display *display = QX11Info::display();
     // Allows events from m_window to be forwarded to the x11EventFilter.
     subscribe(display, m_window, StructureNotifyMask | PropertyChangeMask | VisibilityChangeMask | FocusChangeMask, true);
     // store the desktop on which the window is being shown
     getCardinalProperty(display, m_window, XInternAtom(display, "_NET_WM_DESKTOP", True), &m_desktop);
-    createContextMenu();
 
+    readClassName();
     updateTitle();
     updateIcon();
+    
+    createContextMenu();
+    updateToggleAction();
 
     connect(this, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(toggleWindow(QSystemTrayIcon::ActivationReason)));
 }
@@ -131,7 +135,6 @@ void TrayItem::restoreWindow() {
     long l[5] = {None, CurrentTime, None, 0, 0};
     sendMessage(display, QX11Info::appRootWindow(), m_window, "_NET_ACTIVE_WINDOW", 32, SubstructureNotifyMask | SubstructureRedirectMask, l, sizeof (l));
 
-
     if (m_desktop == -1) {
         /*
          * We track _NET_WM_DESKTOP changes in the x11EventFilter. Its used here.
@@ -141,6 +144,8 @@ void TrayItem::restoreWindow() {
          */
         showOnAllDesktops();
     }
+
+    updateToggleAction();
 }
 
 void TrayItem::iconifyWindow() {
@@ -175,6 +180,8 @@ void TrayItem::iconifyWindow() {
     ev.from_configure = false;
     XSendEvent(display, QX11Info::appRootWindow(), False, SubstructureRedirectMask | SubstructureNotifyMask, (XEvent *) & ev);
     XSync(display, False);
+
+    updateToggleAction();
 }
 
 void TrayItem::skipTaskbar() {
@@ -223,7 +230,7 @@ void TrayItem::skipTaskbar() {
         }
 
         XFree(data);
-        XChangeProperty(display, m_window, _NET_WM_STATE, XA_ATOM, 32, PropModeReplace, (unsigned char *) &new_states, states.count());
+        XChangeProperty(display, m_window, _NET_WM_STATE, XA_ATOM, 32, PropModeReplace, (unsigned char *) & new_states, states.count());
     }
 }
 
@@ -371,6 +378,25 @@ void TrayItem::focusLostEvent() {
     }
 }
 
+void TrayItem::readClassName() {
+    Display *display = QX11Info::display();
+    XClassHint ch;
+    if (XGetClassHint(display, m_window, &ch)) {
+        if (ch.res_class) {
+            m_className = QString(ch.res_class);
+        } else if (ch.res_name) {
+            m_className = QString(ch.res_name);
+        }
+
+        if (ch.res_class) {
+            XFree(ch.res_class);
+        }
+        if (ch.res_name) {
+            XFree(ch.res_name);
+        }
+    }
+}
+
 /*
  * Update the title in the tooltip.
  */
@@ -382,7 +408,6 @@ void TrayItem::updateTitle() {
     Display *display = QX11Info::display();
     char *windowName = 0;
     QString title;
-    QString className;
 
     XFetchName(display, m_window, &windowName);
     title = windowName;
@@ -390,24 +415,8 @@ void TrayItem::updateTitle() {
         XFree(windowName);
     }
 
-    XClassHint ch;
-    if (XGetClassHint(display, m_window, &ch)) {
-        if (ch.res_class) {
-            className = QString(ch.res_class);
-        } else if (ch.res_name) {
-            className = QString(ch.res_name);
-        }
-
-        if (ch.res_class) {
-            XFree(ch.res_class);
-        }
-        if (ch.res_name) {
-            XFree(ch.res_name);
-        }
-    }
-
-    setToolTip(QString("%1 [%2]").arg(title).arg(className));
-    showMessage(className, title, QSystemTrayIcon::Information, m_balloonTimeout);
+    setToolTip(QString("%1 [%2]").arg(title).arg(m_className));
+    showMessage(m_className, title, QSystemTrayIcon::Information, m_balloonTimeout);
 }
 
 void TrayItem::updateIcon() {
@@ -416,6 +425,17 @@ void TrayItem::updateIcon() {
     }
 
     setIcon(createIcon(m_window));
+}
+
+void TrayItem::updateToggleAction() {
+    QString text;
+    if (m_withdrawn) {
+        text = tr("Show %1").arg(m_className);
+    } else {
+        text = tr("Hide %1").arg(m_className);
+    }
+    m_actionToggle->setIcon(icon());
+    m_actionToggle->setText(text);
 }
 
 void TrayItem::createContextMenu() {
@@ -456,6 +476,9 @@ void TrayItem::createContextMenu() {
     m_contextMenu->addAction(QIcon(":/images/another.png"), tr("Dock Another"), this, SLOT(doSelectAnother()));
     m_contextMenu->addAction(tr("Undock All"), this, SLOT(doUndockAll()));
     m_contextMenu->addSeparator();
+    m_actionToggle = new QAction(tr("Toggle"), m_contextMenu);
+    connect(m_actionToggle, SIGNAL(triggered()), this, SLOT(toggleWindow()));
+    m_contextMenu->addAction(m_actionToggle);
     m_contextMenu->addAction(tr("Undock"), this, SLOT(doUndock()));
     m_contextMenu->addAction(QIcon(":/images/close.png"), tr("Close"), this, SLOT(close()));
     setContextMenu(m_contextMenu);

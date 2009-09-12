@@ -58,7 +58,7 @@ public slots:
     void setBalloonTimeout(bool value);
 
 private slots:
-    void toggleWindow(QSystemTrayIcon::ActivationReason reason);
+    void toggleWindow(QSystemTrayIcon::ActivationReason reason=QSystemTrayIcon::Trigger);
     void showOnAllDesktops();
     void doAbout();
     void doSelectAnother();
@@ -76,8 +76,10 @@ private:
     void propertyChangeEvent(Atom property);
     void obscureEvent();
     void focusLostEvent();
+    void readClassName();
     void updateTitle();
     void updateIcon();
+    void updateToggleAction();
     void createContextMenu();
     QIcon createIcon(Window window);
 
@@ -92,6 +94,7 @@ private:
     XSizeHints m_sizeHint; // SizeHint of m_window
     Window m_window; // The window that is associated with the tray icon.
     long m_desktop;
+    QString m_className;
     QMenu *m_contextMenu;
     QMenu *m_optionsMenu;
     QAction *m_actionSkipTaskbar;
@@ -99,6 +102,7 @@ private:
     QAction *m_actionIconifyObscure;
     QAction *m_actionIconifyFocusLost;
     QAction *m_actionBalloonTitleChanges;
+    QAction *m_actionToggle;
 
 };
 
