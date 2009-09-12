@@ -219,7 +219,7 @@ Window TrayItemManager::userSelectWindow(bool checkNormality) {
     out << tr("Select the application/window to dock with the left mouse button.") << endl;
     out << tr("Click any other mouse button to abort.") << endl;
 
-    const char *error = NULL;
+    const char *error = 0;
     Window window = selectWindow(QX11Info::display(), &error);
     if (!window) {
         if (error) {
@@ -253,7 +253,6 @@ void TrayItemManager::undock(TrayItem *trayItem) {
 }
 
 void TrayItemManager::undockAll() {
-
     Q_FOREACH(TrayItem *ti, m_trayItems) {
         undock(ti);
     }
@@ -280,7 +279,7 @@ void TrayItemManager::checkSystemTray() {
             subscribe(QX11Info::display(), m_systemTray, StructureNotifyMask, true);
         }
     } else {
-        QMessageBox::critical(NULL, tr("KDocker"), tr("There is no system tray. Exiting."));
+        QMessageBox::critical(0, tr("KDocker"), tr("There is no system tray. Exiting."));
         restoreAllWindows();
         ::exit(0);
     }

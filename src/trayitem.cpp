@@ -19,6 +19,7 @@
  */
 
 #include <QApplication>
+#include <QMessageBox>
 #include <QPixmap>
 #include <QX11Info>
 
@@ -246,7 +247,7 @@ void TrayItem::toggleWindow(QSystemTrayIcon::ActivationReason reason) {
 }
 
 void TrayItem::doAbout() {
-    
+    QMessageBox::about(0, tr("About KDocker"), tr("KDocker will help you dock any application into the system tray. This means you can dock openoffice, xmms, firefox, thunderbird, anything! Just point and click. Works for all NET WM compliant window managers - that includes KDE, GNOME, Xfce, Fluxbox and many more.\n\nCreated by Girish Ramakrishnan. Updated and maintained by John Schember.\n\nSee https://launchpad.com/kdocker for more information."));
 }
 
 void TrayItem::doSelectAnother() {
@@ -288,7 +289,7 @@ void TrayItem::propertyChangeEvent(Atom property) {
         Atom type = None;
         int format;
         unsigned long nitems, after;
-        unsigned char *data = NULL;
+        unsigned char *data = 0;
         int r = XGetWindowProperty(display, m_window, WM_STATE, 0, 1, False, AnyPropertyType, &type, &format, &nitems, &after, &data);
         if ((r == Success) && data && (*(long *) data == IconicState)) {
             minimizeEvent();
@@ -319,7 +320,7 @@ void TrayItem::updateTitle() {
     }
 
     Display *display = QX11Info::display();
-    char *windowName = NULL;
+    char *windowName = 0;
     QString title;
     QString className;
 
@@ -372,7 +373,7 @@ void TrayItem::createContextMenu() {
 }
 
 QIcon TrayItem::createIcon(Window window) {
-    char **window_icon = NULL;
+    char **window_icon = 0;
 
     if (!window) {
         return QIcon();
@@ -381,7 +382,7 @@ QIcon TrayItem::createIcon(Window window) {
     QPixmap appIcon;
     Display *display = QX11Info::display();
     XWMHints *wm_hints = XGetWMHints(display, window);
-    if (wm_hints != NULL) {
+    if (wm_hints != 0) {
         if (!(wm_hints->flags & IconMaskHint))
             wm_hints->icon_mask = None;
         /*
@@ -390,7 +391,7 @@ QIcon TrayItem::createIcon(Window window) {
          * quite a few KDE 3.x programs) X-(
          */
         if ((wm_hints->flags & IconPixmapHint) && (wm_hints->icon_pixmap)) {
-            XpmCreateDataFromPixmap(display, &window_icon, wm_hints->icon_pixmap, wm_hints->icon_mask, NULL);
+            XpmCreateDataFromPixmap(display, &window_icon, wm_hints->icon_pixmap, wm_hints->icon_mask, 0);
         }
         XFree(wm_hints);
     }
