@@ -36,6 +36,7 @@ TrayItem::TrayItem(Window window, QObject *parent) : QSystemTrayIcon(parent) {
     m_withdrawn = false;
     m_customIcon = false;
     m_skipTaskbar = false;
+    m_iconifyMinimized = true;
     m_iconifyObscure = false;
     m_iconifyFocusLost = false;
     m_balloonTimeout = 4000;
@@ -53,6 +54,8 @@ TrayItem::TrayItem(Window window, QObject *parent) : QSystemTrayIcon(parent) {
 }
 
 TrayItem::~TrayItem() {
+    // Only the main menu needs to be deleted. The rest of the menus and actions
+    // are children of this menu and Qt will delete all children.
     delete m_contextMenu;
 }
 
@@ -222,18 +225,41 @@ void TrayItem::close() {
 
 void TrayItem::setSkipTaskbar(bool value) {
     m_skipTaskbar = value;
+    m_actionSkipTaskbar->setChecked(value);
+    if (value) {
+        skipTaskbar();
+    }
+}
+
+void TrayItem::setIconifyMinimized(bool value) {
+    m_iconifyMinimized = value;
+    m_actionIconifyMinimized->setChecked(value);
 }
 
 void TrayItem::setIconifyObscure(bool value) {
     m_iconifyObscure = value;
+    m_actionIconifyObscure->setChecked(value);
 }
 
 void TrayItem::setIconifyFocusLost(bool value) {
     m_iconifyFocusLost = value;
+    m_actionIconifyFocusLost->setChecked(value);
 }
 
 void TrayItem::setBalloonTimeout(int value) {
+    if (value < 0) {
+        value = 0;
+    }
     m_balloonTimeout = value;
+    m_actionBalloonTitleChanges->setChecked(value? true : false);
+}
+
+void TrayItem::setBalloonTimeout(bool value) {
+    if (value) {
+        setBalloonTimeout(0);
+    } else {
+        setBalloonTimeout(4000);
+    }
 }
 
 void TrayItem::toggleWindow(QSystemTrayIcon::ActivationReason reason) {
@@ -251,7 +277,7 @@ void TrayItem::doAbout() {
     aboutBox.setIconPixmap(QPixmap(":/images/kdocker.png"));
     aboutBox.setWindowTitle(tr("About %1").arg(qApp->applicationName()));
     aboutBox.setText(ABOUT);
-    aboutBox.setInformativeText(tr("See <a href=\"https://launchpad.net/kdocker\">https://launchpad.net/kdocker</a> for more information."));
+    aboutBox.setInformativeText(tr("See %1 for more information.").arg("<a href=\"https://launchpad.net/kdocker\">https://launchpad.net/kdocker</a>"));
     aboutBox.setStandardButtons(QMessageBox::Ok);
     aboutBox.exec();
 }
@@ -269,7 +295,9 @@ void TrayItem::doUndockAll() {
 }
 
 void TrayItem::minimizeEvent() {
-    iconifyWindow();
+    if (m_iconifyMinimized) {
+        iconifyWindow();
+    }
 }
 
 void TrayItem::destroyEvent() {
@@ -369,7 +397,36 @@ void TrayItem::createContextMenu() {
 
     m_contextMenu->addAction(QIcon(":/images/about.png"), tr("About %1").arg(qApp->applicationName()), this, SLOT(doAbout()));
     m_contextMenu->addSeparator();
-    // options menu
+
+    // Options menu
+    m_optionsMenu = new QMenu(tr("Options"), m_contextMenu);
+    m_actionSkipTaskbar = new QAction(tr("Skip taskbar"), m_optionsMenu);
+    m_actionSkipTaskbar->setCheckable(true);
+    m_actionSkipTaskbar->setChecked(m_skipTaskbar);
+    connect(m_actionSkipTaskbar, SIGNAL(toggled(bool)), this, SLOT(setSkipTaskbar(bool)));
+    m_optionsMenu->addAction(m_actionSkipTaskbar);
+    m_actionIconifyMinimized = new QAction(tr("Iconify when minimized"), m_optionsMenu);
+    m_actionIconifyMinimized->setCheckable(true);
+    m_actionIconifyMinimized->setChecked(m_iconifyMinimized);
+    connect(m_actionIconifyMinimized, SIGNAL(toggled(bool)), this, SLOT(setIconifyMinimized(bool)));
+    m_optionsMenu->addAction(m_actionIconifyMinimized);
+    m_actionIconifyObscure = new QAction(tr("Iconify when obscured"), m_optionsMenu);
+    m_actionIconifyObscure->setCheckable(true);
+    m_actionIconifyObscure->setChecked(m_iconifyObscure);
+    connect(m_actionIconifyObscure, SIGNAL(toggled(bool)), this, SLOT(setIconifyObscure(bool)));
+    m_optionsMenu->addAction(m_actionIconifyObscure);
+    m_actionIconifyFocusLost = new QAction(tr("Iconify when focus lost"), m_optionsMenu);
+    m_actionIconifyFocusLost->setCheckable(true);
+    m_actionIconifyFocusLost->setChecked(m_iconifyFocusLost);
+    connect(m_actionIconifyFocusLost, SIGNAL(toggled(bool)), this, SLOT(setIconifyFocusLost(bool)));
+    m_optionsMenu->addAction(m_actionIconifyFocusLost);
+    m_actionBalloonTitleChanges = new QAction(tr("Balloon title changes"), m_optionsMenu);
+    m_actionBalloonTitleChanges->setCheckable(true);
+    m_actionBalloonTitleChanges->setChecked(m_balloonTimeout? true : false);
+    connect(m_actionBalloonTitleChanges, SIGNAL(toggled(bool)), this, SLOT(setBalloonTimeout(bool)));
+    m_optionsMenu->addAction(m_actionBalloonTitleChanges);
+    m_contextMenu->addMenu(m_optionsMenu);
+
     m_contextMenu->addAction(QIcon(":/images/another.png"), tr("Dock Another"), this, SLOT(doSelectAnother()));
     m_contextMenu->addAction(tr("Undock All"), this, SLOT(doUndockAll()));
     m_contextMenu->addSeparator();

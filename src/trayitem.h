@@ -21,6 +21,7 @@
 #ifndef _TRAYITEM_H
 #define	_TRAYITEM_H
 
+#include <QAction>
 #include <QIcon>
 #include <QMenu>
 #include <QObject>
@@ -50,9 +51,11 @@ public slots:
     void close(); // close the docked window
 
     void setSkipTaskbar(bool value);
+    void setIconifyMinimized(bool value);
     void setIconifyObscure(bool value);
     void setIconifyFocusLost(bool value);
     void setBalloonTimeout(int value);
+    void setBalloonTimeout(bool value);
 
 private slots:
     void toggleWindow(QSystemTrayIcon::ActivationReason reason);
@@ -80,6 +83,7 @@ private:
     bool m_withdrawn;
     bool m_customIcon;
     bool m_skipTaskbar;
+    bool m_iconifyMinimized;
     bool m_iconifyObscure;
     bool m_iconifyFocusLost;
     int m_balloonTimeout;
@@ -87,6 +91,13 @@ private:
     XSizeHints m_sizeHint; // SizeHint of m_window
     Window m_window; // The window that is associated with the tray icon.
     QMenu *m_contextMenu;
+    QMenu *m_optionsMenu;
+    QAction *m_actionSkipTaskbar;
+    QAction *m_actionIconifyMinimized;
+    QAction *m_actionIconifyObscure;
+    QAction *m_actionIconifyFocusLost;
+    QAction *m_actionBalloonTitleChanges;
+
 };
 
 #endif	/* _TRAYITEM_H */
