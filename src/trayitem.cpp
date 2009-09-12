@@ -243,6 +243,9 @@ void TrayItem::setIconifyObscure(bool value) {
 void TrayItem::setIconifyFocusLost(bool value) {
     m_iconifyFocusLost = value;
     m_actionIconifyFocusLost->setChecked(value);
+    if (m_window != activeWindow(QX11Info::display())) {
+        focusLostEvent();
+    }
 }
 
 void TrayItem::setBalloonTimeout(int value) {
@@ -353,17 +356,9 @@ void TrayItem::obscureEvent() {
 
 void TrayItem::focusLostEvent() {
     if (m_iconifyFocusLost) {
-        Display *display = QX11Info::display();
-        int num;
-        Atom _NET_ACTIVE_WINDOW = XInternAtom(display, "_NET_ACTIVE_WINDOW", false);
-        Atom *properties = XListProperties(display, m_window, &num);
-
-        for (int i = 0; i < num; i++) {
-            if (properties[i] == _NET_ACTIVE_WINDOW) {
-                return;
-            }
+        if (m_window != activeWindow(QX11Info::display())) {
+            iconifyWindow();
         }
-        iconifyWindow();
     }
 }
 

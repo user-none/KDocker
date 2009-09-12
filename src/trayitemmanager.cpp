@@ -114,6 +114,7 @@ void TrayItemManager::processCommand(const QStringList &args) {
     bool iconify = true;
     bool checkNormality = true;
     bool skipTaskbar = false;
+    bool skipPager = false;
     bool iconifyObscure = false;
     bool iconifyFocusLost = false;
 
@@ -168,6 +169,9 @@ void TrayItemManager::processCommand(const QStringList &args) {
             case 'q':
                 balloonTimeout = 0; // same as '-p 0'
                 break;
+            case 's':
+                skipPager = true;
+                break;
             case 't':
                 skipTaskbar = true;
                 break;
@@ -205,6 +209,7 @@ void TrayItemManager::processCommand(const QStringList &args) {
         ti->setCustomIcon(customIcon);
     }
     ti->setBalloonTimeout(balloonTimeout);
+    ti->setSkipPager(skipPager);
     ti->setSkipTaskbar(skipTaskbar);
     ti->setIconifyObscure(iconifyObscure);
     ti->setIconifyFocusLost(iconifyFocusLost);
