@@ -46,6 +46,7 @@ public:
 public slots:
     void restoreWindow();
     void iconifyWindow();
+    void skipTaskbar();
     void close(); // close the docked window
 
     void setSkipTaskbar(bool value);

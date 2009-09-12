@@ -25,6 +25,7 @@
 #include "trayitem.h"
 #include "util.h"
 
+#include <Xatom.h>
 #include <X11/xpm.h>
 
 const long SYSTEM_TRAY_REQUEST_DOCK = 0;
@@ -157,6 +158,56 @@ void TrayItem::iconifyWindow() {
     XSync(display, False);
 }
 
+void TrayItem::skipTaskbar() {
+    /*
+     * nitems is the number of properties set on the window. It is set by
+     * XGetWindowProperty as a unsigned long. QList only holds max items size
+     * of int. Does the data from XGetWindowProperty really hold size of
+     * unsigned long number of items?
+     */
+
+    if (!m_window || m_withdrawn) {
+        return;
+    }
+
+    Atom type;
+    int format;
+    unsigned long left;
+    Atom *data = 0;
+    unsigned long nitems = 0;
+    Display *display = QX11Info::display();
+
+    Atom _NET_WM_STATE = XInternAtom(display, "_NET_WM_STATE", True);
+    Atom skip_atom = XInternAtom(display, "_NET_WM_STATE_SKIP_TASKBAR", False);
+    int ret = XGetWindowProperty(display, m_window, _NET_WM_STATE, 0, 20, False, AnyPropertyType, &type, &format, &nitems, &left, (unsigned char **) & data);
+    Atom *old_states = (Atom *) data;
+    QList<Atom> states;
+
+    if ((ret == Success) && data) {
+        for (unsigned long i = 0; i < nitems; i++) {
+            if (old_states[i] != skip_atom) {
+                states.append(old_states[i]);
+            } else {
+                if (m_skipTaskbar) {
+                    // Skip taskbar is set and so is the skip atom.
+                    // Nothing needs to be done.
+                    return;
+                }
+            }
+        }
+        if (m_skipTaskbar) {
+            states.prepend(skip_atom);
+        }
+        Atom new_states[states.count()];
+        for (int i = 0; i < states.count(); i++) {
+            new_states[i] = states.at(i);
+        }
+
+        XFree(data);
+        XChangeProperty(display, m_window, _NET_WM_STATE, XA_ATOM, 32, PropModeReplace, (unsigned char *) & new_states, states.count());
+    }
+}
+
 void TrayItem::close() {
     if (m_window) {
         Display *display = QX11Info::display();
@@ -230,6 +281,7 @@ void TrayItem::propertyChangeEvent(Atom property) {
             minimizeEvent();
             XFree(data);
         }
+        skipTaskbar();
     }
 }
 
@@ -316,7 +368,7 @@ QIcon TrayItem::createIcon(Window window) {
         /*
          * We act paranoid here. Progams like KSnake has a bug where
          * IconPixmapHint is set but no pixmap (Actually this happens with
-         * quite a few KDE programs) X-(
+         * quite a few KDE 3.x programs) X-(
          */
         if ((wm_hints->flags & IconPixmapHint) && (wm_hints->icon_pixmap)) {
             XpmCreateDataFromPixmap(display, &window_icon, wm_hints->icon_pixmap, wm_hints->icon_mask, NULL);

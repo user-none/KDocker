@@ -206,6 +206,11 @@ void TrayItemManager::processCommand(const QStringList &args) {
     if (iconify) {
         ti->iconifyWindow();
     }
+    else {
+        if (skipTaskbar) {
+            ti->skipTaskbar();
+        }
+    }
     m_trayItems.append(ti);
 }
 
