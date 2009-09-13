@@ -117,26 +117,25 @@ void TrayItem::restoreWindow() {
     }
 
     Display *display = QX11Info::display();
+    Window root = QX11Info::appRootWindow();
 
     /*
      * A simple XMapWindow would not do. Some applications like xmms wont
      * redisplay its other windows (like the playlist, equalizer) since the
      * Withdrawn->Normal state change code does not map them. So we make the
-     * window go through Withdrawn->Iconify->Normal state.
+     * window go through Withdrawn->Map->Iconify->Normal state.
      */
-    XWMHints *wm_hint = XGetWMHints(display, m_window);
-    if (wm_hint) {
-        wm_hint->initial_state = IconicState;
-        XSetWMHints(display, m_window, wm_hint);
-        XFree(wm_hint);
-    }
-
     XMapWindow(display, m_window);
-    m_sizeHint.flags = USPosition; // Obsolete ?
+    XIconifyWindow(display, m_window, DefaultScreen(display));
+    XSync(display, False);
+    long l1[1] = {NormalState};
+    sendMessage(display, root, m_window, "WM_CHANGE_STATE", 32, SubstructureNotifyMask | SubstructureRedirectMask, l1, sizeof(l1));
+
+    m_sizeHint.flags = USPosition;
     XSetWMNormalHints(display, m_window, &m_sizeHint);
     // make it the active window
-    long l[5] = {None, CurrentTime, None, 0, 0};
-    sendMessage(display, QX11Info::appRootWindow(), m_window, "_NET_ACTIVE_WINDOW", 32, SubstructureNotifyMask | SubstructureRedirectMask, l, sizeof (l));
+    long l2[5] = {None, CurrentTime, None, 0, 0};
+    sendMessage(display, root, m_window, "_NET_ACTIVE_WINDOW", 32, SubstructureNotifyMask | SubstructureRedirectMask, l2, sizeof (l2));
 
     if (m_desktop == -1) {
         /*
@@ -168,22 +167,11 @@ void TrayItem::iconifyWindow() {
      * A simple call to XWithdrawWindow wont do. Here is what we do:
      * 1. Iconify. This will make the application hide all its other windows. For
      *    example, xmms would take off the playlist and equalizer window.
-     * 2. Next tell the WM, that we would like to go to withdrawn state. Withdrawn
-     *    state will remove us from the taskbar.
-     *    Reference: ICCCM 4.1.4 Changing Window State
+     * 2. Withdrawn the window so we will be removed from the taskbar.
      */
     XIconifyWindow(display, m_window, screen); // good for effects too
-    XUnmapWindow(display, m_window);
-    XUnmapEvent ev;
-    memset(&ev, 0, sizeof (ev));
-    ev.type = UnmapNotify;
-    ev.display = display;
-    ev.event = QX11Info::appRootWindow();
-    ev.window = m_window;
-    ev.from_configure = false;
-    XSendEvent(display, QX11Info::appRootWindow(), False, SubstructureNotifyMask | SubstructureRedirectMask, (XEvent *) & ev);
     XSync(display, False);
-
+    XWithdrawWindow(display, m_window, screen);
     updateToggleAction();
 }
 
