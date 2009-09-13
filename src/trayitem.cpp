@@ -90,8 +90,10 @@ bool TrayItem::x11EventFilter(XEvent *ev) {
             //focusLostEvent();
         } else if (event->type == MapNotify) {
             m_iconified = false;
+            updateToggleAction();
         } else if (event->type == UnmapNotify) {
             m_iconified = true;
+            updateToggleAction();
         }
         return true; // Dont process this again
     }
@@ -179,24 +181,23 @@ void TrayItem::iconifyWindow() {
     ev.event = QX11Info::appRootWindow();
     ev.window = m_window;
     ev.from_configure = false;
-    XSendEvent(display, QX11Info::appRootWindow(), False, SubstructureRedirectMask | SubstructureNotifyMask, (XEvent *) & ev);
+    XSendEvent(display, QX11Info::appRootWindow(), False, SubstructureNotifyMask | SubstructureRedirectMask, (XEvent *) & ev);
     XSync(display, False);
 
     updateToggleAction();
 }
 
-void TrayItem::skip_NET_WM_STATE(const char *type, bool isSet) {
+void TrayItem::skip_NET_WM_STATE(const char *type, bool set) {
+    // set, true = add the state to the window. False, remove the state from
+    // the window.
+
     if (!m_window || m_iconified) {
         return;
     }
     Display *display = QX11Info::display();
     Atom atom = XInternAtom(display, type, False);
 
-    int skip = 0;
-    if (isSet) {
-        skip = 1;
-    }
-    long l[2] = {skip, atom};
+    long l[5] = {set ? 1 : 0, atom, 0, 0 , 0};
     sendMessage(display, QX11Info::appRootWindow(), m_window, "_NET_WM_STATE", 32, SubstructureNotifyMask, l, sizeof (l));
 }
 
@@ -206,6 +207,10 @@ void TrayItem::skipTaskbar() {
 
 void TrayItem::skipPager() {
     skip_NET_WM_STATE("_NET_WM_STATE_SKIP_PAGER", m_skipPager);
+}
+
+void TrayItem::sticky() {
+    skip_NET_WM_STATE("_NET_WM_STATE_STICKY", m_sticky);
 }
 
 void TrayItem::close() {
@@ -228,6 +233,12 @@ void TrayItem::setSkipPager(bool value) {
     m_skipPager = value;
     m_actionSkipPager->setChecked(value);
     skipPager();
+}
+
+void TrayItem::setSticky(bool value) {
+    m_sticky = value;
+    m_actionSticky->setChecked(value);
+    sticky();
 }
 
 void TrayItem::setIconifyMinimized(bool value) {
@@ -443,6 +454,11 @@ void TrayItem::createContextMenu() {
     m_actionSkipPager->setChecked(m_skipPager);
     connect(m_actionSkipPager, SIGNAL(triggered(bool)), this, SLOT(setSkipPager(bool)));
     m_optionsMenu->addAction(m_actionSkipPager);
+    m_actionSticky = new QAction(tr("Sticky"), m_optionsMenu);
+    m_actionSticky->setCheckable(true);
+    m_actionSticky->setChecked(m_sticky);
+    connect(m_actionSticky, SIGNAL(triggered(bool)), this, SLOT(setSticky(bool)));
+    m_optionsMenu->addAction(m_actionSticky);
     m_actionIconifyMinimized = new QAction(tr("Iconify when minimized"), m_optionsMenu);
     m_actionIconifyMinimized->setCheckable(true);
     m_actionIconifyMinimized->setChecked(m_iconifyMinimized);
