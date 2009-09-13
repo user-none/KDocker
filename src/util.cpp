@@ -251,8 +251,7 @@ void subscribe(Display *display, Window w, long mask, bool set) {
     XSync(display, False);
 }
 
-// Returns the state of the SystemTray and the Wid if it exists
-
+// Returns Wid of the SystemTray if it exists
 Window systemTray(Display *display) {
     Screen *screen = XDefaultScreenOfDisplay(display);
     Window sys_tray;

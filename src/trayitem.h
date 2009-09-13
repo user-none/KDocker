@@ -42,7 +42,6 @@ public:
 
     // Pass on all events through this interface
     bool x11EventFilter(XEvent * event);
-    void setCustomIcon(QString path);
 
 public slots:
     void restoreWindow();
@@ -51,6 +50,7 @@ public slots:
     void skipTaskbar();
     void skipPager();
     void sticky();
+    void setCustomIcon(QString path);
     void close(); // close the docked window
 
     void setSkipTaskbar(bool value);

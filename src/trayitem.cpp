@@ -101,16 +101,6 @@ bool TrayItem::x11EventFilter(XEvent *ev) {
     return false;
 }
 
-void TrayItem::setCustomIcon(QString path) {
-    m_customIcon = true;
-    QPixmap customIcon;
-    if (!customIcon.load(path)) {
-        customIcon.load(":/images/question.png");
-    }
-
-    setIcon(QIcon(customIcon));
-}
-
 void TrayItem::restoreWindow() {
     m_iconified = false;
     if (!m_window) {
@@ -130,7 +120,7 @@ void TrayItem::restoreWindow() {
     XIconifyWindow(display, m_window, DefaultScreen(display));
     XSync(display, False);
     long l1[1] = {NormalState};
-    sendMessage(display, root, m_window, "WM_CHANGE_STATE", 32, SubstructureNotifyMask | SubstructureRedirectMask, l1, sizeof(l1));
+    sendMessage(display, root, m_window, "WM_CHANGE_STATE", 32, SubstructureNotifyMask | SubstructureRedirectMask, l1, sizeof (l1));
 
     m_sizeHint.flags = USPosition;
     XSetWMNormalHints(display, m_window, &m_sizeHint);
@@ -186,7 +176,7 @@ void TrayItem::skip_NET_WM_STATE(const char *type, bool set) {
     Display *display = QX11Info::display();
     Atom atom = XInternAtom(display, type, False);
 
-    long l[5] = {set ? 1 : 0, atom, 0, 0 , 0};
+    long l[5] = {set ? 1 : 0, atom, 0, 0, 0};
     sendMessage(display, QX11Info::appRootWindow(), m_window, "_NET_WM_STATE", 32, SubstructureNotifyMask, l, sizeof (l));
 }
 
@@ -200,6 +190,16 @@ void TrayItem::skipPager() {
 
 void TrayItem::sticky() {
     skip_NET_WM_STATE("_NET_WM_STATE_STICKY", m_sticky);
+}
+
+void TrayItem::setCustomIcon(QString path) {
+    m_customIcon = true;
+    QPixmap customIcon;
+    if (!customIcon.load(path)) {
+        customIcon.load(":/images/question.png");
+    }
+
+    setIcon(QIcon(customIcon));
 }
 
 void TrayItem::close() {
@@ -243,9 +243,7 @@ void TrayItem::setIconifyObscure(bool value) {
 void TrayItem::setIconifyFocusLost(bool value) {
     m_iconifyFocusLost = value;
     m_actionIconifyFocusLost->setChecked(value);
-    if (m_window != activeWindow(QX11Info::display())) {
-        focusLostEvent();
-    }
+    focusLostEvent();
 }
 
 void TrayItem::setBalloonTimeout(int value) {
@@ -279,7 +277,7 @@ void TrayItem::toggleWindow(QSystemTrayIcon::ActivationReason reason) {
  */
 void TrayItem::showOnAllDesktops() {
     Display *display = QX11Info::display();
-    long l[5] = {-1, 0, 0, 0, 0}; // -1 = all, 0 = Desktop1, 1 = Desktop2 ...
+    long l[1] = {-1}; // -1 = all, 0 = Desktop1, 1 = Desktop2 ...
     sendMessage(display, QX11Info::appRootWindow(), m_window, "_NET_WM_DESKTOP", 32, SubstructureNotifyMask | SubstructureRedirectMask, l, sizeof (l));
 }
 
@@ -355,10 +353,8 @@ void TrayItem::obscureEvent() {
 }
 
 void TrayItem::focusLostEvent() {
-    if (m_iconifyFocusLost) {
-        if (m_window != activeWindow(QX11Info::display())) {
-            iconifyWindow();
-        }
+    if (m_iconifyFocusLost && m_window != activeWindow(QX11Info::display())) {
+        iconifyWindow();
     }
 }
 
