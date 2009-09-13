@@ -38,26 +38,20 @@ public:
     ~TrayItemManager();
     bool x11EventFilter(XEvent *ev);
     void restoreAllWindows();
-
     void processCommand(const QStringList &args);
 
 public slots:
-    Window userSelectWindow(bool checkNormality=true);
+    Window userSelectWindow(bool checkNormality = true);
     void undock(TrayItem *trayItem);
     void undockAll();
 
-signals:
-    void systemTrayDestroyEvent();
-
 private slots:
     void selectAndIconify();
-    void checkSystemTray();
 
 private:
     void checkCount();
     bool isWindowDocked(Window window);
 
-    Window m_systemTray;
     QList<TrayItem*> m_trayItems;
 
     static TrayItemManager *g_trayItemManager;

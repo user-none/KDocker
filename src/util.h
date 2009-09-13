@@ -36,7 +36,5 @@ extern Window activeWindow(Display *display);
 extern Window selectWindow(Display *display, const char **err = 0);
 extern void subscribe(Display *display, Window w, long mask, bool set);
 extern bool getCardinalProperty(Display *display, Window w, Atom prop, long *data);
-extern Window systemTray(Display *display);
 
 #endif
-

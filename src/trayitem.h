@@ -63,7 +63,7 @@ public slots:
     void setBalloonTimeout(bool value);
 
 private slots:
-    void toggleWindow(QSystemTrayIcon::ActivationReason reason=QSystemTrayIcon::Trigger);
+    void toggleWindow(QSystemTrayIcon::ActivationReason reason = QSystemTrayIcon::Trigger);
     void showOnAllDesktops();
     void doAbout();
     void doSelectAnother();
@@ -103,6 +103,7 @@ private:
     Window m_window; // The window that is associated with the tray icon.
     long m_desktop;
     QString m_dockedAppName;
+
     QMenu *m_contextMenu;
     QMenu *m_optionsMenu;
     QAction *m_actionSkipTaskbar;

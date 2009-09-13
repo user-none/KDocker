@@ -20,9 +20,9 @@
 
 #include <QApplication>
 
-#include <signal.h>
-
 #include "kdocker.h"
+
+#include <signal.h>
 
 static void sighandler(int sig) {
     Q_UNUSED(sig);

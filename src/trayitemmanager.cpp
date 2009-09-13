@@ -43,9 +43,6 @@ TrayItemManager *TrayItemManager::instance() {
 }
 
 TrayItemManager::TrayItemManager() {
-    m_systemTray = 0;
-    checkSystemTray();
-    connect(this, SIGNAL(systemTrayDestroyEvent()), this, SLOT(checkSystemTray()));
 }
 
 TrayItemManager::~TrayItemManager() {
@@ -59,24 +56,13 @@ TrayItemManager::~TrayItemManager() {
 /*
  * The X11 Event Filter. Pass on events to the TrayItems that we created.
  * The logic and the code below is a bit fuzzy.
- *  a) Events about windows that are not docked but of interest (like
- *     SystemTray) are handled by the TrayItemManager.
- *  b) Events about windows that are being docked need to be processed only by
+ *  a) Events about windows that are being docked need to be processed only by
  *     the TrayItem object that is docking that window.
- *  c) When a TrayItem manages to find the window that is was looking for, we
+ *  b) When a TrayItem manages to find the window that is was looking for, we
  *     need not process the event further.
  */
 bool TrayItemManager::x11EventFilter(XEvent *ev) {
     XAnyEvent *event = (XAnyEvent *) ev;
-    if (event->window == m_systemTray) {
-        if (event->type != DestroyNotify) {
-            return false; // not interested in others
-        }
-        m_systemTray = 0;
-        emit(systemTrayDestroyEvent());
-        return true;
-    }
-
     QListIterator<TrayItem*> ti(m_trayItems);
     bool ret = false;
 
@@ -121,6 +107,7 @@ void TrayItemManager::processCommand(const QStringList &args) {
 
     // Turn the QStringList of arguments into something getopt can use.
     QList<QByteArray> bargs;
+
     Q_FOREACH(QString s, args) {
         bargs.append(s.toLocal8Bit());
     }
@@ -136,7 +123,7 @@ void TrayItemManager::processCommand(const QStringList &args) {
      * want them to print on the tty the instance was called from.
      */
     optind = 0; // initialise the getopt static
-    while ((option = getopt(argc, const_cast<char **>(argv), OPTIONSTRING)) != -1) {
+    while ((option = getopt(argc, const_cast<char **> (argv), OPTIONSTRING)) != -1) {
         switch (option) {
             case '?':
                 checkCount();
@@ -287,19 +274,6 @@ void TrayItemManager::selectAndIconify() {
         ti->show();
         ti->iconifyWindow();
         m_trayItems.append(ti);
-    }
-}
-
-void TrayItemManager::checkSystemTray() {
-    if (QSystemTrayIcon::isSystemTrayAvailable()) {
-        if (!m_systemTray) {
-            m_systemTray = systemTray(QX11Info::display());
-            subscribe(QX11Info::display(), m_systemTray, StructureNotifyMask, true);
-        }
-    } else {
-        QMessageBox::critical(0, tr("KDocker"), tr("There is no system tray. Exiting."));
-        restoreAllWindows();
-        ::exit(0);
     }
 }
 

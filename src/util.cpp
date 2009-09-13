@@ -251,22 +251,6 @@ void subscribe(Display *display, Window w, long mask, bool set) {
     XSync(display, False);
 }
 
-// Returns Wid of the SystemTray if it exists
-Window systemTray(Display *display) {
-    Screen *screen = XDefaultScreenOfDisplay(display);
-    Window sys_tray;
-    Atom selection = None;
-
-    char temp[50];
-    sprintf(temp, "_NET_SYSTEM_TRAY_S%i", XScreenNumberOfScreen(screen));
-    selection = XInternAtom(display, temp, True);
-    if (selection == None) {
-        return 0;
-    }
-    sys_tray = XGetSelectionOwner(display, selection);
-    return sys_tray;
-}
-
 bool getCardinalProperty(Display *display, Window w, Atom prop, long *data) {
     Atom type;
     int format;
