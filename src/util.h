@@ -30,6 +30,7 @@
 extern bool isNormalWindow(Display *display, Window w);
 extern bool isValidWindowId(Display *display, Window w);
 extern pid_t pid(Display *display, Window w);
+extern Window pidToWid(Display *display, pid_t epid, Window window);
 extern void sendMessage(Display *display, Window to, Window w, const char *type, int format, long mask, void *data, int size);
 extern bool analyzeWindow(Display *display, Window w, pid_t epid, const QString &ename);
 extern Window activeWindow(Display *display);

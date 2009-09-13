@@ -123,6 +123,30 @@ pid_t pid(Display *display, Window w) {
     return pid_return;
 }
 
+Window pidToWid(Display *display, pid_t epid, Window window) {
+    Window w = None;
+
+    Window root;
+    Window parent;
+    Window *child;
+    unsigned int num_child;
+    if (XQueryTree(display, window, &root, &parent, &child, &num_child) != 0) {
+        for (unsigned int i = 0; i < num_child; i++) {
+            if (epid == pid(display, child[i]) && isNormalWindow(display, child[i])) {
+                return child[i];
+            }
+            else {
+                w = pidToWid(display, epid, child[i]);
+            }
+            if (w != None) {
+                return w;
+            }
+        }
+    }
+
+    return w;
+}
+
 /*
  * Sends ClientMessage to a window
  */
@@ -162,8 +186,7 @@ bool analyzeWindow(Display *display, Window w, pid_t epid, const QString &ename)
             this_is_our_man = true;
         } else if (QString(ch.res_class).indexOf(ename, 0, Qt::CaseInsensitive) != -1) {
             this_is_our_man = true;
-        }
-        else {
+        } else {
             // sheer desperation
             char *wm_name = NULL;
             XFetchName(display, w, &wm_name);
