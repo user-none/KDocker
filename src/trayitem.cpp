@@ -208,10 +208,7 @@ void TrayItem::removeWindowBorder() {
     unsigned long nitems;
     unsigned long bytes_after;
 
-    XGetWindowProperty(display, m_window,
-            hints_atom, 0, sizeof (MotifWmHints) / sizeof (long),
-            false, AnyPropertyType, &type, &format, &nitems,
-            &bytes_after, &data);
+    XGetWindowProperty(display, m_window, hints_atom, 0, sizeof (MotifWmHints) / sizeof (long), false, AnyPropertyType, &type, &format, &nitems, &bytes_after, &data);
 
     if (type == None) {
         MotifWmHints hints;
