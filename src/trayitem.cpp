@@ -30,6 +30,8 @@
 #include <Xatom.h>
 #include <X11/xpm.h>
 
+#include "mwmutil.h"
+
 const long SYSTEM_TRAY_REQUEST_DOCK = 0;
 
 TrayItem::TrayItem(Window window, QObject *parent) : QSystemTrayIcon(parent) {
@@ -190,6 +192,44 @@ void TrayItem::skipPager() {
 
 void TrayItem::sticky() {
     skip_NET_WM_STATE("_NET_WM_STATE_STICKY", m_sticky);
+}
+
+void TrayItem::removeWindowBorder() {
+    if (!m_window) {
+        return;
+    }
+
+    Display *display = QX11Info::display();
+    Atom hints_atom = XInternAtom(display, _XA_MOTIF_WM_HINTS, false);
+
+    unsigned char *data;
+    Atom type;
+    int format;
+    unsigned long nitems;
+    unsigned long bytes_after;
+
+    XGetWindowProperty(display, m_window,
+            hints_atom, 0, sizeof (MotifWmHints) / sizeof (long),
+            false, AnyPropertyType, &type, &format, &nitems,
+            &bytes_after, &data);
+
+    if (type == None) {
+        MotifWmHints hints;
+        memset(&hints, 0, sizeof (hints));
+        hints.flags = MWM_HINTS_DECORATIONS;
+        hints.decorations = 0;
+        XChangeProperty(display, m_window, hints_atom, hints_atom, 32, PropModeReplace, (unsigned char *) & hints, sizeof (MotifWmHints) / sizeof (long));
+    } else {
+        MotifWmHints *hints;
+        hints = (MotifWmHints *) data;
+
+        if (!(hints->flags & MWM_HINTS_DECORATIONS)) {
+            hints->flags |= MWM_HINTS_DECORATIONS;
+        }
+        hints->decorations = 0;
+        XChangeProperty(display, m_window, hints_atom, hints_atom, 32, PropModeReplace, (unsigned char *) hints, sizeof (MotifWmHints) / sizeof (long));
+        XFree(hints);
+    }
 }
 
 void TrayItem::setCustomIcon(QString path) {

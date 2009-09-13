@@ -50,6 +50,7 @@ public slots:
     void skipTaskbar();
     void skipPager();
     void sticky();
+    void removeWindowBorder();
     void setCustomIcon(QString path);
     void close(); // close the docked window
 

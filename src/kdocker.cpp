@@ -203,6 +203,7 @@ void KDocker::printHelp() {
     out << tr("Options") << endl;
     out << "-a     \t" << tr("Show author information") << endl;
     out << "-b     \t" << tr("Don't warn about non-normal windows (blind mode)") << endl;
+    out << "-c     \t" << tr("Remove the window border") << endl;
     out << "-f     \t" << tr("Dock window that has focus (active window)") << endl;
     out << "-h     \t" << tr("Display this help") << endl;
     //out << "-l     \t" << tr("Iconify when focus lost") << endl;

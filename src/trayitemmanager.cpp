@@ -97,6 +97,7 @@ void TrayItemManager::processCommand(const QStringList &args) {
     Window window = 0;
     QString customIcon;
     int balloonTimeout = 4000;
+    bool borderless = false;
     bool iconify = true;
     bool checkNormality = true;
     bool skipTaskbar = false;
@@ -130,6 +131,9 @@ void TrayItemManager::processCommand(const QStringList &args) {
                 return;
             case 'b':
                 checkNormality = false;
+                break;
+            case 'c':
+                borderless = true;
                 break;
             case 'f':
                 window = activeWindow(QX11Info::display());
@@ -200,6 +204,9 @@ void TrayItemManager::processCommand(const QStringList &args) {
         ti->setCustomIcon(customIcon);
     }
     ti->setBalloonTimeout(balloonTimeout);
+    if (borderless) {
+        ti->removeWindowBorder();
+    }
     ti->setSticky(sticky);
     ti->setSkipPager(skipPager);
     ti->setSkipTaskbar(skipTaskbar);
