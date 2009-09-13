@@ -37,6 +37,7 @@ TrayItem::TrayItem(Window window, QObject *parent) : QSystemTrayIcon(parent) {
     m_customIcon = false;
     m_skipTaskbar = false;
     m_skipPager = false;
+    m_sticky = false;
     m_iconifyMinimized = true;
     m_iconifyObscure = false;
     m_iconifyFocusLost = false;
