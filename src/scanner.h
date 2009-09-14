@@ -23,6 +23,7 @@
 
 #include <QList>
 #include <QObject>
+#include <QString>
 #include <QTimer>
 
 #include "trayitem.h"
@@ -30,9 +31,11 @@
 #include <X11/Xlib.h>
 
 struct ProcessId {
+    QString command;
     int pid;
     TrayItemSettings settings;
     int count;
+    int maxCount;
 };
 
 // Launches commands and looks for the window ids they create.
@@ -43,7 +46,7 @@ class Scanner : public QObject {
 public:
     Scanner();
     ~Scanner();
-    void enqueue(const QString &command, const QStringList &arguments, TrayItemSettings settings);
+    void enqueue(const QString &command, const QStringList &arguments, TrayItemSettings settings, int maxTime=30);
     bool isRunning();
 private slots:
     void check();

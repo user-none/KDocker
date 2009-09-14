@@ -101,6 +101,7 @@ void TrayItemManager::processCommand(const QStringList &args) {
     Window window = 0;
     bool checkNormality = true;
     TrayItemSettings settings;
+    int maxTime = 30;
     settings.balloonTimeout = 4000;
     settings.borderless = false;
     settings.iconify = true;
@@ -138,6 +139,9 @@ void TrayItemManager::processCommand(const QStringList &args) {
                 break;
             case 'c':
                 settings.borderless = true;
+                break;
+            case 'd':
+                maxTime = atoi(optarg);
                 break;
             case 'f':
                 window = activeWindow(QX11Info::display());
@@ -192,9 +196,9 @@ void TrayItemManager::processCommand(const QStringList &args) {
         QString command = argv[optind];
         QStringList arguments;
         for (int i = optind + 1; i < argc; i++) {
-            arguments << argv[i];
+            arguments << QString::fromLocal8Bit(argv[i]);
         }
-        m_scanner->enqueue(command, arguments, settings);
+        m_scanner->enqueue(command, arguments, settings, maxTime);
     } else {
         if (!window) {
             window = userSelectWindow(checkNormality);
@@ -259,7 +263,7 @@ Window TrayItemManager::userSelectWindow(bool checkNormality) {
 
     if (checkNormality) {
         if (!isNormalWindow(QX11Info::display(), window)) {
-            if (QMessageBox::warning(0, tr("KDocker"), tr("The window you are attempting to dock does not seem to be a normal window."), QMessageBox::Abort) == QMessageBox::Abort) {
+            if (QMessageBox::warning(0, tr("KDocker"), tr("The window you are attempting to dock does not seem to be a normal window."), QMessageBox::Abort | QMessageBox::Ignore) == QMessageBox::Abort) {
                 checkCount();
                 return 0;
             }
