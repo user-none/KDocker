@@ -43,6 +43,7 @@ TrayItemManager *TrayItemManager::instance() {
 }
 
 TrayItemManager::TrayItemManager() {
+    m_startingCount = 0;
     m_scanner = new Scanner();
     connect(m_scanner, SIGNAL(windowFound(Window, TrayItemSettings)), this, SLOT(dockWindow(Window, TrayItemSettings)));
     connect(m_scanner, SIGNAL(stopping()), this, SLOT(checkCount()));
@@ -97,6 +98,8 @@ void TrayItemManager::restoreAllWindows() {
 }
 
 void TrayItemManager::processCommand(const QStringList &args) {
+    m_startingCount++;
+
     int option;
     Window window = 0;
     bool checkNormality = true;
@@ -207,6 +210,7 @@ void TrayItemManager::processCommand(const QStringList &args) {
         if (window) {
             dockWindow(window, settings);
         } else {
+            m_startingCount--;
             checkCount();
         }
     }
@@ -244,6 +248,7 @@ void TrayItemManager::dockWindow(Window window, TrayItemSettings settings) {
         }
     }
     m_trayItems.append(ti);
+    m_startingCount--;
 }
 
 Window TrayItemManager::userSelectWindow(bool checkNormality) {
@@ -306,7 +311,7 @@ void TrayItemManager::selectAndIconify() {
 }
 
 void TrayItemManager::checkCount() {
-    if (m_trayItems.isEmpty() && !m_scanner->isRunning()) {
+    if (m_trayItems.isEmpty() && !m_scanner->isRunning() && !m_startingCount) {
         ::exit(0);
     }
 }
