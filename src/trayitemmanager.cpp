@@ -43,6 +43,9 @@ TrayItemManager *TrayItemManager::instance() {
 }
 
 TrayItemManager::TrayItemManager() {
+    m_scanner = new Scanner();
+    connect(m_scanner, SIGNAL(windowFound(Window, TrayItemSettings)), this, SLOT(dockWindow(Window, TrayItemSettings)));
+    connect(m_scanner, SIGNAL(stopping()), this, SLOT(checkCount()));
 }
 
 TrayItemManager::~TrayItemManager() {
@@ -51,6 +54,7 @@ TrayItemManager::~TrayItemManager() {
         delete t;
         t = 0;
     }
+    delete m_scanner;
 }
 
 /*
@@ -95,16 +99,16 @@ void TrayItemManager::restoreAllWindows() {
 void TrayItemManager::processCommand(const QStringList &args) {
     int option;
     Window window = 0;
-    QString customIcon;
-    int balloonTimeout = 4000;
-    bool borderless = false;
-    bool iconify = true;
     bool checkNormality = true;
-    bool skipTaskbar = false;
-    bool skipPager = false;
-    bool sticky = false;
-    bool iconifyObscure = false;
-    bool iconifyFocusLost = false;
+    TrayItemSettings settings;
+    settings.balloonTimeout = 4000;
+    settings.borderless = false;
+    settings.iconify = true;
+    settings.skipTaskbar = false;
+    settings.skipPager = false;
+    settings.sticky = false;
+    settings.iconifyObscure = false;
+    settings.iconifyFocusLost = false;
 
     // Turn the QStringList of arguments into something getopt can use.
     QList<QByteArray> bargs;
@@ -133,7 +137,7 @@ void TrayItemManager::processCommand(const QStringList &args) {
                 checkNormality = false;
                 break;
             case 'c':
-                borderless = true;
+                settings.borderless = true;
                 break;
             case 'f':
                 window = activeWindow(QX11Info::display());
@@ -144,31 +148,31 @@ void TrayItemManager::processCommand(const QStringList &args) {
                 }
                 break;
             case 'i':
-                customIcon = QString::fromLocal8Bit(optarg);
+                settings.customIcon = QString::fromLocal8Bit(optarg);
                 break;
             case 'l':
-                iconifyFocusLost = true;
+                settings.iconifyFocusLost = true;
                 break;
             case 'm':
-                iconify = false;
+                settings.iconify = false;
                 break;
             case 'o':
-                iconifyObscure = true;
+                settings.iconifyObscure = true;
                 break;
             case 'p':
-                balloonTimeout = atoi(optarg) * 1000; // convert to ms
+                settings.balloonTimeout = atoi(optarg) * 1000; // convert to ms
                 break;
             case 'q':
-                balloonTimeout = 0; // same as '-p 0'
+                settings.balloonTimeout = 0; // same as '-p 0'
                 break;
             case 'r':
-                skipPager = true;
+                settings.skipPager = true;
                 break;
             case 's':
-                sticky = true;
+                settings.sticky = true;
                 break;
             case 't':
-                skipTaskbar = true;
+                settings.skipTaskbar = true;
                 break;
             case 'w':
                 if ((optarg[1] == 'x') || (optarg[1] == 'X'))
@@ -184,15 +188,27 @@ void TrayItemManager::processCommand(const QStringList &args) {
         } // switch (option)
     } // while (getopt)
 
-    if (!window) {
-        window = userSelectWindow(checkNormality);
+    if (optind < argc) {
+        QString command = argv[optind];
+        QStringList arguments;
+        for (int i = optind + 1; i < argc; i++) {
+            arguments << argv[i];
+        }
+        m_scanner->enqueue(command, arguments, settings);
+    } else {
+        if (!window) {
+            window = userSelectWindow(checkNormality);
+        }
+        // No window was selected or set.
+        if (window) {
+            dockWindow(window, settings);
+        } else {
+            checkCount();
+        }
     }
-    // No window was selected or set.
-    if (!window) {
-        checkCount();
-        return;
-    }
+}
 
+void TrayItemManager::dockWindow(Window window, TrayItemSettings settings) {
     if (isWindowDocked(window)) {
         QMessageBox::information(0, tr("KDocker"), tr("This window is already docked.\nClick on system tray icon to toggle docking."));
         checkCount();
@@ -200,26 +216,26 @@ void TrayItemManager::processCommand(const QStringList &args) {
     }
 
     TrayItem *ti = new TrayItem(window);
-    if (!customIcon.isEmpty()) {
-        ti->setCustomIcon(customIcon);
+    if (!settings.customIcon.isEmpty()) {
+        ti->setCustomIcon(settings.customIcon);
     }
-    ti->setBalloonTimeout(balloonTimeout);
-    if (borderless) {
+    ti->setBalloonTimeout(settings.balloonTimeout);
+    if (settings.borderless) {
         ti->removeWindowBorder();
     }
-    ti->setSticky(sticky);
-    ti->setSkipPager(skipPager);
-    ti->setSkipTaskbar(skipTaskbar);
-    ti->setIconifyObscure(iconifyObscure);
-    ti->setIconifyFocusLost(iconifyFocusLost);
+    ti->setSticky(settings.sticky);
+    ti->setSkipPager(settings.skipPager);
+    ti->setSkipTaskbar(settings.skipTaskbar);
+    ti->setIconifyObscure(settings.iconifyObscure);
+    ti->setIconifyFocusLost(settings.iconifyFocusLost);
     connect(ti, SIGNAL(selectAnother()), this, SLOT(selectAndIconify()));
     connect(ti, SIGNAL(undock(TrayItem*)), this, SLOT(undock(TrayItem*)));
     connect(ti, SIGNAL(undockAll()), this, SLOT(undockAll()));
     ti->show();
-    if (iconify) {
+    if (settings.iconify) {
         ti->iconifyWindow();
     } else {
-        if (skipTaskbar) {
+        if (settings.skipTaskbar) {
             ti->skipTaskbar();
         }
     }
@@ -265,6 +281,7 @@ void TrayItemManager::undock(TrayItem *trayItem) {
 }
 
 void TrayItemManager::undockAll() {
+
     Q_FOREACH(TrayItem *ti, m_trayItems) {
         undock(ti);
     }
@@ -285,7 +302,7 @@ void TrayItemManager::selectAndIconify() {
 }
 
 void TrayItemManager::checkCount() {
-    if (m_trayItems.isEmpty()) {
+    if (m_trayItems.isEmpty() && !m_scanner->isRunning()) {
         ::exit(0);
     }
 }

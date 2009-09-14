@@ -31,6 +31,18 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
+struct TrayItemSettings {
+    QString customIcon;
+    int balloonTimeout;
+    bool borderless;
+    bool iconify;
+    bool skipTaskbar;
+    bool skipPager;
+    bool sticky;
+    bool iconifyObscure;
+    bool iconifyFocusLost;
+};
+
 class TrayItem : public QSystemTrayIcon {
     Q_OBJECT
 

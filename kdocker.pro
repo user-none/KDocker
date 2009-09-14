@@ -21,12 +21,15 @@ target.path = /usr/local/bin
 INSTALLS += target icons desktop
 
 # Input
-HEADERS += src/kdocker.h \
+HEADERS += src/constants.h \
+           src/kdocker.h \
+           src/scanner.h \
            src/trayitem.h \
            src/trayitemmanager.h \
            src/util.h
 SOURCES += src/kdocker.cpp \
            src/main.cpp \
+           src/scanner.cpp \
            src/trayitem.cpp \
            src/trayitemmanager.cpp \
            src/util.cpp

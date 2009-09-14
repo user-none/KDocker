@@ -32,8 +32,6 @@
 
 #include "mwmutil.h"
 
-const long SYSTEM_TRAY_REQUEST_DOCK = 0;
-
 TrayItem::TrayItem(Window window, QObject *parent) : QSystemTrayIcon(parent) {
     m_iconified = false;
     m_customIcon = false;

@@ -18,46 +18,41 @@
  * USA.
  */
 
-#ifndef _TRAYITEMMANAGER_H
-#define	_TRAYITEMMANAGER_H
+#ifndef _SCANNER_H
+#define	_SCANNER_H
 
+#include <QList>
 #include <QObject>
-#include <QStringList>
+#include <QTimer>
 
-#include "scanner.h"
 #include "trayitem.h"
 
 #include <X11/Xlib.h>
 
-class TrayItemManager : public QObject {
+struct ProcessId {
+    int pid;
+    TrayItemSettings settings;
+    int count;
+};
+
+// Launches commands and looks for the window ids they create.
+
+class Scanner : public QObject {
     Q_OBJECT
 
 public:
-    static TrayItemManager *instance();
-
-    TrayItemManager();
-    ~TrayItemManager();
-    bool x11EventFilter(XEvent *ev);
-    void restoreAllWindows();
-    void processCommand(const QStringList &args);
-
-public slots:
-    void dockWindow(Window window, TrayItemSettings settings);
-    Window userSelectWindow(bool checkNormality = true);
-    void undock(TrayItem *trayItem);
-    void undockAll();
-
+    Scanner();
+    ~Scanner();
+    void enqueue(const QString &command, const QStringList &arguments, TrayItemSettings settings);
+    bool isRunning();
 private slots:
-    void selectAndIconify();
-    void checkCount();
-
+    void check();
+signals:
+    void windowFound(Window, TrayItemSettings);
+    void stopping();
 private:
-    bool isWindowDocked(Window window);
-
-    Scanner *m_scanner;
-    QList<TrayItem*> m_trayItems;
-
-    static TrayItemManager *g_trayItemManager;
+    QTimer *m_timer;
+    QList<ProcessId> m_processes;
 };
 
-#endif	/* _TRAYITEMMANAGER_H */
+#endif	/* _SCANNER_H */
