@@ -44,6 +44,7 @@ public:
 public slots:
     void dockWindow(Window window, TrayItemSettings settings);
     Window userSelectWindow(bool checkNormality = true);
+    void remove(TrayItem *trayItem);
     void undock(TrayItem *trayItem);
     void undockAll();
 

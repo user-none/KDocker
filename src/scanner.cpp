@@ -47,11 +47,10 @@ void Scanner::enqueue(const QString &command, const QStringList &arguments, Tray
         maxTime = 1;
     }
     if (QProcess::startDetached(command, arguments, "", &pid)) {
-        ProcessId processId = {command, (int)pid, settings, 0, maxTime};
+        ProcessId processId = {command, (int) pid, settings, 0, maxTime};
         m_processes.append(processId);
         m_timer->start();
-    }
-    else {
+    } else {
         QMessageBox::information(0, tr("KDocker"), tr("%1 did not start properly.").arg(command));
     }
     if (m_processes.isEmpty()) {

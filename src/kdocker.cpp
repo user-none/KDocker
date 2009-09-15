@@ -200,7 +200,7 @@ void KDocker::printHelp() {
     out << tr("Usage: %1 [options] [command] -- [command options]").arg(applicationName().toLower()) << endl;
     out << tr("Docks any application into the system tray") << endl;
     out << endl;
-    out << tr("Command") <<endl;
+    out << tr("Command") << endl;
     out << tr("Run command and dock window") << endl;
     out << tr("Use -- after command to specify options for command") << endl;
     out << endl;

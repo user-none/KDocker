@@ -46,7 +46,7 @@ class Scanner : public QObject {
 public:
     Scanner();
     ~Scanner();
-    void enqueue(const QString &command, const QStringList &arguments, TrayItemSettings settings, int maxTime=30);
+    void enqueue(const QString &command, const QStringList &arguments, TrayItemSettings settings, int maxTime = 30);
     bool isRunning();
 private slots:
     void check();

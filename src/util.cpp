@@ -35,7 +35,7 @@
  */
 bool isValidWindowId(Display *display, Window w) {
     XWindowAttributes attrib;
-    return XGetWindowAttributes(display, w, &attrib) != 0;
+    return (XGetWindowAttributes(display, w, &attrib) != 0);
 }
 
 /*
@@ -161,46 +161,6 @@ void sendMessage(Display* display, Window to, Window w, const char *type,
     memcpy((char *) & ev.xclient.data, (const char *) data, size);
     XSendEvent(display, to, False, mask, &ev);
     XSync(display, False);
-}
-
-/*
- * The Grand Window Analyzer. Checks if window w has a expected pid of epid
- * or a expected name of ename
- */
-bool analyzeWindow(Display *display, Window w, pid_t epid, const QString &ename) {
-    XClassHint ch;
-    pid_t apid = pid(display, w);
-
-    if (epid == apid) return true;
-
-    // no plans to analyze windows without a name
-    char *window_name = NULL;
-    if (!XFetchName(display, w, &window_name)) return false;
-    if (window_name) XFree(window_name);
-    else return false;
-
-    bool this_is_our_man = false;
-    // lets try the program name
-    if (XGetClassHint(display, w, &ch)) {
-        if (QString(ch.res_name).indexOf(ename, 0, Qt::CaseInsensitive) != -1) {
-            this_is_our_man = true;
-        } else if (QString(ch.res_class).indexOf(ename, 0, Qt::CaseInsensitive) != -1) {
-            this_is_our_man = true;
-        } else {
-            // sheer desperation
-            char *wm_name = NULL;
-            XFetchName(display, w, &wm_name);
-            if (wm_name && (QString(wm_name).indexOf(ename, 0, Qt::CaseInsensitive) != -1)) {
-                this_is_our_man = true;
-            }
-        }
-
-        if (ch.res_class) XFree(ch.res_class);
-        if (ch.res_name) XFree(ch.res_name);
-    }
-
-    // its probably a good idea to check (obsolete) WM_COMMAND here
-    return this_is_our_man;
 }
 
 Window activeWindow(Display *display) {

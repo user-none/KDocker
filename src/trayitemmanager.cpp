@@ -35,6 +35,10 @@
 
 TrayItemManager *TrayItemManager::g_trayItemManager = 0;
 
+int ignoreXErrors(Display *, XErrorEvent *) {
+    return 0;
+}
+
 TrayItemManager *TrayItemManager::instance() {
     if (!g_trayItemManager) {
         g_trayItemManager = new TrayItemManager();
@@ -47,6 +51,10 @@ TrayItemManager::TrayItemManager() {
     m_scanner = new Scanner();
     connect(m_scanner, SIGNAL(windowFound(Window, TrayItemSettings)), this, SLOT(dockWindow(Window, TrayItemSettings)));
     connect(m_scanner, SIGNAL(stopping()), this, SLOT(checkCount()));
+    // This will prevent x errors from being written to the console.
+    // The isValidWindowId function in util.cpp will generate errors if the
+    // window is not valid while it is checking.
+    XSetErrorHandler(ignoreXErrors);
 }
 
 TrayItemManager::~TrayItemManager() {
@@ -237,6 +245,7 @@ void TrayItemManager::dockWindow(Window window, TrayItemSettings settings) {
     ti->setIconifyObscure(settings.iconifyObscure);
     ti->setIconifyFocusLost(settings.iconifyFocusLost);
     connect(ti, SIGNAL(selectAnother()), this, SLOT(selectAndIconify()));
+    connect(ti, SIGNAL(dead(TrayItem*)), this, SLOT(remove(TrayItem*)));
     connect(ti, SIGNAL(undock(TrayItem*)), this, SLOT(undock(TrayItem*)));
     connect(ti, SIGNAL(undockAll()), this, SLOT(undockAll()));
     ti->show();
@@ -278,15 +287,19 @@ Window TrayItemManager::userSelectWindow(bool checkNormality) {
     return window;
 }
 
-void TrayItemManager::undock(TrayItem *trayItem) {
-    trayItem->restoreWindow();
-    trayItem->setSkipTaskbar(false);
-    trayItem->skipTaskbar();
+void TrayItemManager::remove(TrayItem *trayItem) {
     m_trayItems.removeAll(trayItem);
     delete trayItem;
     trayItem = 0;
 
     checkCount();
+}
+
+void TrayItemManager::undock(TrayItem *trayItem) {
+    trayItem->restoreWindow();
+    trayItem->setSkipTaskbar(false);
+    trayItem->skipTaskbar();
+    remove(trayItem);
 }
 
 void TrayItemManager::undockAll() {

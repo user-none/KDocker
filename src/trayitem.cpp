@@ -73,7 +73,7 @@ Window TrayItem::dockedWindow() {
 }
 
 bool TrayItem::x11EventFilter(XEvent *ev) {
-    if (!m_window) {
+    if (isBadWindow()) {
         return false;
     }
 
@@ -102,47 +102,51 @@ bool TrayItem::x11EventFilter(XEvent *ev) {
 }
 
 void TrayItem::restoreWindow() {
-    m_iconified = false;
-    if (!m_window) {
+    if (isBadWindow()) {
         return;
     }
 
     Display *display = QX11Info::display();
     Window root = QX11Info::appRootWindow();
 
-    /*
-     * A simple XMapWindow would not do. Some applications like xmms wont
-     * redisplay its other windows (like the playlist, equalizer) since the
-     * Withdrawn->Normal state change code does not map them. So we make the
-     * window go through Withdrawn->Map->Iconify->Normal state.
-     */
-    XMapWindow(display, m_window);
-    XIconifyWindow(display, m_window, DefaultScreen(display));
-    XSync(display, False);
-    long l1[1] = {NormalState};
-    sendMessage(display, root, m_window, "WM_CHANGE_STATE", 32, SubstructureNotifyMask | SubstructureRedirectMask, l1, sizeof (l1));
-
-    m_sizeHint.flags = USPosition;
-    XSetWMNormalHints(display, m_window, &m_sizeHint);
-    // make it the active window
-    long l2[5] = {None, CurrentTime, None, 0, 0};
-    sendMessage(display, root, m_window, "_NET_ACTIVE_WINDOW", 32, SubstructureNotifyMask | SubstructureRedirectMask, l2, sizeof (l2));
-
-    if (m_desktop == -1) {
+    if (m_iconified) {
+        m_iconified = false;
         /*
-         * We track _NET_WM_DESKTOP changes in the x11EventFilter. Its used here.
-         * _NET_WM_DESKTOP is set by the WM to the active desktop for newly
-         * mapped windows (like this one) at some point in time. We will override
-         *  that value to -1 (all desktops) on showOnAllDesktops().
+         * A simple XMapWindow would not do. Some applications like xmms wont
+         * redisplay its other windows (like the playlist, equalizer) since the
+         * Withdrawn->Normal state change code does not map them. So we make the
+         * window go through Withdrawn->Map->Iconify->Normal state.
          */
-        showOnAllDesktops();
-    }
+        XMapWindow(display, m_window);
+        XIconifyWindow(display, m_window, DefaultScreen(display));
+        XSync(display, False);
+        long l1[1] = {NormalState};
+        sendMessage(display, root, m_window, "WM_CHANGE_STATE", 32, SubstructureNotifyMask | SubstructureRedirectMask, l1, sizeof (l1));
 
-    updateToggleAction();
+        m_sizeHint.flags = USPosition;
+        XSetWMNormalHints(display, m_window, &m_sizeHint);
+        // make it the active window
+        long l2[5] = {None, CurrentTime, None, 0, 0};
+        sendMessage(display, root, m_window, "_NET_ACTIVE_WINDOW", 32, SubstructureNotifyMask | SubstructureRedirectMask, l2, sizeof (l2));
+
+        if (m_desktop == -1) {
+            /*
+             * We track _NET_WM_DESKTOP changes in the x11EventFilter. Its used here.
+             * _NET_WM_DESKTOP is set by the WM to the active desktop for newly
+             * mapped windows (like this one) at some point in time. We will override
+             *  that value to -1 (all desktops) on showOnAllDesktops().
+             */
+            showOnAllDesktops();
+        }
+
+        updateToggleAction();
+    } else {
+        XRaiseWindow(display, m_window);
+    }
 }
 
 void TrayItem::iconifyWindow() {
-    if (!m_window) {
+    if (isBadWindow()) {
         return;
     }
 
@@ -170,7 +174,7 @@ void TrayItem::skip_NET_WM_STATE(const char *type, bool set) {
     // set, true = add the state to the window. False, remove the state from
     // the window.
 
-    if (!m_window || m_iconified) {
+    if (isBadWindow() || m_iconified) {
         return;
     }
     Display *display = QX11Info::display();
@@ -193,7 +197,7 @@ void TrayItem::sticky() {
 }
 
 void TrayItem::removeWindowBorder() {
-    if (!m_window) {
+    if (isBadWindow()) {
         return;
     }
 
@@ -311,6 +315,10 @@ void TrayItem::toggleWindow(QSystemTrayIcon::ActivationReason reason) {
  * Sends a message to the WM to show this window on all the desktops
  */
 void TrayItem::showOnAllDesktops() {
+    if (isBadWindow()) {
+        return;
+    }
+
     Display *display = QX11Info::display();
     long l[1] = {-1}; // -1 = all, 0 = Desktop1, 1 = Desktop2 ...
     sendMessage(display, QX11Info::appRootWindow(), m_window, "_NET_WM_DESKTOP", 32, SubstructureNotifyMask | SubstructureRedirectMask, l, sizeof (l));
@@ -350,7 +358,7 @@ void TrayItem::destroyEvent() {
 }
 
 void TrayItem::propertyChangeEvent(Atom property) {
-    if (!m_window) {
+    if (isBadWindow()) {
         return;
     }
 
@@ -394,6 +402,10 @@ void TrayItem::focusLostEvent() {
 }
 
 void TrayItem::readDockedAppName() {
+    if (isBadWindow()) {
+        return;
+    }
+
     Display *display = QX11Info::display();
     XClassHint ch;
     if (XGetClassHint(display, m_window, &ch)) {
@@ -416,7 +428,7 @@ void TrayItem::readDockedAppName() {
  * Update the title in the tooltip.
  */
 void TrayItem::updateTitle() {
-    if (!m_window) {
+    if (isBadWindow()) {
         return;
     }
 
@@ -435,7 +447,7 @@ void TrayItem::updateTitle() {
 }
 
 void TrayItem::updateIcon() {
-    if (!m_window || m_customIcon) {
+    if (isBadWindow() || m_customIcon) {
         return;
     }
 
@@ -545,4 +557,14 @@ QIcon TrayItem::createIcon(Window window) {
         XpmFree(window_icon);
     }
     return QIcon(appIcon);
+}
+
+bool TrayItem::isBadWindow() {
+    Display *display = QX11Info::display();
+
+    if (!isValidWindowId(display, m_window)) {
+        emit(dead(this));
+        return true;
+    }
+    return false;
 }

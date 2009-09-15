@@ -85,6 +85,7 @@ private slots:
 
 signals:
     void selectAnother();
+    void dead(TrayItem*);
     void undockAll();
     void undock(TrayItem*);
 
@@ -100,6 +101,7 @@ private:
     void updateToggleAction();
     void createContextMenu();
     QIcon createIcon(Window window);
+    bool isBadWindow();
 
     bool m_iconified;
 
