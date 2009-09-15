@@ -53,9 +53,6 @@ void Scanner::enqueue(const QString &command, const QStringList &arguments, Tray
     } else {
         QMessageBox::information(0, tr("KDocker"), tr("%1 did not start properly.").arg(command));
     }
-    if (m_processes.isEmpty()) {
-        emit(stopping());
-    }
 }
 
 bool Scanner::isRunning() {
