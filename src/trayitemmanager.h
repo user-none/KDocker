@@ -55,7 +55,6 @@ private slots:
 private:
     bool isWindowDocked(Window window);
 
-    int m_startingCount;
     Scanner *m_scanner;
     QList<TrayItem*> m_trayItems;
 
