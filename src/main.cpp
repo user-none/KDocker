@@ -28,6 +28,7 @@ static void sighandler(int sig) {
     Q_UNUSED(sig);
 
     ((KDocker *) qApp)->trayItemManager()->restoreAllWindows();
+    ::exit(0);
 }
 
 int main(int argc, char *argv[]) {

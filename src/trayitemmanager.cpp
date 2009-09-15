@@ -103,6 +103,7 @@ void TrayItemManager::restoreAllWindows() {
     while (ti.hasNext()) {
         ti.next()->restoreWindow();
     }
+    checkCount();
 }
 
 void TrayItemManager::processCommand(const QStringList &args) {
