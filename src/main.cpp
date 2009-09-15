@@ -27,7 +27,7 @@
 static void sighandler(int sig) {
     Q_UNUSED(sig);
 
-    ((KDocker *) qApp)->trayItemManager()->restoreAllWindows();
+    ((KDocker *) qApp)->trayItemManager()->undockAll();
     ::exit(0);
 }
 
