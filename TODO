@@ -1,10 +1,4 @@
 Bugs and wishes to https://bugs.launchpad.net/kdocker
 
-1. Finish Qt 4 port.
-
-2. Dock on close (Reparent window/QXEmbed)
-   Status: Doesnt work well with decoration-less windows. Even if I hide the 
-   decoration, the user can click "x" on child and exit (Think of xmms).
-
-3. Translations.
+1. Translations.
 

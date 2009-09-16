@@ -1,9 +1,9 @@
 Prerequisites
 1. Make sure you have Qt 4 installed and working. If you dont know what Qt is,
-you must be out from a cave just now. You will need qmake to compile.
+go to http://qt.nokia.com/products/. You will need qmake to compile.
 
 Building
-1. edit kdocker.pro as necessary. you should be ready to go with no change.
+1. edit kdocker.pro if necessary. It should be ready to go with no change.
 2. qmake
 3. make 
 4. run "make install" (optional)

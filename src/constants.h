@@ -27,7 +27,7 @@
 #define ORG_NAME "net.launchpad.kdocker"
 #define DOM_NAME "launchpad.net/kdocker"
 #define APP_NAME "KDocker"
-#define APP_VERSION "4.0-Preview-1"
+#define APP_VERSION "4.0"
 
 #define OPTIONSTRING "+abcd:fhi:lmop:qrstvuw:"
 #define TMPFILE_PREFIX QDir::homePath() + "/.kdocker."

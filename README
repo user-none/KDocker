@@ -12,8 +12,7 @@ also be made to dissappear from the task bar.
 
 System Tray Support
 -------------------
-KDocker supports the KDE System Tray Protocol and the System Tray Protocol from
-freedesktop.org
+KDocker supports the System Tray Protocol from freedesktop.org
 
 Tips to use KDocker
 -------------------
