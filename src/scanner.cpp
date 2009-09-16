@@ -67,7 +67,7 @@ void Scanner::check() {
         // kill with a signum of 0 is used to determine if the process is still
         // running.
         if (kill(id.pid, 0) == -1) {
-            QMessageBox::information(0, tr("KDocker"), tr("%1 id dead.").arg(id.command));
+            QMessageBox::information(0, tr("KDocker"), tr("%1 is no longer running.").arg(id.command));
             pi.remove();
             break;
         }
@@ -78,7 +78,7 @@ void Scanner::check() {
             pi.remove();
         } else {
             if (id.count >= id.maxCount) {
-                QMessageBox::information(0, tr("KDocker"), tr("%1 did not open a window in the specified time %2 seconds.").arg(id.command).arg(QString::number(id.maxCount)));
+                QMessageBox::information(0, tr("KDocker"), tr("%1 did not open a window in the specified time: %2 seconds.").arg(id.command).arg(QString::number(id.maxCount)));
                 pi.remove();
             }
         }
