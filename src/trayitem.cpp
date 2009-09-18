@@ -443,7 +443,9 @@ void TrayItem::updateTitle() {
     }
 
     setToolTip(QString("%1 [%2]").arg(title).arg(m_dockedAppName));
-    showMessage(m_dockedAppName, title, QSystemTrayIcon::Information, m_balloonTimeout);
+    if (m_balloonTimeout > 0) {
+        showMessage(m_dockedAppName, title, QSystemTrayIcon::Information, m_balloonTimeout);
+    }
 }
 
 void TrayItem::updateIcon() {
