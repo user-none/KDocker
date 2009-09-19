@@ -208,11 +208,12 @@ void KDocker::printHelp() {
     out << "-a     \t" << tr("Show author information") << endl;
     out << "-b     \t" << tr("Don't warn about non-normal windows (blind mode)") << endl;
     out << "-c     \t" << tr("Remove the window border") << endl;
-    out << "-d     \t" << tr("Maximum time in seconds to allow for command to start and open a window") << endl;
+    out << "-d     \t" << tr("Maximum time in seconds to allow for command to start and open a window (defaults to 5 sec)") << endl;
     out << "-f     \t" << tr("Dock window that has focus (active window)") << endl;
     out << "-h     \t" << tr("Display this help") << endl;
     //out << "-l     \t" << tr("Iconify when focus lost") << endl;
     out << "-m     \t" << tr("Keep application window showing (dont hide on dock)") << endl;
+    out << "-n name\t" << tr("Name used for matching when running command (fall back in case command is a launcher so pid and command won't match the window tile or class)") << endl;
     out << "-o     \t" << tr("Iconify when obscured") << endl;
     out << "-p secs\t" << tr("Set ballooning timeout (popup time)") << endl;
     out << "-q     \t" << tr("Disable ballooning title changes (quiet)") << endl;

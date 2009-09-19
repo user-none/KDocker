@@ -36,6 +36,8 @@ struct ProcessId {
     TrayItemSettings settings;
     int count;
     int maxCount;
+    bool checkNormality;
+    QString windowName;
 };
 
 // Launches commands and looks for the window ids they create.
@@ -46,7 +48,7 @@ class Scanner : public QObject {
 public:
     Scanner();
     ~Scanner();
-    void enqueue(const QString &command, const QStringList &arguments, TrayItemSettings settings, int maxTime = 30);
+    void enqueue(const QString &command, const QStringList &arguments, TrayItemSettings settings, int maxTime = 30, bool checkNormality = true, const QString &windowName = QString());
     bool isRunning();
 private slots:
     void check();

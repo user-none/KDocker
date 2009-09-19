@@ -24,7 +24,6 @@
 #include <QString>
 #include <QStringList>
 #include <QX11Info>
-#include <QDebug>
 
 #include "scanner.h"
 #include "util.h"
@@ -41,13 +40,22 @@ Scanner::~Scanner() {
     delete m_timer;
 }
 
-void Scanner::enqueue(const QString &command, const QStringList &arguments, TrayItemSettings settings, int maxTime) {
+void Scanner::enqueue(const QString &command, const QStringList &arguments, TrayItemSettings settings, int maxTime, bool checkNormality, const QString &windowName) {
     qint64 pid;
+    QString name;
+
     if (maxTime <= 0) {
         maxTime = 1;
     }
+    if (windowName.isEmpty()) {
+        name = command.split("/").last();
+    }
+    else {
+        name = windowName;
+    }
+    
     if (QProcess::startDetached(command, arguments, "", &pid)) {
-        ProcessId processId = {command, (int) pid, settings, 0, maxTime};
+        ProcessId processId = {command, (int) pid, settings, 0, maxTime, checkNormality, name};
         m_processes.append(processId);
         m_timer->start();
     } else {
@@ -63,22 +71,15 @@ void Scanner::check() {
     QMutableListIterator<ProcessId> pi(m_processes);
     while (pi.hasNext()) {
         ProcessId id = pi.next();
-        // if pid is not running remove and move to next.
-        // kill with a signum of 0 is used to determine if the process is still
-        // running.
-        if (kill(id.pid, 0) == -1) {
-            QMessageBox::information(0, tr("KDocker"), tr("%1 is no longer running.").arg(id.command));
-            pi.remove();
-            break;
-        }
         id.count++;
-        Window w = pidToWid(QX11Info::display(), id.pid, QX11Info::appRootWindow());
+        pi.setValue(id);
+        Window w = findWindow(QX11Info::display(), QX11Info::appRootWindow(), id.checkNormality, id.pid, id.windowName);
         if (w != None) {
             emit(windowFound(w, id.settings));
             pi.remove();
         } else {
             if (id.count >= id.maxCount) {
-                QMessageBox::information(0, tr("KDocker"), tr("%1 did not open a window in the specified time: %2 seconds.").arg(id.command).arg(QString::number(id.maxCount)));
+                QMessageBox::information(0, tr("KDocker"), tr("Could not find a matching window for %1 in the specified time: %2 seconds.").arg(id.command).arg(QString::number(id.maxCount)));
                 pi.remove();
             }
         }

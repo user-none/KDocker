@@ -24,7 +24,6 @@
 #include <QSystemTrayIcon>
 #include <QTextStream>
 #include <QX11Info>
-#include <QDebug>
 
 #include "constants.h"
 #include "trayitemmanager.h"
@@ -110,7 +109,8 @@ void TrayItemManager::processCommand(const QStringList &args) {
     Window window = 0;
     bool checkNormality = true;
     TrayItemSettings settings;
-    int maxTime = 30;
+    int maxTime = 5;
+    QString windowName;
     settings.balloonTimeout = 4000;
     settings.borderless = false;
     settings.iconify = true;
@@ -169,6 +169,9 @@ void TrayItemManager::processCommand(const QStringList &args) {
             case 'm':
                 settings.iconify = false;
                 break;
+            case 'n':
+                windowName = QString::fromLocal8Bit(optarg);
+                break;
             case 'o':
                 settings.iconifyObscure = true;
                 break;
@@ -207,7 +210,7 @@ void TrayItemManager::processCommand(const QStringList &args) {
         for (int i = optind + 1; i < argc; i++) {
             arguments << QString::fromLocal8Bit(argv[i]);
         }
-        m_scanner->enqueue(command, arguments, settings, maxTime);
+        m_scanner->enqueue(command, arguments, settings, maxTime, checkNormality, windowName);
         checkCount();
     } else {
         if (!window) {

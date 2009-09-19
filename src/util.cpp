@@ -134,8 +134,7 @@ Window pidToWid(Display *display, pid_t epid, Window window) {
         for (unsigned int i = 0; i < num_child; i++) {
             if (epid == pid(display, child[i]) && isNormalWindow(display, child[i])) {
                 return child[i];
-            }
-            else {
+            } else {
                 w = pidToWid(display, epid, child[i]);
             }
             if (w != None) {
@@ -144,6 +143,89 @@ Window pidToWid(Display *display, pid_t epid, Window window) {
         }
     }
 
+    return w;
+}
+
+/*
+ * The Grand Window Analyzer. Checks if window w has a expected pid of epid
+ * or a expected name of ename
+ */
+bool analyzeWindow(Display *display, Window w, pid_t epid, const QString &ename) {
+    XClassHint ch;
+
+    if (epid == pid(display, w)) {
+        return true;
+    }
+
+    // no plans to analyze windows without a name
+    char *window_name = NULL;
+    if (!XFetchName(display, w, &window_name)) {
+        return false;
+    }
+    if (window_name) {
+        XFree(window_name);
+    } else {
+        return false;
+    }
+
+    bool this_is_our_man = false;
+    // lets try the program name
+    if (XGetClassHint(display, w, &ch)) {
+        if (QString(ch.res_name).indexOf(ename, 0, Qt::CaseInsensitive) != -1) {
+            this_is_our_man = true;
+        } else if (QString(ch.res_class).indexOf(ename, 0, Qt::CaseInsensitive) != -1) {
+            this_is_our_man = true;
+        } else {
+            // sheer desperation
+            char *wm_name = NULL;
+            XFetchName(display, w, &wm_name);
+            if (wm_name && (QString(wm_name).indexOf(ename, 0, Qt::CaseInsensitive) != -1)) {
+                this_is_our_man = true;
+            }
+        }
+
+        if (ch.res_class) {
+            XFree(ch.res_class);
+        }
+        if (ch.res_name) {
+            XFree(ch.res_name);
+        }
+    }
+
+    // its probably a good idea to check (obsolete) WM_COMMAND here
+    return this_is_our_man;
+}
+
+/*
+ * Given a starting window look though all children and try to find a window
+ * that matches either hte pid or eid.
+ */
+Window findWindow(Display *display, Window window, bool checkNormality, pid_t epid, const QString &ename) {
+    Window w = None;
+
+    Window root;
+    Window parent;
+    Window *child;
+    unsigned int num_child;
+    if (XQueryTree(display, window, &root, &parent, &child, &num_child) != 0) {
+        for (unsigned int i = 0; i < num_child; i++) {
+            if (analyzeWindow(display, child[i], epid, ename)) {
+                if (checkNormality) {
+                    if (isNormalWindow(display, child[i])) {
+                        return child[i];
+                    }
+                } else {
+                    return child[i];
+                }
+            }
+            if (w == None) {
+                w = findWindow(display, child[i], checkNormality, epid, ename);
+            }
+            if (w != None) {
+                break;
+            }
+        }
+    }
     return w;
 }
 
@@ -163,7 +245,7 @@ void sendMessage(Display* display, Window to, Window w, const char *type,
     XSync(display, False);
 }
 
-Window activeWindow(Display *display) {
+Window activeWindow(Display * display) {
     Atom active_window_atom = XInternAtom(display, "_NET_ACTIVE_WINDOW", True);
     Atom type = None;
     int format;
