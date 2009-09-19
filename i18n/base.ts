@@ -50,7 +50,7 @@
     </message>
     <message>
         <location filename="../src/kdocker.cpp" line="211"/>
-        <source>Maximum time in seconds to allow for command to start and open a window</source>
+        <source>Maximum time in seconds to allow for command to start and open a window (defaults to 5 sec)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -70,71 +70,86 @@
     </message>
     <message>
         <location filename="../src/kdocker.cpp" line="216"/>
-        <source>Iconify when obscured</source>
+        <source>Name used for matching when running command (fall back in case command is a launcher so pid and command won&apos;t match the window tile or class)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/kdocker.cpp" line="217"/>
-        <source>Set ballooning timeout (popup time)</source>
+        <source>Iconify when obscured</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/kdocker.cpp" line="218"/>
-        <source>Disable ballooning title changes (quiet)</source>
+        <source>Set ballooning timeout (popup time)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/kdocker.cpp" line="219"/>
-        <source>Remove this application from the pager</source>
+        <source>Disable ballooning title changes (quiet)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/kdocker.cpp" line="220"/>
-        <source>Make the window sticky (appears on all desktops)</source>
+        <source>Remove this application from the pager</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/kdocker.cpp" line="221"/>
-        <source>Remove this application from the taskbar</source>
+        <source>Make the window sticky (appears on all desktops)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/kdocker.cpp" line="222"/>
-        <source>Display version</source>
+        <source>Remove this application from the taskbar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/kdocker.cpp" line="223"/>
+        <source>Display version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/kdocker.cpp" line="224"/>
         <source>Window id of the application to dock</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/kdocker.cpp" line="225"/>
-        <source>Bugs and wishes to https://bugs.launchpad.net/kdocker</source>
+        <source>Process id of the application to dock</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/kdocker.cpp" line="226"/>
+        <source>Force matching of command by using name instead of pid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/kdocker.cpp" line="228"/>
+        <source>Bugs and wishes to https://bugs.launchpad.net/kdocker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/kdocker.cpp" line="229"/>
         <source>Project information at https://launchpad.net/kdocker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/kdocker.cpp" line="231"/>
+        <location filename="../src/kdocker.cpp" line="234"/>
         <source>Usage: %1 [options] command</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/kdocker.cpp" line="232"/>
+        <location filename="../src/kdocker.cpp" line="235"/>
         <source>Try `%1 -h&apos; for more information</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/kdocker.cpp" line="237"/>
+        <location filename="../src/kdocker.cpp" line="240"/>
         <source>%1 version: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/kdocker.cpp" line="238"/>
+        <location filename="../src/kdocker.cpp" line="241"/>
         <source>Using Qt version: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -152,117 +167,121 @@ Created by %1. Updated and maintained by %2.</source>
 <context>
     <name>Scanner</name>
     <message>
-        <location filename="../src/scanner.cpp" line="54"/>
-        <location filename="../src/scanner.cpp" line="70"/>
-        <location filename="../src/scanner.cpp" line="81"/>
+        <location filename="../src/scanner.cpp" line="62"/>
+        <location filename="../src/scanner.cpp" line="91"/>
         <source>KDocker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/scanner.cpp" line="54"/>
+        <location filename="../src/scanner.cpp" line="62"/>
         <source>%1 did not start properly.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/scanner.cpp" line="70"/>
-        <source>%1 is no longer running.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/scanner.cpp" line="81"/>
-        <source>%1 did not open a window in the specified time: %2 seconds.</source>
+        <location filename="../src/scanner.cpp" line="91"/>
+        <source>Could not find a matching window for %1 in the specified time: %2 seconds.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>TrayItem</name>
     <message>
-        <location filename="../src/trayitem.cpp" line="330"/>
+        <location filename="../src/trayitem.cpp" line="276"/>
+        <source>Select Icon</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/trayitem.cpp" line="359"/>
         <source>About %1 - %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/trayitem.cpp" line="332"/>
+        <location filename="../src/trayitem.cpp" line="361"/>
         <source>See %1 for more information.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/trayitem.cpp" line="461"/>
+        <location filename="../src/trayitem.cpp" line="492"/>
         <source>Show %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/trayitem.cpp" line="464"/>
+        <location filename="../src/trayitem.cpp" line="495"/>
         <source>Hide %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/trayitem.cpp" line="474"/>
+        <location filename="../src/trayitem.cpp" line="505"/>
         <source>About %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/trayitem.cpp" line="478"/>
+        <location filename="../src/trayitem.cpp" line="509"/>
         <source>Options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/trayitem.cpp" line="479"/>
+        <location filename="../src/trayitem.cpp" line="510"/>
+        <source>Set icon</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/trayitem.cpp" line="513"/>
         <source>Skip taskbar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/trayitem.cpp" line="484"/>
+        <location filename="../src/trayitem.cpp" line="518"/>
         <source>Skip pager</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/trayitem.cpp" line="489"/>
+        <location filename="../src/trayitem.cpp" line="523"/>
         <source>Sticky</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/trayitem.cpp" line="494"/>
+        <location filename="../src/trayitem.cpp" line="528"/>
         <source>Iconify when minimized</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/trayitem.cpp" line="499"/>
+        <location filename="../src/trayitem.cpp" line="533"/>
         <source>Iconify when obscured</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/trayitem.cpp" line="504"/>
+        <location filename="../src/trayitem.cpp" line="538"/>
         <source>Iconify when focus lost</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/trayitem.cpp" line="509"/>
+        <location filename="../src/trayitem.cpp" line="543"/>
         <source>Balloon title changes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/trayitem.cpp" line="516"/>
+        <location filename="../src/trayitem.cpp" line="550"/>
         <source>Dock Another</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/trayitem.cpp" line="517"/>
+        <location filename="../src/trayitem.cpp" line="551"/>
         <source>Undock All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/trayitem.cpp" line="519"/>
+        <location filename="../src/trayitem.cpp" line="553"/>
         <source>Toggle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/trayitem.cpp" line="522"/>
+        <location filename="../src/trayitem.cpp" line="556"/>
         <source>Undock</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/trayitem.cpp" line="523"/>
+        <location filename="../src/trayitem.cpp" line="557"/>
         <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
@@ -270,42 +289,42 @@ Created by %1. Updated and maintained by %2.</source>
 <context>
     <name>TrayItemManager</name>
     <message>
-        <location filename="../src/trayitemmanager.cpp" line="158"/>
-        <location filename="../src/trayitemmanager.cpp" line="196"/>
-        <location filename="../src/trayitemmanager.cpp" line="227"/>
-        <location filename="../src/trayitemmanager.cpp" line="269"/>
-        <location filename="../src/trayitemmanager.cpp" line="277"/>
+        <location filename="../src/trayitemmanager.cpp" line="154"/>
+        <location filename="../src/trayitemmanager.cpp" line="195"/>
+        <location filename="../src/trayitemmanager.cpp" line="236"/>
+        <location filename="../src/trayitemmanager.cpp" line="278"/>
+        <location filename="../src/trayitemmanager.cpp" line="286"/>
         <source>KDocker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/trayitemmanager.cpp" line="158"/>
+        <location filename="../src/trayitemmanager.cpp" line="154"/>
         <source>Cannot dock the active window because no window has focus.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/trayitemmanager.cpp" line="196"/>
+        <location filename="../src/trayitemmanager.cpp" line="195"/>
         <source>Invalid window id.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/trayitemmanager.cpp" line="227"/>
+        <location filename="../src/trayitemmanager.cpp" line="236"/>
         <source>This window is already docked.
 Click on system tray icon to toggle docking.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/trayitemmanager.cpp" line="262"/>
+        <location filename="../src/trayitemmanager.cpp" line="271"/>
         <source>Select the application/window to dock with the left mouse button.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/trayitemmanager.cpp" line="263"/>
+        <location filename="../src/trayitemmanager.cpp" line="272"/>
         <source>Click any other mouse button to abort.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/trayitemmanager.cpp" line="277"/>
+        <location filename="../src/trayitemmanager.cpp" line="286"/>
         <source>The window you are attempting to dock does not seem to be a normal window.</source>
         <translation type="unfinished"></translation>
     </message>
