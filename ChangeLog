@@ -7,6 +7,7 @@ for version 4.1
     - Fix a bug that prevented the time out for trying to dock and launched
       command from increasing.
     - Menu item for setting the tray icon.
+    - Fix bug: Do not quit when closing docked application from tray menu.
 
 for version 4.0
     - 4.0 rewrite complete.

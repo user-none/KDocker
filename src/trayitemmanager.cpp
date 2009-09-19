@@ -96,14 +96,6 @@ bool TrayItemManager::x11EventFilter(XEvent *ev) {
     return ret;
 }
 
-void TrayItemManager::restoreAllWindows() {
-    QListIterator<TrayItem*> ti(m_trayItems);
-    while (ti.hasNext()) {
-        ti.next()->restoreWindow();
-    }
-    checkCount();
-}
-
 void TrayItemManager::processCommand(const QStringList &args) {
     int option;
     Window window = 0;
@@ -303,7 +295,6 @@ void TrayItemManager::undock(TrayItem *trayItem) {
 }
 
 void TrayItemManager::undockAll() {
-
     Q_FOREACH(TrayItem *ti, m_trayItems) {
         undock(ti);
     }

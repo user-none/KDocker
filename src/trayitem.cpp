@@ -245,13 +245,16 @@ void TrayItem::setCustomIcon(QString path) {
 }
 
 void TrayItem::close() {
-    if (m_window) {
+    if (isBadWindow()) {
+        return;
+    }
+    else {
         Display *display = QX11Info::display();
         long l[5] = {0, 0, 0, 0, 0};
         restoreWindow();
         sendMessage(display, QX11Info::appRootWindow(), m_window, "_NET_CLOSE_WINDOW", 32, SubstructureNotifyMask | SubstructureRedirectMask, l, sizeof (l));
+        destroyEvent();
     }
-    destroyEvent();
 }
 
 void TrayItem::selectCustomIcon(bool value) {
@@ -264,7 +267,11 @@ void TrayItem::selectCustomIcon(bool value) {
     Q_FOREACH(QByteArray type, QImageReader::supportedImageFormats()) {
         types << QString(type);
     }
-    supportedTypes = QString("Images (*.%1)").arg(types.join(" *."));
+    if (types.isEmpty()) {
+        supportedTypes = "All Files (*.*)";
+    } else {
+        supportedTypes = QString("Images (*.%1);;All Files (*.*)").arg(types.join(" *."));
+    }
 
     path = QFileDialog::getOpenFileName(0, tr("Select Icon"), QDir::homePath(), supportedTypes);
 
@@ -376,7 +383,7 @@ void TrayItem::minimizeEvent() {
 
 void TrayItem::destroyEvent() {
     m_window = 0;
-    emit(undock(this));
+    emit(dead(this));
 }
 
 void TrayItem::propertyChangeEvent(Atom property) {
@@ -590,7 +597,7 @@ bool TrayItem::isBadWindow() {
     Display *display = QX11Info::display();
 
     if (!isValidWindowId(display, m_window)) {
-        emit(dead(this));
+        destroyEvent();
         return true;
     }
     return false;

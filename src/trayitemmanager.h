@@ -38,7 +38,6 @@ public:
     TrayItemManager();
     ~TrayItemManager();
     bool x11EventFilter(XEvent *ev);
-    void restoreAllWindows();
     void processCommand(const QStringList &args);
 
 public slots:
