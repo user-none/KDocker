@@ -40,7 +40,7 @@ Scanner::~Scanner() {
     delete m_timer;
 }
 
-void Scanner::enqueue(const QString &command, const QStringList &arguments, TrayItemSettings settings, int maxTime, bool checkNormality, const QString &windowName) {
+void Scanner::enqueue(const QString &command, const QStringList &arguments, TrayItemSettings settings, int maxTime, bool checkNormality, bool windowNameMatch, const QString &windowName) {
     qint64 pid;
     QString name;
 
@@ -55,7 +55,7 @@ void Scanner::enqueue(const QString &command, const QStringList &arguments, Tray
     }
     
     if (QProcess::startDetached(command, arguments, "", &pid)) {
-        ProcessId processId = {command, (int) pid, settings, 0, maxTime, checkNormality, name};
+        ProcessId processId = {command, (int) pid, settings, 0, maxTime, checkNormality, windowNameMatch, name};
         m_processes.append(processId);
         m_timer->start();
     } else {
@@ -73,7 +73,16 @@ void Scanner::check() {
         ProcessId id = pi.next();
         id.count++;
         pi.setValue(id);
-        Window w = findWindow(QX11Info::display(), QX11Info::appRootWindow(), id.checkNormality, id.pid, id.windowName);
+        
+        Window w = None;
+        if (id.windowNameMatch || kill(id.pid, 0) == -1) {
+            // Check based on window name if force matching by window name is set or the PID is not valid.
+            w = findWindow(QX11Info::display(), QX11Info::appRootWindow(), id.checkNormality, id.windowName);
+        } else {
+            // Check based on PID if it is still valid.
+            w = pidToWid(QX11Info::display(), QX11Info::appRootWindow(), id.checkNormality, id.pid);
+        }
+        
         if (w != None) {
             emit(windowFound(w, id.settings));
             pi.remove();

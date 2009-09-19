@@ -98,8 +98,10 @@ bool TrayItemManager::x11EventFilter(XEvent *ev) {
 
 void TrayItemManager::processCommand(const QStringList &args) {
     int option;
+    int pid = 0;
     Window window = 0;
     bool checkNormality = true;
+    bool windowNameMatch = false;
     TrayItemSettings settings;
     int maxTime = 5;
     QString windowName;
@@ -193,6 +195,12 @@ void TrayItemManager::processCommand(const QStringList &args) {
                     return;
                 }
                 break;
+            case 'x':
+                pid = atoi(optarg);
+                break;
+            case 'y':
+                windowNameMatch = true;
+                break;
         } // switch (option)
     } // while (getopt)
 
@@ -202,16 +210,20 @@ void TrayItemManager::processCommand(const QStringList &args) {
         for (int i = optind + 1; i < argc; i++) {
             arguments << QString::fromLocal8Bit(argv[i]);
         }
-        m_scanner->enqueue(command, arguments, settings, maxTime, checkNormality, windowName);
+        m_scanner->enqueue(command, arguments, settings, maxTime, checkNormality, windowNameMatch, windowName);
         checkCount();
     } else {
         if (!window) {
-            window = userSelectWindow(checkNormality);
+            if (pid != 0) {
+                window = pidToWid(QX11Info::display(), QX11Info::appRootWindow(), checkNormality, pid);
+            } else {
+                window = userSelectWindow(checkNormality);
+            }
         }
-        // No window was selected or set.
         if (window) {
             dockWindow(window, settings);
         } else {
+            // No window was selected or set.
             checkCount();
         }
     }
@@ -295,6 +307,7 @@ void TrayItemManager::undock(TrayItem *trayItem) {
 }
 
 void TrayItemManager::undockAll() {
+
     Q_FOREACH(TrayItem *ti, m_trayItems) {
         undock(ti);
     }

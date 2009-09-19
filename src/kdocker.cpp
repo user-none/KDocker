@@ -222,6 +222,8 @@ void KDocker::printHelp() {
     out << "-t     \t" << tr("Remove this application from the taskbar") << endl;
     out << "-v     \t" << tr("Display version") << endl;
     out << "-w wid \t" << tr("Window id of the application to dock") << endl;
+    out << "-x pid \t" << tr("Process id of the application to dock") << endl;
+    out << "-y     \t" << tr("Force matching of command by using name instead of pid") << endl;
     out << endl;
     out << tr("Bugs and wishes to https://bugs.launchpad.net/kdocker") << endl;
     out << tr("Project information at https://launchpad.net/kdocker") << endl;

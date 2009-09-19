@@ -123,7 +123,7 @@ pid_t pid(Display *display, Window w) {
     return pid_return;
 }
 
-Window pidToWid(Display *display, pid_t epid, Window window) {
+Window pidToWid(Display *display, Window window, bool checkNormality, pid_t epid) {
     Window w = None;
 
     Window root;
@@ -132,13 +132,21 @@ Window pidToWid(Display *display, pid_t epid, Window window) {
     unsigned int num_child;
     if (XQueryTree(display, window, &root, &parent, &child, &num_child) != 0) {
         for (unsigned int i = 0; i < num_child; i++) {
-            if (epid == pid(display, child[i]) && isNormalWindow(display, child[i])) {
-                return child[i];
-            } else {
-                w = pidToWid(display, epid, child[i]);
+            if (epid == pid(display, child[i])) {
+                if (checkNormality) {
+                    if (isNormalWindow(display, child[i])) {
+                        return child[i];
+                    }
+                }
+                else {
+                    return child[i];
+                }
+            }
+            if (w == None) {
+                w = pidToWid(display, child[i], checkNormality, epid);
             }
             if (w != None) {
-                return w;
+                break;
             }
         }
     }
@@ -150,12 +158,8 @@ Window pidToWid(Display *display, pid_t epid, Window window) {
  * The Grand Window Analyzer. Checks if window w has a expected pid of epid
  * or a expected name of ename
  */
-bool analyzeWindow(Display *display, Window w, pid_t epid, const QString &ename) {
+bool analyzeWindow(Display *display, Window w, const QString &ename) {
     XClassHint ch;
-
-    if (epid == pid(display, w)) {
-        return true;
-    }
 
     // no plans to analyze windows without a name
     char *window_name = NULL;
@@ -198,9 +202,9 @@ bool analyzeWindow(Display *display, Window w, pid_t epid, const QString &ename)
 
 /*
  * Given a starting window look though all children and try to find a window
- * that matches either hte pid or eid.
+ * that matches the ename.
  */
-Window findWindow(Display *display, Window window, bool checkNormality, pid_t epid, const QString &ename) {
+Window findWindow(Display *display, Window window, bool checkNormality, const QString &ename) {
     Window w = None;
 
     Window root;
@@ -209,7 +213,7 @@ Window findWindow(Display *display, Window window, bool checkNormality, pid_t ep
     unsigned int num_child;
     if (XQueryTree(display, window, &root, &parent, &child, &num_child) != 0) {
         for (unsigned int i = 0; i < num_child; i++) {
-            if (analyzeWindow(display, child[i], epid, ename)) {
+            if (analyzeWindow(display, child[i], ename)) {
                 if (checkNormality) {
                     if (isNormalWindow(display, child[i])) {
                         return child[i];
@@ -219,7 +223,7 @@ Window findWindow(Display *display, Window window, bool checkNormality, pid_t ep
                 }
             }
             if (w == None) {
-                w = findWindow(display, child[i], checkNormality, epid, ename);
+                w = findWindow(display, child[i], checkNormality, ename);
             }
             if (w != None) {
                 break;
