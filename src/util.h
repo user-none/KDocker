@@ -18,8 +18,6 @@
  * USA.
  */
 
-// $Id: util.h,v 1.3 2004/11/19 15:44:51 cs19713 Exp $
-
 #ifndef _UTIL_H
 #define _UTIL_H
 

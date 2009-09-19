@@ -18,8 +18,6 @@
  * USA.
  */
 
-// $Id: util.cpp,v 1.7 2005/01/29 09:56:08 cs19713 Exp $
-
 #include "util.h"
 
 #include <X11/Xutil.h>
@@ -28,6 +26,7 @@
 #include <X11/cursorfont.h>
 
 #include <stdio.h>
+#include <stdlib.h>
 
 /*
  * Assert validity of the window id. Get window attributes for the heck of it
@@ -117,7 +116,9 @@ pid_t pid(Display *display, Window w) {
             XInternAtom(display, "_NET_WM_PID", False), 0,
             1, False, XA_CARDINAL, &actual_type,
             &actual_format, &nitems, &leftover, &pid) == Success) {
-        if (pid) pid_return = *(pid_t *) pid;
+        if (pid) {
+            pid_return = *(pid_t *) pid;
+        }
         XFree(pid);
     }
     return pid_return;
@@ -137,8 +138,7 @@ Window pidToWid(Display *display, Window window, bool checkNormality, pid_t epid
                     if (isNormalWindow(display, child[i])) {
                         return child[i];
                     }
-                }
-                else {
+                } else {
                     return child[i];
                 }
             }
@@ -156,7 +156,7 @@ Window pidToWid(Display *display, Window window, bool checkNormality, pid_t epid
 
 /*
  * The Grand Window Analyzer. Checks if window w has a expected pid of epid
- * or a expected name of ename
+ * or a expected name of ename.
  */
 bool analyzeWindow(Display *display, Window w, const QString &ename) {
     XClassHint ch;

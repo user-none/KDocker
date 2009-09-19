@@ -55,7 +55,7 @@ void Scanner::enqueue(const QString &command, const QStringList &arguments, Tray
     }
     
     if (QProcess::startDetached(command, arguments, "", &pid)) {
-        ProcessId processId = {command, (int) pid, settings, 0, maxTime, checkNormality, windowNameMatch, name};
+        ProcessId processId = {command, (pid_t) pid, settings, 0, maxTime, checkNormality, windowNameMatch, name};
         m_processes.append(processId);
         m_timer->start();
     } else {

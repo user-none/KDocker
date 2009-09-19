@@ -29,8 +29,10 @@
 #include "trayitemmanager.h"
 #include "util.h"
 
-#include <stdio.h>
 #include <getopt.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
 
 TrayItemManager *TrayItemManager::g_trayItemManager = 0;
 
@@ -98,7 +100,7 @@ bool TrayItemManager::x11EventFilter(XEvent *ev) {
 
 void TrayItemManager::processCommand(const QStringList &args) {
     int option;
-    int pid = 0;
+    pid_t pid = 0;
     Window window = 0;
     bool checkNormality = true;
     bool windowNameMatch = false;
@@ -196,7 +198,7 @@ void TrayItemManager::processCommand(const QStringList &args) {
                 }
                 break;
             case 'x':
-                pid = atoi(optarg);
+                pid = atol(optarg);
                 break;
             case 'y':
                 windowNameMatch = true;

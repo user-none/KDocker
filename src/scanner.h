@@ -28,11 +28,12 @@
 
 #include "trayitem.h"
 
+#include <sys/types.h>
 #include <X11/Xlib.h>
 
 struct ProcessId {
     QString command;
-    int pid;
+    pid_t pid;
     TrayItemSettings settings;
     int count;
     int maxCount;

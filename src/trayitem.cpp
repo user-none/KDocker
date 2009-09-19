@@ -230,8 +230,8 @@ void TrayItem::removeWindowBorder() {
         }
         hints->decorations = 0;
         XChangeProperty(display, m_window, hints_atom, hints_atom, 32, PropModeReplace, (unsigned char *) hints, sizeof (MotifWmHints) / sizeof (long));
-        XFree(hints);
     }
+    XFree(data);
 }
 
 void TrayItem::setCustomIcon(QString path) {
