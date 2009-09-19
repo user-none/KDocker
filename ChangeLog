@@ -1,3 +1,13 @@
+for version 4.1
+    - Fix bug 431297: Fall back to window title and class name when launching if
+      pid does not match. Allows commands that detach and get a new pid (rox)
+      to dock correctly.
+    - New command line option -n: Specify the string to use for fall back when
+      launching a command and a pid match cannot be determined.
+    - Fix a bug that prevented the time out for trying to dock and launched
+      command from increasing.
+    - Menu item for setting the tray icon.
+
 for version 4.0
     - 4.0 rewrite complete.
 

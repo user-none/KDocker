@@ -66,6 +66,7 @@ public slots:
     void setCustomIcon(QString path);
     void close(); // close the docked window
 
+    void selectCustomIcon(bool value);
     void setSkipTaskbar(bool value);
     void setSkipPager(bool value);
     void setSticky(bool value);
@@ -121,6 +122,7 @@ private:
 
     QMenu *m_contextMenu;
     QMenu *m_optionsMenu;
+    QAction *m_actionSetIcon;
     QAction *m_actionSkipTaskbar;
     QAction *m_actionSkipPager;
     QAction *m_actionSticky;

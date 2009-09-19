@@ -19,8 +19,11 @@
  */
 
 #include <QApplication>
+#include <QFileDialog>
+#include <QImageReader>
 #include <QMessageBox>
 #include <QPixmap>
+#include <QStringList>
 #include <QX11Info>
 
 #include "constants.h"
@@ -251,6 +254,25 @@ void TrayItem::close() {
     destroyEvent();
 }
 
+void TrayItem::selectCustomIcon(bool value) {
+    Q_UNUSED(value);
+
+    QStringList types;
+    QString supportedTypes;
+    QString path;
+
+    Q_FOREACH(QByteArray type, QImageReader::supportedImageFormats()) {
+        types << QString(type);
+    }
+    supportedTypes = QString("Images (*.%1)").arg(types.join(" *."));
+
+    path = QFileDialog::getOpenFileName(0, tr("Select Icon"), QDir::homePath(), supportedTypes);
+
+    if (!path.isEmpty()) {
+        setCustomIcon(path);
+    }
+}
+
 void TrayItem::setSkipTaskbar(bool value) {
     m_skipTaskbar = value;
     m_actionSkipTaskbar->setChecked(value);
@@ -478,6 +500,9 @@ void TrayItem::createContextMenu() {
 
     // Options menu
     m_optionsMenu = new QMenu(tr("Options"), m_contextMenu);
+    m_actionSetIcon = new QAction(tr("Set icon"), m_optionsMenu);
+    connect(m_actionSetIcon, SIGNAL(triggered(bool)), this, SLOT(selectCustomIcon(bool)));
+    m_optionsMenu->addAction(m_actionSetIcon);
     m_actionSkipTaskbar = new QAction(tr("Skip taskbar"), m_optionsMenu);
     m_actionSkipTaskbar->setCheckable(true);
     m_actionSkipTaskbar->setChecked(m_skipTaskbar);
