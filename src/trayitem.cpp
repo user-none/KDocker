@@ -323,8 +323,8 @@ void TrayItem::setBalloonTimeout(int value) {
 }
 
 void TrayItem::setBalloonTimeout(bool value) {
-    if (value) {
-        setBalloonTimeout(0);
+    if (!value) {
+        setBalloonTimeout(-1);
     } else {
         setBalloonTimeout(4000);
     }
