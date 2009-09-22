@@ -1,3 +1,6 @@
+for version 4.next
+    - Fix disabling balloon title changes menu option.
+
 for version 4.1
     - Fix bug 431297: Fall back to window title and class name when launching if
       pid becomes invalid. Allows commands that detach and get a new pid (rox)

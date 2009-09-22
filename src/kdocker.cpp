@@ -208,7 +208,7 @@ void KDocker::printHelp() {
     out << "-a     \t" << tr("Show author information") << endl;
     out << "-b     \t" << tr("Don't warn about non-normal windows (blind mode)") << endl;
     out << "-c     \t" << tr("Remove the window border") << endl;
-    out << "-d     \t" << tr("Maximum time in seconds to allow for command to start and open a window (defaults to 5 sec)") << endl;
+    out << "-d secs\t" << tr("Maximum time in seconds to allow for command to start and open a window (defaults to 5 sec)") << endl;
     out << "-f     \t" << tr("Dock window that has focus (active window)") << endl;
     out << "-h     \t" << tr("Display this help") << endl;
     //out << "-l     \t" << tr("Iconify when focus lost") << endl;
