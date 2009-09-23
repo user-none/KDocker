@@ -21,13 +21,18 @@
 #ifndef _TRAYITEMMANAGER_H
 #define	_TRAYITEMMANAGER_H
 
+#include <QList>
 #include <QObject>
 #include <QStringList>
 
 #include "scanner.h"
 #include "trayitem.h"
 
+#include <sys/types.h>
+
 #include <X11/Xlib.h>
+
+class Scanner;
 
 class TrayItemManager : public QObject {
     Q_OBJECT
@@ -39,6 +44,7 @@ public:
     ~TrayItemManager();
     bool x11EventFilter(XEvent *ev);
     void processCommand(const QStringList &args);
+    QList<Window> dockedWindows();
 
 public slots:
     void dockWindow(Window window, TrayItemSettings settings);

@@ -27,9 +27,13 @@
 #include <QTimer>
 
 #include "trayitem.h"
+#include "trayitemmanager.h"
 
 #include <sys/types.h>
+
 #include <X11/Xlib.h>
+
+class TrayItemManager;
 
 struct ProcessId {
     QString command;
@@ -48,7 +52,7 @@ class Scanner : public QObject {
     Q_OBJECT
 
 public:
-    Scanner();
+    Scanner(TrayItemManager *manager);
     ~Scanner();
     void enqueue(const QString &command, const QStringList &arguments, TrayItemSettings settings, int maxTime = 30, bool checkNormality = true, bool windowNameMatch = false, const QString &windowName = QString());
     bool isRunning();
@@ -58,6 +62,7 @@ signals:
     void windowFound(Window, TrayItemSettings);
     void stopping();
 private:
+    TrayItemManager *m_manager;
     QTimer *m_timer;
     QList<ProcessId> m_processes;
 };

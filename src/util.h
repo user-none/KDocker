@@ -21,16 +21,19 @@
 #ifndef _UTIL_H
 #define _UTIL_H
 
+#include <QList>
 #include <QString>
-#include <X11/Xlib.h>
+
 #include <sys/types.h>
+
+#include <X11/Xlib.h>
 
 extern bool isNormalWindow(Display *display, Window w);
 extern bool isValidWindowId(Display *display, Window w);
 extern pid_t pid(Display *display, Window w);
 extern Window pidToWid(Display *display, Window window, bool checkNormality, pid_t epid);
 extern bool analyzeWindow(Display *display, Window w, const QString &ename);
-extern Window findWindow(Display *display, Window w, bool checkNormality, const QString &ename);
+extern Window findWindow(Display *display, Window w, bool checkNormality, const QString &ename, QList<Window> dockedWindows = QList<Window>());
 extern void sendMessage(Display *display, Window to, Window w, const char *type, int format, long mask, void *data, int size);
 extern Window activeWindow(Display *display);
 extern Window selectWindow(Display *display, const char **err = 0);

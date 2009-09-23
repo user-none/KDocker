@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
  * USA.
  */
-
+#include <QDebug>
 #include "util.h"
 
 #include <X11/Xutil.h>
@@ -142,9 +142,7 @@ Window pidToWid(Display *display, Window window, bool checkNormality, pid_t epid
                     return child[i];
                 }
             }
-            if (w == None) {
-                w = pidToWid(display, child[i], checkNormality, epid);
-            }
+            w = pidToWid(display, child[i], checkNormality, epid);
             if (w != None) {
                 break;
             }
@@ -204,7 +202,7 @@ bool analyzeWindow(Display *display, Window w, const QString &ename) {
  * Given a starting window look though all children and try to find a window
  * that matches the ename.
  */
-Window findWindow(Display *display, Window window, bool checkNormality, const QString &ename) {
+Window findWindow(Display *display, Window window, bool checkNormality, const QString &ename, QList<Window> dockedWindows) {
     Window w = None;
 
     Window root;
@@ -214,17 +212,17 @@ Window findWindow(Display *display, Window window, bool checkNormality, const QS
     if (XQueryTree(display, window, &root, &parent, &child, &num_child) != 0) {
         for (unsigned int i = 0; i < num_child; i++) {
             if (analyzeWindow(display, child[i], ename)) {
-                if (checkNormality) {
-                    if (isNormalWindow(display, child[i])) {
+                if (!dockedWindows.contains(child[i])) {
+                    if (checkNormality) {
+                        if (isNormalWindow(display, child[i])) {
+                            return child[i];
+                        }
+                    } else {
                         return child[i];
                     }
-                } else {
-                    return child[i];
                 }
             }
-            if (w == None) {
-                w = findWindow(display, child[i], checkNormality, ename);
-            }
+            w = findWindow(display, child[i], checkNormality, ename);
             if (w != None) {
                 break;
             }

@@ -48,7 +48,7 @@ TrayItemManager *TrayItemManager::instance() {
 }
 
 TrayItemManager::TrayItemManager() {
-    m_scanner = new Scanner();
+    m_scanner = new Scanner(this);
     connect(m_scanner, SIGNAL(windowFound(Window, TrayItemSettings)), this, SLOT(dockWindow(Window, TrayItemSettings)));
     connect(m_scanner, SIGNAL(stopping()), this, SLOT(checkCount()));
     // This will prevent x errors from being written to the console.
@@ -231,6 +231,17 @@ void TrayItemManager::processCommand(const QStringList &args) {
     }
 }
 
+QList<Window> TrayItemManager::dockedWindows() {
+    QList<Window> windows;
+
+    QListIterator<TrayItem*> ti(m_trayItems);
+    while (ti.hasNext()) {
+        windows.append(ti.next()->dockedWindow());
+    }
+
+    return windows;
+}
+
 void TrayItemManager::dockWindow(Window window, TrayItemSettings settings) {
     if (isWindowDocked(window)) {
         QMessageBox::information(0, tr("KDocker"), tr("This window is already docked.\nClick on system tray icon to toggle docking."));
@@ -336,12 +347,5 @@ void TrayItemManager::checkCount() {
 }
 
 bool TrayItemManager::isWindowDocked(Window window) {
-    QListIterator<TrayItem*> ti(m_trayItems);
-    while (ti.hasNext()) {
-        if (ti.next()->dockedWindow() == window) {
-            return true;
-        }
-    }
-
-    return false;
+    return dockedWindows().contains(window);
 }

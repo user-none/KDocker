@@ -30,7 +30,8 @@
 
 #include "signal.h"
 
-Scanner::Scanner() {
+Scanner::Scanner(TrayItemManager *manager) {
+    m_manager = manager;
     m_timer = new QTimer();
     m_timer->setInterval(1000);
     connect(m_timer, SIGNAL(timeout()), this, SLOT(check()));
@@ -77,7 +78,7 @@ void Scanner::check() {
         Window w = None;
         if (id.windowNameMatch || kill(id.pid, 0) == -1) {
             // Check based on window name if force matching by window name is set or the PID is not valid.
-            w = findWindow(QX11Info::display(), QX11Info::appRootWindow(), id.checkNormality, id.windowName);
+            w = findWindow(QX11Info::display(), QX11Info::appRootWindow(), id.checkNormality, id.windowName, m_manager->dockedWindows());
         } else {
             // Check based on PID if it is still valid.
             w = pidToWid(QX11Info::display(), QX11Info::appRootWindow(), id.checkNormality, id.pid);
