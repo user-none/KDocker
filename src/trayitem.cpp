@@ -142,7 +142,7 @@ void TrayItem::restoreWindow() {
     } else {
         XRaiseWindow(display, m_window);
     }
-    
+
     // make it the active window
     long l2[2] = {1, CurrentTime};
     sendMessage(display, root, m_window, "_NET_ACTIVE_WINDOW", 32, SubstructureNotifyMask | SubstructureRedirectMask, l2, sizeof (l2));
@@ -248,8 +248,7 @@ void TrayItem::setCustomIcon(QString path) {
 void TrayItem::close() {
     if (isBadWindow()) {
         return;
-    }
-    else {
+    } else {
         Display *display = QX11Info::display();
         long l[5] = {0, 0, 0, 0, 0};
         restoreWindow();
