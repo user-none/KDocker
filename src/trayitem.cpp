@@ -62,7 +62,7 @@ TrayItem::TrayItem(Window window, QObject *parent) : QSystemTrayIcon(parent) {
     createContextMenu();
     updateToggleAction();
 
-    connect(this, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(toggleWindow(QSystemTrayIcon::ActivationReason)));
+    connect(this, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(trayActivated(QSystemTrayIcon::ActivationReason)));
 }
 
 TrayItem::~TrayItem() {
@@ -128,10 +128,6 @@ void TrayItem::restoreWindow() {
 
         m_sizeHint.flags = USPosition;
         XSetWMNormalHints(display, m_window, &m_sizeHint);
-        // make it the active window
-        long l2[5] = {None, CurrentTime, None, 0, 0};
-        sendMessage(display, root, m_window, "_NET_ACTIVE_WINDOW", 32, SubstructureNotifyMask | SubstructureRedirectMask, l2, sizeof (l2));
-
         if (m_desktop == -1) {
             /*
              * We track _NET_WM_DESKTOP changes in the x11EventFilter. Its used here.
@@ -146,6 +142,11 @@ void TrayItem::restoreWindow() {
     } else {
         XRaiseWindow(display, m_window);
     }
+    
+    // make it the active window
+    long l2[2] = {1, CurrentTime};
+    sendMessage(display, root, m_window, "_NET_ACTIVE_WINDOW", 32, SubstructureNotifyMask | SubstructureRedirectMask, l2, sizeof (l2));
+
 }
 
 void TrayItem::iconifyWindow() {
@@ -330,9 +331,17 @@ void TrayItem::setBalloonTimeout(bool value) {
     }
 }
 
-void TrayItem::toggleWindow(QSystemTrayIcon::ActivationReason reason) {
+void TrayItem::toggleWindow() {
+    if (m_iconified) {
+        restoreWindow();
+    } else {
+        iconifyWindow();
+    }
+}
+
+void TrayItem::trayActivated(QSystemTrayIcon::ActivationReason reason) {
     if (reason == QSystemTrayIcon::Trigger) {
-        if (m_iconified) {
+        if (m_iconified || m_window != activeWindow(QX11Info::display())) {
             restoreWindow();
         } else {
             iconifyWindow();

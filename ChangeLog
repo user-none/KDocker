@@ -3,6 +3,8 @@ for version 4.next
     - Ignore docked windows and continue looking when matching command by name.
     - Bash completion
     - Italian Translation thanks to Alessio Cassibba
+    - Change behavior of tray activation. Raise window when not active, and
+      iconify when active.
 
 for version 4.1
     - Fix bug 431297: Fall back to window title and class name when launching if

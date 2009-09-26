@@ -77,7 +77,8 @@ public slots:
     void setBalloonTimeout(bool value);
 
 private slots:
-    void toggleWindow(QSystemTrayIcon::ActivationReason reason = QSystemTrayIcon::Trigger);
+    void toggleWindow();
+    void trayActivated(QSystemTrayIcon::ActivationReason reason = QSystemTrayIcon::Trigger);
     void showOnAllDesktops();
     void doAbout();
     void doSelectAnother();
