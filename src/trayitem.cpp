@@ -46,7 +46,6 @@ TrayItem::TrayItem(Window window, QObject *parent) : QSystemTrayIcon(parent) {
     m_iconifyFocusLost = false;
     m_balloonTimeout = 4000;
     m_window = window;
-    m_desktop = 999;
     m_dockedAppName = "";
 
     Display *display = QX11Info::display();
@@ -123,30 +122,27 @@ void TrayItem::restoreWindow() {
         XMapWindow(display, m_window);
         XIconifyWindow(display, m_window, DefaultScreen(display));
         XSync(display, False);
-        long l1[1] = {NormalState};
-        sendMessage(display, root, m_window, "WM_CHANGE_STATE", 32, SubstructureNotifyMask | SubstructureRedirectMask, l1, sizeof (l1));
+        long l_state[1] = {NormalState};
+        sendMessage(display, root, m_window, "WM_CHANGE_STATE", 32, SubstructureNotifyMask | SubstructureRedirectMask, l_state, sizeof (l_state));
 
         m_sizeHint.flags = USPosition;
         XSetWMNormalHints(display, m_window, &m_sizeHint);
-        if (m_desktop == -1) {
-            /*
-             * We track _NET_WM_DESKTOP changes in the x11EventFilter. Its used here.
-             * _NET_WM_DESKTOP is set by the WM to the active desktop for newly
-             * mapped windows (like this one) at some point in time. We will override
-             *  that value to -1 (all desktops) on showOnAllDesktops().
-             */
-            showOnAllDesktops();
-        }
 
         updateToggleAction();
     } else {
         XRaiseWindow(display, m_window);
     }
 
-    // make it the active window
-    long l2[2] = {1, CurrentTime};
-    sendMessage(display, root, m_window, "_NET_ACTIVE_WINDOW", 32, SubstructureNotifyMask | SubstructureRedirectMask, l2, sizeof (l2));
+    // Change to the desktop that the window was last on.
+    long l_currDesk[2] = {m_desktop, CurrentTime};
+    sendMessage(display, root, root, "_NET_CURRENT_DESKTOP", 32, SubstructureNotifyMask | SubstructureRedirectMask, l_currDesk, sizeof (l_currDesk));
+    // Set the desktop the window wants to be on.
+    long l_wmDesk[2] = {m_desktop, 1}; // 1 == request sent from application. 2 == from pager
+    sendMessage(display, root, m_window, "_NET_WM_DESKTOP", 32, SubstructureNotifyMask | SubstructureRedirectMask, l_wmDesk, sizeof (l_wmDesk));
 
+    // Make it the active window
+    long l_active[2] = {1, CurrentTime}; // 1 == request sent from application. 2 == from pager
+    sendMessage(display, root, m_window, "_NET_ACTIVE_WINDOW", 32, SubstructureNotifyMask | SubstructureRedirectMask, l_active, sizeof (l_active));
 }
 
 void TrayItem::iconifyWindow() {
@@ -346,19 +342,6 @@ void TrayItem::trayActivated(QSystemTrayIcon::ActivationReason reason) {
             iconifyWindow();
         }
     }
-}
-
-/*
- * Sends a message to the WM to show this window on all the desktops
- */
-void TrayItem::showOnAllDesktops() {
-    if (isBadWindow()) {
-        return;
-    }
-
-    Display *display = QX11Info::display();
-    long l[1] = {-1}; // -1 = all, 0 = Desktop1, 1 = Desktop2 ...
-    sendMessage(display, QX11Info::appRootWindow(), m_window, "_NET_WM_DESKTOP", 32, SubstructureNotifyMask | SubstructureRedirectMask, l, sizeof (l));
 }
 
 void TrayItem::doAbout() {
