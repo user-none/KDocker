@@ -7,6 +7,7 @@ for version 4.next
       iconify when active.
     - Change to the desktop the window was last on when restoring. Only works
       with WMs that support _NET_CURRENT_DESKTOP.
+    - Iconify when focus lost.
 
 for version 4.1
     - Fix bug 431297: Fall back to window title and class name when launching if

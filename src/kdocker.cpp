@@ -230,7 +230,7 @@ void KDocker::printHelp() {
     out << "-d secs\t" << tr("Maximum time in seconds to allow for command to start and open a window (defaults to 5 sec)") << endl;
     out << "-f     \t" << tr("Dock window that has focus (active window)") << endl;
     out << "-h     \t" << tr("Display this help") << endl;
-    //out << "-l     \t" << tr("Iconify when focus lost") << endl;
+    out << "-l     \t" << tr("Iconify when focus lost") << endl;
     out << "-m     \t" << tr("Keep application window showing (dont hide on dock)") << endl;
     out << "-n name\t" << tr("Name used for matching when running command (fall back in case command is a launcher so pid and command won't match the window tile or class)") << endl;
     out << "-o     \t" << tr("Iconify when obscured") << endl;

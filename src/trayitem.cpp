@@ -90,7 +90,7 @@ bool TrayItem::x11EventFilter(XEvent *ev) {
                 obscureEvent();
             }
         } else if (event->type == FocusOut) {
-            //focusLostEvent();
+            focusLostEvent();
         } else if (event->type == MapNotify) {
             m_iconified = false;
             updateToggleAction();
@@ -143,6 +143,7 @@ void TrayItem::restoreWindow() {
     // Make it the active window
     long l_active[2] = {1, CurrentTime}; // 1 == request sent from application. 2 == from pager
     sendMessage(display, root, m_window, "_NET_ACTIVE_WINDOW", 32, SubstructureNotifyMask | SubstructureRedirectMask, l_active, sizeof (l_active));
+    XSetInputFocus(display, m_window, RevertToParent, CurrentTime);
 }
 
 void TrayItem::iconifyWindow() {
@@ -529,8 +530,8 @@ void TrayItem::createContextMenu() {
     m_actionIconifyFocusLost = new QAction(tr("Iconify when focus lost"), m_optionsMenu);
     m_actionIconifyFocusLost->setCheckable(true);
     m_actionIconifyFocusLost->setChecked(m_iconifyFocusLost);
-    //connect(m_actionIconifyFocusLost, SIGNAL(toggled(bool)), this, SLOT(setIconifyFocusLost(bool)));
-    //m_optionsMenu->addAction(m_actionIconifyFocusLost);
+    connect(m_actionIconifyFocusLost, SIGNAL(toggled(bool)), this, SLOT(setIconifyFocusLost(bool)));
+    m_optionsMenu->addAction(m_actionIconifyFocusLost);
     m_actionBalloonTitleChanges = new QAction(tr("Balloon title changes"), m_optionsMenu);
     m_actionBalloonTitleChanges->setCheckable(true);
     m_actionBalloonTitleChanges->setChecked(m_balloonTimeout ? true : false);
