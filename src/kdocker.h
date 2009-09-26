@@ -38,6 +38,7 @@ public:
 private:
     void notifyPreviousInstance(Window prevInstance, QStringList args = QStringList());
     void preProcessCommand(int argc, char **argv);
+    void setupTranslator();
 
     void printAbout();
     void printHelp();
@@ -45,6 +46,7 @@ private:
     void printVersion();
 
     TrayItemManager *m_trayItemManager;
+    QTranslator *m_translator;
 
 };
 

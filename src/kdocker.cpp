@@ -21,8 +21,10 @@
 #include <QCoreApplication>
 #include <QFile>
 #include <QFileInfo>
+#include <QLocale>
 #include <QMessageBox>
 #include <QTextStream>
+#include <QTranslator>
 #include <QX11Info>
 
 #include "constants.h"
@@ -41,6 +43,8 @@ KDocker::KDocker(int &argc, char **argv) : QApplication(argc, argv) {
     setApplicationName(APP_NAME);
     setApplicationVersion(APP_VERSION);
     setQuitOnLastWindowClosed(false);
+
+    setupTranslator();
 
     preProcessCommand(argc, argv); // this can exit the application
     QStringList args = QCoreApplication::arguments();
@@ -70,6 +74,8 @@ KDocker::~KDocker() {
         delete m_trayItemManager;
         m_trayItemManager = 0;
     }
+    delete m_translator;
+    m_translator = 0;
 }
 
 TrayItemManager *KDocker::trayItemManager() {
@@ -186,6 +192,19 @@ void KDocker::preProcessCommand(int argc, char **argv) {
                 break;
         }
     }
+}
+
+void KDocker::setupTranslator() {
+    m_translator = new QTranslator();
+    QString locale = QString("kdocker_%1").arg(QLocale::system().name());
+
+    if (!m_translator->load(locale, TRANSLATIONS_PATH)) {
+        if (!m_translator->load(locale, "./build/i18n/")) {
+            m_translator->load(locale, "./i18n/");
+        }
+    }
+
+    installTranslator(m_translator);
 }
 
 void KDocker::printAbout() {
