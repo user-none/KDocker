@@ -11,14 +11,17 @@ INSTALL_PATH = /usr/local/share/kdocker
 
 ICONS_PATH = $$INSTALL_PATH/icons
 icons.path = $$ICONS_PATH
-icons.files = icons/kdocker.png
+icons.files = resources/images/kdocker.png
 
 desktop.path = /usr/share/applications
-desktop.files = kdocker.desktop
+desktop.files = helpers/kdocker.desktop
+
+completion.path = /etc/bash_completion.d
+completion.file = helpers/kdocker
 
 target.path = /usr/local/bin
 
-INSTALLS += target icons desktop
+INSTALLS += target icons desktop completion
 
 # Input
 HEADERS += src/constants.h \
