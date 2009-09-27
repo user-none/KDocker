@@ -35,7 +35,7 @@ desktop.path = /usr/share/applications
 desktop.files = helpers/kdocker.desktop
 
 completion.path = /etc/bash_completion.d
-completion.file = helpers/kdocker
+completion.files = helpers/kdocker
 
 target.path = /usr/local/bin
 
