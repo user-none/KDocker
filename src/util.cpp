@@ -124,7 +124,7 @@ pid_t pid(Display *display, Window w) {
     return pid_return;
 }
 
-Window pidToWid(Display *display, Window window, bool checkNormality, pid_t epid) {
+Window pidToWid(Display *display, Window window, bool checkNormality, pid_t epid, QList<Window> dockedWindows) {
     Window w = None;
 
     Window root;
@@ -134,12 +134,14 @@ Window pidToWid(Display *display, Window window, bool checkNormality, pid_t epid
     if (XQueryTree(display, window, &root, &parent, &child, &num_child) != 0) {
         for (unsigned int i = 0; i < num_child; i++) {
             if (epid == pid(display, child[i])) {
-                if (checkNormality) {
-                    if (isNormalWindow(display, child[i])) {
+                if (!dockedWindows.contains(child[i])) {
+                    if (checkNormality) {
+                        if (isNormalWindow(display, child[i])) {
+                            return child[i];
+                        }
+                    } else {
                         return child[i];
                     }
-                } else {
-                    return child[i];
                 }
             }
             w = pidToWid(display, child[i], checkNormality, epid);

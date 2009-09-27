@@ -104,9 +104,9 @@ void TrayItemManager::processCommand(const QStringList &args) {
     Window window = 0;
     bool checkNormality = true;
     bool windowNameMatch = false;
-    TrayItemSettings settings;
     int maxTime = 5;
     QString windowName;
+    TrayItemSettings settings;
     settings.balloonTimeout = 4000;
     settings.borderless = false;
     settings.iconify = true;
@@ -217,7 +217,7 @@ void TrayItemManager::processCommand(const QStringList &args) {
     } else {
         if (!window) {
             if (pid != 0) {
-                window = pidToWid(QX11Info::display(), QX11Info::appRootWindow(), checkNormality, pid);
+                window = pidToWid(QX11Info::display(), QX11Info::appRootWindow(), checkNormality, pid, dockedWindows());
             } else {
                 window = userSelectWindow(checkNormality);
             }

@@ -1,6 +1,7 @@
 for version 4.next
     - Fix disabling balloon title changes menu option.
-    - Ignore docked windows and continue looking when matching command by name.
+    - Ignore docked windows and continue looking when matching command by name
+      and when matching by specified pid.
     - Bash completion
     - Italian Translation thanks to Alessio Cassibba
     - Change behavior of tray activation. Raise window when not active, and
