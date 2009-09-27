@@ -19,6 +19,7 @@
  */
 
 #include <QByteArray>
+#include <QCoreApplication>
 #include <QList>
 #include <QMessageBox>
 #include <QSystemTrayIcon>
@@ -151,7 +152,7 @@ void TrayItemManager::processCommand(const QStringList &args) {
             case 'f':
                 window = activeWindow(QX11Info::display());
                 if (!window) {
-                    QMessageBox::critical(0, tr("KDocker"), tr("Cannot dock the active window because no window has focus."));
+                    QMessageBox::critical(0, qApp->applicationName(), tr("Cannot dock the active window because no window has focus."));
                     checkCount();
                     return;
                 }
@@ -192,7 +193,7 @@ void TrayItemManager::processCommand(const QStringList &args) {
                 else
                     window = (Window) atoi(optarg);
                 if (!isValidWindowId(QX11Info::display(), window)) {
-                    QMessageBox::critical(0, tr("KDocker"), tr("Invalid window id."));
+                    QMessageBox::critical(0, qApp->applicationName(), tr("Invalid window id."));
                     checkCount();
                     return;
                 }
@@ -244,7 +245,7 @@ QList<Window> TrayItemManager::dockedWindows() {
 
 void TrayItemManager::dockWindow(Window window, TrayItemSettings settings) {
     if (isWindowDocked(window)) {
-        QMessageBox::information(0, tr("KDocker"), tr("This window is already docked.\nClick on system tray icon to toggle docking."));
+        QMessageBox::information(0, qApp->applicationName(), tr("This window is already docked.\nClick on system tray icon to toggle docking."));
         checkCount();
         return;
     }
@@ -286,7 +287,7 @@ Window TrayItemManager::userSelectWindow(bool checkNormality) {
     Window window = selectWindow(QX11Info::display(), &error);
     if (!window) {
         if (error) {
-            QMessageBox::critical(0, tr("KDocker"), tr(error));
+            QMessageBox::critical(0, qApp->applicationName(), tr(error));
         }
         checkCount();
         return 0;
@@ -294,7 +295,7 @@ Window TrayItemManager::userSelectWindow(bool checkNormality) {
 
     if (checkNormality) {
         if (!isNormalWindow(QX11Info::display(), window)) {
-            if (QMessageBox::warning(0, tr("KDocker"), tr("The window you are attempting to dock does not seem to be a normal window."), QMessageBox::Abort | QMessageBox::Ignore) == QMessageBox::Abort) {
+            if (QMessageBox::warning(0, qApp->applicationName(), tr("The window you are attempting to dock does not seem to be a normal window."), QMessageBox::Abort | QMessageBox::Ignore) == QMessageBox::Abort) {
                 checkCount();
                 return 0;
             }

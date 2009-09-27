@@ -18,6 +18,7 @@
  * USA.
  */
 
+#include <QCoreApplication>
 #include <QMessageBox>
 #include <QMutableListIterator>
 #include <QProcess>
@@ -60,7 +61,7 @@ void Scanner::enqueue(const QString &command, const QStringList &arguments, Tray
         m_processes.append(processId);
         m_timer->start();
     } else {
-        QMessageBox::information(0, tr("KDocker"), tr("%1 did not start properly.").arg(command));
+        QMessageBox::information(0, qApp->applicationName(), tr("%1 did not start properly.").arg(command));
     }
 }
 
