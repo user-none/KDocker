@@ -5,6 +5,4 @@ Known issues:
 ---
 * Robust error reporting from 1.x have not been implemented in 4.x.
 * Starting two instances at the same time will result in two kdocker processes.
-* Mozilla prisim does not return when spawning correctly. Prisim applications
-  cannot be started by KDocker.
 
