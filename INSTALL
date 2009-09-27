@@ -9,8 +9,7 @@ Building
 4. run "make install" (optional)
 5. if you did not do a "make install" make sure kdocker is in your $PATH. This
    is required for session management to work.
-6. While making shortcuts, use the icons in /usr/local/share/kdocker/icons or
-   the ones in /icons in the tar ball.
+6. While making shortcuts, use the icons in /usr/local/share/kdocker/icons.
 
 Please see README for tips and general information
 

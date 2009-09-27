@@ -1,4 +1,4 @@
-for version 4.next
+for version 4.2
     - Fix disabling balloon title changes menu option.
     - Ignore docked windows and continue looking when matching command by name
       and when matching by specified pid.
