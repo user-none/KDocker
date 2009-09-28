@@ -22,10 +22,10 @@ updateqm.commands = $$QMAKE_LRELEASE -silent ${QMAKE_FILE_IN} -qm build/i18n/${Q
 updateqm.CONFIG += no_link target_predeps
 QMAKE_EXTRA_COMPILERS += updateqm
 
-TRANSLATIONS_PATH = $$INSTALL_PATH/i18n
-DEFINES += TRANSLATIONS_PATH=\\\"$$TRANSLATIONS_PATH\\\"
+TRANSLATIONS_PATH = $$INSTALL_PATH
+DEFINES += TRANSLATIONS_PATH=\\\"$${TRANSLATIONS_PATH}/i18n\\\"
 translations.path = $$TRANSLATIONS_PATH
-translations.files = build/i18n/*.qm
+translations.files = build/i18n
 
 ICONS_PATH = $$INSTALL_PATH/icons
 icons.path = $$ICONS_PATH
