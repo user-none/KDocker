@@ -19,6 +19,7 @@
  */
 
 #include <QApplication>
+#include <QMetaObject>
 
 #include "kdocker.h"
 
@@ -27,7 +28,7 @@
 static void sighandler(int sig) {
     Q_UNUSED(sig);
 
-    ((KDocker *) qApp)->trayItemManager()->undockAll();
+    ((KDocker *) qApp)->undockAll();
     ::exit(0);
 }
 
@@ -39,6 +40,9 @@ int main(int argc, char *argv[]) {
     signal(SIGINT, sighandler);
     signal(SIGUSR1, sighandler);
 
-    KDocker app(argc, argv);
+    KDocker app("KDocker", argc, argv);
+
+    QMetaObject::invokeMethod(&app, "run", Qt::QueuedConnection);
+
     return app.exec();
 }

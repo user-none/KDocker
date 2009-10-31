@@ -21,22 +21,27 @@
 #ifndef _KDOCKER_H
 #define	_KDOCKER_H
 
-#include <QApplication>
+#include <QtSingleApplication>
 #include <QStringList>
 #include "trayitemmanager.h"
 
-class KDocker : public QApplication {
+class KDocker : public QtSingleApplication {
     Q_OBJECT
 
 public:
-    KDocker(int &argc, char **argv);
+    KDocker(const QString &appId, int &argc, char **argv);
     ~KDocker();
 
-    TrayItemManager *trayItemManager();
+    void undockAll();
     bool x11EventFilter(XEvent *event);
 
+public slots:
+    void run();
+
+private slots:
+    void handleMessage(const QString &args);
+
 private:
-    void notifyPreviousInstance(Window prevInstance, QStringList args = QStringList());
     void preProcessCommand(int argc, char **argv);
     void setupTranslator();
 

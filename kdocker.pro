@@ -2,6 +2,8 @@ TEMPLATE = app
 CONFIG += qt debug
 TARGET = kdocker
 
+include(solutions/qtsingleapplication/qtsingleapplication.pri)
+
 DEPENDPATH += src
 INCLUDEPATH += . src  /usr/include/X11
 LIBPATH += /usr/X11/lib
