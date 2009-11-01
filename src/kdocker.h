@@ -23,6 +23,7 @@
 
 #include <QtSingleApplication>
 #include <QStringList>
+
 #include "trayitemmanager.h"
 
 class KDocker : public QtSingleApplication {

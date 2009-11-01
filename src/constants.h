@@ -29,7 +29,7 @@
 #define APP_NAME "KDocker"
 #define APP_VERSION "4.2.2"
 
-#define OPTIONSTRING "+abcd:fhi:lmn:op:qrstvuw:x:y"
+#define OPTIONSTRING "+abd:fhi:lmn:op:qrstvuw:x:y"
 #define TMPFILE_PREFIX QDir::homePath() + "/.kdocker."
 
 const QString ABOUT = QObject::tr("KDocker will help you dock any application into the system tray. This means you can dock openoffice, xmms, firefox, thunderbird, anything! Just point and click. Works for all NET WM compliant window managers - that includes KDE, GNOME, Xfce, Fluxbox and many more.\n\nCreated by %1. Updated and maintained by %2.").arg("Girish Ramakrishnan").arg("John Schember");

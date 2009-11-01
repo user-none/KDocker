@@ -45,14 +45,57 @@ TrayItem::TrayItem(Window window, QObject *parent) : QSystemTrayIcon(parent) {
     m_iconifyObscure = false;
     m_iconifyFocusLost = false;
     m_balloonTimeout = 4000;
-    m_window = window;
     m_dockedAppName = "";
+    m_window = window;
 
     Display *display = QX11Info::display();
-    // Allows events from m_window to be forwarded to the x11EventFilter.
-    subscribe(display, m_window, StructureNotifyMask | PropertyChangeMask | VisibilityChangeMask | FocusChangeMask, true);
+    long dummy;
+    Atom wm_hints_atom = XInternAtom(display, _XA_MOTIF_WM_HINTS, false);
+    unsigned char *wm_data;
+    Atom wm_type;
+    int wm_format;
+    unsigned long wm_nitems;
+    unsigned long wm_bytes_after;
+
+    // Get the window size info.
+    XGetWMNormalHints(display, window, &m_sizeHint, &dummy);
+    // Get the window decoration info.
+    XGetWindowProperty(display, m_window, wm_hints_atom, 0, sizeof (MotifWmHints) / sizeof (long), false, AnyPropertyType, &wm_type, &wm_format, &wm_nitems, &wm_bytes_after, &wm_data);
+
+    // Create the container window and place the selected window into it.
+    m_container = new QX11EmbedContainer();
+    m_container->embedClient(window);
+    m_container->show();
+
+    // Allows events from m_container to be forwarded to the x11EventFilter.
+    subscribe(display, m_container->winId(), StructureNotifyMask | PropertyChangeMask | VisibilityChangeMask | FocusChangeMask, true);
     // store the desktop on which the window is being shown
-    getCardinalProperty(display, m_window, XInternAtom(display, "_NET_WM_DESKTOP", True), &m_desktop);
+    getCardinalProperty(display, m_container->winId(), XInternAtom(display, "_NET_WM_DESKTOP", True), &m_desktop);
+
+    // Do not close the window when the X button is pressed. This only works
+    // Because we have embedded into our own window.
+    Atom wm_delete = XInternAtom(display, "WM_DELETE_WINDOW", False);
+    XSetWMProtocols(display, m_container->winId(), &wm_delete, 1);
+
+    // Set the containers size info to that of window.
+    XSetWMNormalHints(display, m_container->winId(), &m_sizeHint);
+    // Set the containers decorations to those of window.
+    if (wm_type == None) {
+        MotifWmHints hints;
+        memset(&hints, 0, sizeof (hints));
+        hints.flags = MWM_HINTS_DECORATIONS;
+        hints.decorations = MWM_DECOR_ALL;
+        XChangeProperty(display, m_container->winId(), wm_hints_atom, wm_hints_atom, 32, PropModeReplace, (unsigned char *) & hints, sizeof (MotifWmHints) / sizeof (long));
+    } else {
+        MotifWmHints *hints;
+        hints = (MotifWmHints *) wm_data;
+        if (!(hints->flags & MWM_HINTS_DECORATIONS)) {
+            hints->flags |= MWM_HINTS_DECORATIONS;
+            hints->decorations = 0;
+        }
+        XChangeProperty(display, m_container->winId(), wm_hints_atom, wm_hints_atom, 32, PropModeReplace, (unsigned char *) hints, sizeof (MotifWmHints) / sizeof (long));
+    }
+    XFree(wm_data);
 
     readDockedAppName();
     updateTitle();
@@ -68,10 +111,12 @@ TrayItem::~TrayItem() {
     // Only the main menu needs to be deleted. The rest of the menus and actions
     // are children of this menu and Qt will delete all children.
     delete m_contextMenu;
+    m_container->discardClient();
+    delete m_container;
 }
 
 Window TrayItem::dockedWindow() {
-    return m_window;
+    return m_container->winId();
 }
 
 bool TrayItem::x11EventFilter(XEvent *ev) {
@@ -79,26 +124,35 @@ bool TrayItem::x11EventFilter(XEvent *ev) {
         return false;
     }
 
+    if (ev->type == ClientMessage && ev->xclient.data.l[0] == XInternAtom(QX11Info::display(), "WM_DELETE_WINDOW", False)) {
+        iconifyWindow();
+        return true;
+    }
+
     XAnyEvent *event = (XAnyEvent *) ev;
-    if (event->window == m_window) {
+    if (event->window == m_container->winId()) {
         if (event->type == DestroyNotify) {
             destroyEvent();
+            return true;
         } else if (event->type == PropertyNotify) {
-            propertyChangeEvent(((XPropertyEvent *) event)->atom);
+            return propertyChangeEvent(((XPropertyEvent *) event)->atom);
         } else if (event->type == VisibilityNotify) {
             if (((XVisibilityEvent *) event)->state == VisibilityFullyObscured) {
                 obscureEvent();
+                return true;
             }
         } else if (event->type == FocusOut) {
             focusLostEvent();
+            return true;
         } else if (event->type == MapNotify) {
             m_iconified = false;
             updateToggleAction();
+            return true;
         } else if (event->type == UnmapNotify) {
             m_iconified = true;
             updateToggleAction();
+            return true;
         }
-        return true; // Dont process this again
     }
     return false;
 }
@@ -119,18 +173,18 @@ void TrayItem::restoreWindow() {
          * Withdrawn->Normal state change code does not map them. So we make the
          * window go through Withdrawn->Map->Iconify->Normal state.
          */
-        XMapWindow(display, m_window);
-        XIconifyWindow(display, m_window, DefaultScreen(display));
+        XMapWindow(display, m_container->winId());
+        XIconifyWindow(display, m_container->winId(), DefaultScreen(display));
         XSync(display, False);
         long l_state[1] = {NormalState};
-        sendMessage(display, root, m_window, "WM_CHANGE_STATE", 32, SubstructureNotifyMask | SubstructureRedirectMask, l_state, sizeof (l_state));
+        sendMessage(display, root, m_container->winId(), "WM_CHANGE_STATE", 32, SubstructureNotifyMask | SubstructureRedirectMask, l_state, sizeof (l_state));
 
         m_sizeHint.flags = USPosition;
-        XSetWMNormalHints(display, m_window, &m_sizeHint);
+        XSetWMNormalHints(display, m_container->winId(), &m_sizeHint);
 
         updateToggleAction();
     } else {
-        XRaiseWindow(display, m_window);
+        XRaiseWindow(display, m_container->winId());
     }
 
     // Change to the desktop that the window was last on.
@@ -138,12 +192,13 @@ void TrayItem::restoreWindow() {
     sendMessage(display, root, root, "_NET_CURRENT_DESKTOP", 32, SubstructureNotifyMask | SubstructureRedirectMask, l_currDesk, sizeof (l_currDesk));
     // Set the desktop the window wants to be on.
     long l_wmDesk[2] = {m_desktop, 1}; // 1 == request sent from application. 2 == from pager
-    sendMessage(display, root, m_window, "_NET_WM_DESKTOP", 32, SubstructureNotifyMask | SubstructureRedirectMask, l_wmDesk, sizeof (l_wmDesk));
+    sendMessage(display, root, m_container->winId(), "_NET_WM_DESKTOP", 32, SubstructureNotifyMask | SubstructureRedirectMask, l_wmDesk, sizeof (l_wmDesk));
 
     // Make it the active window
     long l_active[2] = {1, CurrentTime}; // 1 == request sent from application. 2 == from pager
-    sendMessage(display, root, m_window, "_NET_ACTIVE_WINDOW", 32, SubstructureNotifyMask | SubstructureRedirectMask, l_active, sizeof (l_active));
-    XSetInputFocus(display, m_window, RevertToParent, CurrentTime);
+    sendMessage(display, root, m_container->winId(), "_NET_ACTIVE_WINDOW", 32, SubstructureNotifyMask | SubstructureRedirectMask, l_active, sizeof (l_active));
+    XSetInputFocus(display, m_container->winId(), RevertToParent, CurrentTime);
+    skipTaskbar();
 }
 
 void TrayItem::iconifyWindow() {
@@ -157,7 +212,7 @@ void TrayItem::iconifyWindow() {
     int screen = DefaultScreen(display);
     long dummy;
 
-    XGetWMNormalHints(display, m_window, &m_sizeHint, &dummy);
+    XGetWMNormalHints(display, m_container->winId(), &m_sizeHint, &dummy);
 
     /*
      * A simple call to XWithdrawWindow wont do. Here is what we do:
@@ -165,16 +220,16 @@ void TrayItem::iconifyWindow() {
      *    example, xmms would take off the playlist and equalizer window.
      * 2. Withdrawn the window so we will be removed from the taskbar.
      */
-    XIconifyWindow(display, m_window, screen); // good for effects too
+    skip_NET_WM_STATE("_NET_WM_STATE_SKIP_TASKBAR", true);
+    XIconifyWindow(display, m_container->winId(), screen); // good for effects too
     XSync(display, False);
-    XWithdrawWindow(display, m_window, screen);
+    XWithdrawWindow(display, m_container->winId(), screen);
     updateToggleAction();
 }
 
 void TrayItem::skip_NET_WM_STATE(const char *type, bool set) {
     // set, true = add the state to the window. False, remove the state from
     // the window.
-
     if (isBadWindow() || m_iconified) {
         return;
     }
@@ -182,7 +237,7 @@ void TrayItem::skip_NET_WM_STATE(const char *type, bool set) {
     Atom atom = XInternAtom(display, type, False);
 
     long l[5] = {set ? 1 : 0, atom, 0, 0, 0};
-    sendMessage(display, QX11Info::appRootWindow(), m_window, "_NET_WM_STATE", 32, SubstructureNotifyMask, l, sizeof (l));
+    sendMessage(display, QX11Info::appRootWindow(), m_container->winId(), "_NET_WM_STATE", 32, SubstructureNotifyMask, l, sizeof (l));
 }
 
 void TrayItem::skipTaskbar() {
@@ -195,41 +250,6 @@ void TrayItem::skipPager() {
 
 void TrayItem::sticky() {
     skip_NET_WM_STATE("_NET_WM_STATE_STICKY", m_sticky);
-}
-
-void TrayItem::removeWindowBorder() {
-    if (isBadWindow()) {
-        return;
-    }
-
-    Display *display = QX11Info::display();
-    Atom hints_atom = XInternAtom(display, _XA_MOTIF_WM_HINTS, false);
-
-    unsigned char *data;
-    Atom type;
-    int format;
-    unsigned long nitems;
-    unsigned long bytes_after;
-
-    XGetWindowProperty(display, m_window, hints_atom, 0, sizeof (MotifWmHints) / sizeof (long), false, AnyPropertyType, &type, &format, &nitems, &bytes_after, &data);
-
-    if (type == None) {
-        MotifWmHints hints;
-        memset(&hints, 0, sizeof (hints));
-        hints.flags = MWM_HINTS_DECORATIONS;
-        hints.decorations = 0;
-        XChangeProperty(display, m_window, hints_atom, hints_atom, 32, PropModeReplace, (unsigned char *) & hints, sizeof (MotifWmHints) / sizeof (long));
-    } else {
-        MotifWmHints *hints;
-        hints = (MotifWmHints *) data;
-
-        if (!(hints->flags & MWM_HINTS_DECORATIONS)) {
-            hints->flags |= MWM_HINTS_DECORATIONS;
-        }
-        hints->decorations = 0;
-        XChangeProperty(display, m_window, hints_atom, hints_atom, 32, PropModeReplace, (unsigned char *) hints, sizeof (MotifWmHints) / sizeof (long));
-    }
-    XFree(data);
 }
 
 void TrayItem::setCustomIcon(QString path) {
@@ -246,6 +266,7 @@ void TrayItem::close() {
     if (isBadWindow()) {
         return;
     } else {
+        m_container->discardClient();
         Display *display = QX11Info::display();
         long l[5] = {0, 0, 0, 0, 0};
         restoreWindow();
@@ -337,7 +358,7 @@ void TrayItem::toggleWindow() {
 
 void TrayItem::trayActivated(QSystemTrayIcon::ActivationReason reason) {
     if (reason == QSystemTrayIcon::Trigger) {
-        if (m_iconified || m_window != activeWindow(QX11Info::display())) {
+        if (m_iconified || m_container->winId() != activeWindow(QX11Info::display())) {
             restoreWindow();
         } else {
             iconifyWindow();
@@ -378,9 +399,9 @@ void TrayItem::destroyEvent() {
     emit(dead(this));
 }
 
-void TrayItem::propertyChangeEvent(Atom property) {
+bool TrayItem::propertyChangeEvent(Atom property) {
     if (isBadWindow()) {
-        return;
+        return false;
     }
 
     Display *display = QX11Info::display();
@@ -391,23 +412,28 @@ void TrayItem::propertyChangeEvent(Atom property) {
 
     if (property == WM_NAME) {
         updateTitle();
+        return true;
     } else if (property == WM_ICON) {
         updateIcon();
+        return true;
     } else if (property == _NET_WM_DESKTOP) {
-        getCardinalProperty(display, m_window, _NET_WM_DESKTOP, &m_desktop);
+        getCardinalProperty(display, m_container->winId(), _NET_WM_DESKTOP, &m_desktop);
+        return true;
     } else if (property == WM_STATE) {
         Atom type = None;
         int format;
         unsigned long nitems, after;
         unsigned char *data = 0;
-        int r = XGetWindowProperty(display, m_window, WM_STATE, 0, 1, False, AnyPropertyType, &type, &format, &nitems, &after, &data);
+        int r = XGetWindowProperty(display, m_container->winId(), WM_STATE, 0, 1, False, AnyPropertyType, &type, &format, &nitems, &after, &data);
         if ((r == Success) && data && (*(long *) data == IconicState)) {
             minimizeEvent();
             XFree(data);
         }
         skipTaskbar();
         skipPager();
+        return true;
     }
+    return false;
 }
 
 void TrayItem::obscureEvent() {
@@ -417,7 +443,7 @@ void TrayItem::obscureEvent() {
 }
 
 void TrayItem::focusLostEvent() {
-    if (m_iconifyFocusLost && m_window != activeWindow(QX11Info::display())) {
+    if (m_iconifyFocusLost && m_container->winId() != activeWindow(QX11Info::display())) {
         iconifyWindow();
     }
 }
@@ -463,6 +489,8 @@ void TrayItem::updateTitle() {
         XFree(windowName);
     }
 
+    m_container->setWindowTitle(title);
+
     setToolTip(QString("%1 [%2]").arg(title).arg(m_dockedAppName));
     if (m_balloonTimeout > 0) {
         showMessage(m_dockedAppName, title, QSystemTrayIcon::Information, m_balloonTimeout);
@@ -474,7 +502,10 @@ void TrayItem::updateIcon() {
         return;
     }
 
-    setIcon(createIcon(m_window));
+    QIcon icon = createIcon(m_window);
+
+    m_container->setWindowIcon(icon);
+    setIcon(icon);
 }
 
 void TrayItem::updateToggleAction() {
@@ -588,7 +619,7 @@ QIcon TrayItem::createIcon(Window window) {
 bool TrayItem::isBadWindow() {
     Display *display = QX11Info::display();
 
-    if (!isValidWindowId(display, m_window)) {
+    if (!isValidWindowId(display, m_container->winId())) {
         destroyEvent();
         return true;
     }

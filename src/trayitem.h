@@ -27,6 +27,7 @@
 #include <QObject>
 #include <QString>
 #include <QSystemTrayIcon>
+#include <QX11EmbedContainer>
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -34,7 +35,6 @@
 struct TrayItemSettings {
     QString customIcon;
     int balloonTimeout;
-    bool borderless;
     bool iconify;
     bool skipTaskbar;
     bool skipPager;
@@ -50,6 +50,7 @@ public:
     TrayItem(Window window, QObject *parent = 0);
     ~TrayItem();
 
+    Window containerWindow();
     Window dockedWindow();
 
     // Pass on all events through this interface
@@ -62,7 +63,6 @@ public slots:
     void skipTaskbar();
     void skipPager();
     void sticky();
-    void removeWindowBorder();
     void setCustomIcon(QString path);
     void close(); // close the docked window
 
@@ -93,7 +93,7 @@ signals:
 private:
     void minimizeEvent();
     void destroyEvent();
-    void propertyChangeEvent(Atom property);
+    bool propertyChangeEvent(Atom property);
     void obscureEvent();
     void focusLostEvent();
     void readDockedAppName();
@@ -114,6 +114,8 @@ private:
     bool m_iconifyObscure;
     bool m_iconifyFocusLost;
     int m_balloonTimeout;
+
+    QX11EmbedContainer *m_container;
 
     XSizeHints m_sizeHint; // SizeHint of m_window
     Window m_window; // The window that is associated with the tray icon.

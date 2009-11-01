@@ -109,7 +109,6 @@ void TrayItemManager::processCommand(const QStringList &args) {
     QString windowName;
     TrayItemSettings settings;
     settings.balloonTimeout = 4000;
-    settings.borderless = false;
     settings.iconify = true;
     settings.skipTaskbar = false;
     settings.skipPager = false;
@@ -142,9 +141,6 @@ void TrayItemManager::processCommand(const QStringList &args) {
                 return;
             case 'b':
                 checkNormality = false;
-                break;
-            case 'c':
-                settings.borderless = true;
                 break;
             case 'd':
                 maxTime = atoi(optarg);
@@ -255,9 +251,6 @@ void TrayItemManager::dockWindow(Window window, TrayItemSettings settings) {
         ti->setCustomIcon(settings.customIcon);
     }
     ti->setBalloonTimeout(settings.balloonTimeout);
-    if (settings.borderless) {
-        ti->removeWindowBorder();
-    }
     ti->setSticky(settings.sticky);
     ti->setSkipPager(settings.skipPager);
     ti->setSkipTaskbar(settings.skipTaskbar);
