@@ -23,6 +23,7 @@
 #include <QImageReader>
 #include <QMessageBox>
 #include <QPixmap>
+#include <QRect>
 #include <QStringList>
 #include <QX11Info>
 
@@ -123,8 +124,13 @@ TrayItem::~TrayItem() {
     // Only the main menu needs to be deleted. The rest of the menus and actions
     // are children of this menu and Qt will delete all children.
     delete m_contextMenu;
+
+    QRect geo = m_container->geometry();
     m_container->discardClient();
     delete m_container;
+    if (m_window) {
+        XMoveResizeWindow(QX11Info::display(), m_window, geo.x(), geo.y(), (unsigned int)geo.width(), (unsigned int)geo.height());
+    }
 }
 
 Window TrayItem::dockedWindow() {
