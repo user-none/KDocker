@@ -41,6 +41,7 @@ struct TrayItemSettings {
     bool sticky;
     bool iconifyObscure;
     bool iconifyFocusLost;
+    bool iconifyOnClose;
 };
 
 class TrayItem : public QSystemTrayIcon {
@@ -73,6 +74,7 @@ public slots:
     void setIconifyMinimized(bool value);
     void setIconifyObscure(bool value);
     void setIconifyFocusLost(bool value);
+    void setIconifyOnClose(bool value);
     void setBalloonTimeout(int value);
     void setBalloonTimeout(bool value);
 
@@ -111,6 +113,7 @@ private:
     bool m_iconifyMinimized;
     bool m_iconifyObscure;
     bool m_iconifyFocusLost;
+    bool m_iconifyOnClose;
     int m_balloonTimeout;
 
     QX11EmbedContainer *m_container;
@@ -129,6 +132,7 @@ private:
     QAction *m_actionIconifyMinimized;
     QAction *m_actionIconifyObscure;
     QAction *m_actionIconifyFocusLost;
+    QAction *m_actionIconifyOnClose;
     QAction *m_actionBalloonTitleChanges;
     QAction *m_actionToggle;
 

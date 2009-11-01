@@ -115,6 +115,7 @@ void TrayItemManager::processCommand(const QStringList &args) {
     settings.sticky = false;
     settings.iconifyObscure = false;
     settings.iconifyFocusLost = false;
+    settings.iconifyOnClose = true;
 
     // Turn the QStringList of arguments into something getopt can use.
     QList<QByteArray> bargs;
@@ -141,6 +142,9 @@ void TrayItemManager::processCommand(const QStringList &args) {
                 return;
             case 'b':
                 checkNormality = false;
+                break;
+            case 'c':
+                settings.iconifyOnClose = false;
                 break;
             case 'd':
                 maxTime = atoi(optarg);
@@ -256,6 +260,7 @@ void TrayItemManager::dockWindow(Window window, TrayItemSettings settings) {
     ti->setSkipTaskbar(settings.skipTaskbar);
     ti->setIconifyObscure(settings.iconifyObscure);
     ti->setIconifyFocusLost(settings.iconifyFocusLost);
+    ti->setIconifyOnClose(settings.iconifyOnClose);
     connect(ti, SIGNAL(selectAnother()), this, SLOT(selectAndIconify()));
     connect(ti, SIGNAL(dead(TrayItem*)), this, SLOT(remove(TrayItem*)));
     connect(ti, SIGNAL(undock(TrayItem*)), this, SLOT(undock(TrayItem*)));

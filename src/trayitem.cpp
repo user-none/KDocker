@@ -25,7 +25,6 @@
 #include <QPixmap>
 #include <QStringList>
 #include <QX11Info>
-#include <QDebug>
 
 #include "constants.h"
 #include "trayitem.h"
@@ -44,6 +43,7 @@ TrayItem::TrayItem(Window window, QObject *parent) : QSystemTrayIcon(parent) {
     m_iconifyMinimized = true;
     m_iconifyObscure = false;
     m_iconifyFocusLost = false;
+    m_iconifyOnClose = true;
     m_balloonTimeout = 4000;
     m_dockedAppName = "";
     m_window = window;
@@ -131,8 +131,12 @@ Window TrayItem::dockedWindow() {
 }
 
 bool TrayItem::x11EventFilter(XEvent *ev) {
-    if (ev->type == ClientMessage && (ulong)ev->xclient.data.l[0] == XInternAtom(QX11Info::display(), "WM_DELETE_WINDOW", False)) {
-        iconifyWindow();
+    if (ev->type == ClientMessage && (ulong) ev->xclient.data.l[0] == XInternAtom(QX11Info::display(), "WM_DELETE_WINDOW", False)) {
+        if (m_iconifyOnClose) {
+            iconifyWindow();
+        } else {
+            close();
+        }
         return true;
     }
 
@@ -159,7 +163,6 @@ bool TrayItem::x11EventFilter(XEvent *ev) {
 void TrayItem::restoreWindow() {
     skip_NET_WM_STATE("_NET_WM_STATE_SKIP_TASKBAR", false);
     m_container->show();
-
 
     Display *display = QX11Info::display();
     Window root = QX11Info::appRootWindow();
@@ -278,6 +281,11 @@ void TrayItem::setIconifyFocusLost(bool value) {
     m_iconifyFocusLost = value;
     m_actionIconifyFocusLost->setChecked(value);
     focusLostEvent();
+}
+
+void TrayItem::setIconifyOnClose(bool value) {
+    m_iconifyOnClose = value;
+    m_actionIconifyOnClose->setChecked(value);
 }
 
 void TrayItem::setBalloonTimeout(int value) {
@@ -497,6 +505,11 @@ void TrayItem::createContextMenu() {
     m_actionIconifyFocusLost->setChecked(m_iconifyFocusLost);
     connect(m_actionIconifyFocusLost, SIGNAL(toggled(bool)), this, SLOT(setIconifyFocusLost(bool)));
     m_optionsMenu->addAction(m_actionIconifyFocusLost);
+    m_actionIconifyOnClose = new QAction(tr("Iconify on close"), m_optionsMenu);
+    m_actionIconifyOnClose->setCheckable(true);
+    m_actionIconifyOnClose->setChecked(m_iconifyOnClose);
+    connect(m_actionIconifyOnClose, SIGNAL(toggled(bool)), this, SLOT(setIconifyOnClose(bool)));
+    m_optionsMenu->addAction(m_actionIconifyOnClose);
     m_actionBalloonTitleChanges = new QAction(tr("Balloon title changes"), m_optionsMenu);
     m_actionBalloonTitleChanges->setCheckable(true);
     m_actionBalloonTitleChanges->setChecked(m_balloonTimeout ? true : false);
