@@ -84,9 +84,11 @@ void KDocker::run() {
 }
 
 void KDocker::handleMessage(const QString &args) {
-    if (m_trayItemManager) {
-        m_trayItemManager->processCommand(args.split("\n"));
+    if (!m_trayItemManager) {
+        m_trayItemManager = TrayItemManager::instance();
     }
+
+    m_trayItemManager->processCommand(args.split("\n"));
 }
 
 /*

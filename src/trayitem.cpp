@@ -65,14 +65,15 @@ TrayItem::TrayItem(Window window, QObject *parent) : QSystemTrayIcon(parent) {
     unsigned long wm_bytes_after;
 
     // Get the window size info.
-    XGetWMNormalHints(display, window, &m_sizeHint, &dummy);
+    XGetWMNormalHints(display, m_window, &m_sizeHint, &dummy);
     XGetGeometry(display, m_window, &root, &x, &y, &width, &height, &border, &depth);
     // Get the window decoration info.
     XGetWindowProperty(display, m_window, wm_hints_atom, 0, sizeof (MotifWmHints) / sizeof (long), false, AnyPropertyType, &wm_type, &wm_format, &wm_nitems, &wm_bytes_after, &wm_data);
 
     // Create the container window and place the selected window into it.
+    QX11EmbedContainer();
     m_container = new QX11EmbedContainer();
-    m_container->embedClient(window);
+    m_container->embedClient(m_window);
     m_container->show();
 
     // Allows events from m_container to be forwarded to the x11EventFilter.
@@ -131,17 +132,17 @@ Window TrayItem::dockedWindow() {
 }
 
 bool TrayItem::x11EventFilter(XEvent *ev) {
-    if (ev->type == ClientMessage && (ulong) ev->xclient.data.l[0] == XInternAtom(QX11Info::display(), "WM_DELETE_WINDOW", False)) {
-        if (m_iconifyOnClose) {
-            iconifyWindow();
-        } else {
-            close();
-        }
-        return true;
-    }
-
     XAnyEvent *event = (XAnyEvent *) ev;
     if (event->window == m_container->winId()) {
+        if (ev->type == ClientMessage && (ulong) ev->xclient.data.l[0] == XInternAtom(QX11Info::display(), "WM_DELETE_WINDOW", False)) {
+            if (m_iconifyOnClose) {
+                iconifyWindow();
+            } else {
+                close();
+            }
+            return true;
+        }
+
         if (event->type == DestroyNotify) {
             destroyEvent();
             return true;
