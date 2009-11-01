@@ -104,8 +104,6 @@ private:
     QIcon createIcon(Window window);
     bool isBadWindow();
 
-    bool m_iconified;
-
     bool m_customIcon;
     bool m_skipTaskbar;
     bool m_skipPager;
