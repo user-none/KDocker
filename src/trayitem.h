@@ -27,10 +27,11 @@
 #include <QObject>
 #include <QString>
 #include <QSystemTrayIcon>
-#include <QX11EmbedContainer>
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+
+#include "embedcontainer.h"
 
 struct TrayItemSettings {
     QString customIcon;
@@ -48,11 +49,11 @@ class TrayItem : public QSystemTrayIcon {
     Q_OBJECT
 
 public:
-    TrayItem(Window window, QObject *parent = 0);
+    TrayItem(Window window);
     ~TrayItem();
 
     Window containerWindow();
-    Window dockedWindow();
+    Window embedWindow();
 
     // Pass on all events through this interface
     bool x11EventFilter(XEvent * event);
@@ -85,6 +86,7 @@ private slots:
     void doSelectAnother();
     void doUndock();
     void doUndockAll();
+    void destroyEvent();
 
 signals:
     void selectAnother();
@@ -94,8 +96,8 @@ signals:
 
 private:
     void minimizeEvent();
-    void destroyEvent();
     bool propertyChangeEvent(Atom property);
+    bool updateEmbedProperty(Atom property);
     void obscureEvent();
     void focusLostEvent();
     void readDockedAppName();
@@ -116,7 +118,7 @@ private:
     bool m_iconifyOnClose;
     int m_balloonTimeout;
 
-    QX11EmbedContainer *m_container;
+    EmbedContainer *m_container;
 
     XSizeHints m_sizeHint; // SizeHint of m_window
     Window m_window; // The window that is associated with the tray icon.

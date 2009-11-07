@@ -38,8 +38,6 @@ class TrayItemManager : public QObject {
     Q_OBJECT
 
 public:
-    static TrayItemManager *instance();
-
     TrayItemManager();
     ~TrayItemManager();
     bool x11EventFilter(XEvent *ev);
@@ -62,8 +60,6 @@ private:
 
     Scanner *m_scanner;
     QList<TrayItem*> m_trayItems;
-
-    static TrayItemManager *g_trayItemManager;
 };
 
 #endif	/* _TRAYITEMMANAGER_H */

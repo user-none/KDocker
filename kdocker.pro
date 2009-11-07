@@ -44,13 +44,17 @@ target.path = /usr/local/bin
 INSTALLS += target icons desktop completion translations
 
 # Input
-HEADERS += src/constants.h \
+HEADERS += src/application.h \
+           src/constants.h \
+           src/embedcontainer.h \
            src/kdocker.h \
            src/scanner.h \
            src/trayitem.h \
            src/trayitemmanager.h \
            src/util.h
-SOURCES += src/kdocker.cpp \
+SOURCES += src/application.cpp \
+           src/embedcontainer.cpp \
+           src/kdocker.cpp \
            src/main.cpp \
            src/scanner.cpp \
            src/trayitem.cpp \

@@ -19,10 +19,8 @@
  */
 
 #include <QCoreApplication>
-#include <QLocale>
 #include <QMessageBox>
 #include <QTextStream>
-#include <QTranslator>
 #include <QX11Info>
 
 #include "constants.h"
@@ -35,18 +33,8 @@
 
 #include <X11/Xlib.h>
 
-KDocker::KDocker(const QString &appId, int &argc, char **argv) : QtSingleApplication(appId, argc, argv) {
-    m_trayItemManager = 0;
-
-    setOrganizationName(ORG_NAME);
-    setOrganizationDomain(DOM_NAME);
-    setApplicationName(APP_NAME);
-    setApplicationVersion(APP_VERSION);
-    setQuitOnLastWindowClosed(false);
-
-    setupTranslator();
-
-    preProcessCommand(argc, argv); // this can exit the application
+KDocker::KDocker() {
+    m_trayItemManager = new TrayItemManager();
 }
 
 KDocker::~KDocker() {
@@ -54,8 +42,6 @@ KDocker::~KDocker() {
         delete m_trayItemManager;
         m_trayItemManager = 0;
     }
-    delete m_translator;
-    m_translator = 0;
 }
 
 void KDocker::undockAll() {
@@ -72,23 +58,15 @@ bool KDocker::x11EventFilter(XEvent *ev) {
 }
 
 void KDocker::run() {
-    QStringList args = QCoreApplication::arguments();
-
-    if (sendMessage(args.join("\n"))) {
-        ::exit(0);
+    if (m_trayItemManager) {
+        m_trayItemManager->processCommand(QCoreApplication::arguments());
     }
-
-    connect(this, SIGNAL(messageReceived(const QString&)), this, SLOT(handleMessage(const QString&)));
-    m_trayItemManager = TrayItemManager::instance();
-    m_trayItemManager->processCommand(args);
 }
 
 void KDocker::handleMessage(const QString &args) {
-    if (!m_trayItemManager) {
-        m_trayItemManager = TrayItemManager::instance();
+    if (m_trayItemManager) {
+        m_trayItemManager->processCommand(args.split("\n"));
     }
-
-    m_trayItemManager->processCommand(args.split("\n"));
 }
 
 /*
@@ -127,19 +105,6 @@ void KDocker::preProcessCommand(int argc, char **argv) {
     }
 }
 
-void KDocker::setupTranslator() {
-    m_translator = new QTranslator();
-    QString locale = QString("kdocker_%1").arg(QLocale::system().name());
-
-    if (!m_translator->load(locale, TRANSLATIONS_PATH)) {
-        if (!m_translator->load(locale, "./build/i18n/")) {
-            m_translator->load(locale, "./i18n/");
-        }
-    }
-
-    installTranslator(m_translator);
-}
-
 void KDocker::printAbout() {
     QTextStream out(stdout);
 
@@ -149,7 +114,7 @@ void KDocker::printAbout() {
 void KDocker::printHelp() {
     QTextStream out(stdout);
 
-    out << tr("Usage: %1 [options] [command] -- [command options]").arg(applicationName().toLower()) << endl;
+    out << tr("Usage: %1 [options] [command] -- [command options]").arg(qApp->applicationName().toLower()) << endl;
     out << tr("Docks any application into the system tray") << endl;
     out << endl;
     out << tr("Command") << endl;
@@ -183,12 +148,12 @@ void KDocker::printHelp() {
 
 void KDocker::printUsage() {
     QTextStream out(stdout);
-    out << tr("Usage: %1 [options] command").arg(applicationName().toLower()) << endl;
-    out << tr("Try `%1 -h' for more information").arg(applicationName().toLower()) << endl;
+    out << tr("Usage: %1 [options] command").arg(qApp->applicationName().toLower()) << endl;
+    out << tr("Try `%1 -h' for more information").arg(qApp->applicationName().toLower()) << endl;
 }
 
 void KDocker::printVersion() {
     QTextStream out(stdout);
-    out << tr("%1 version: %2").arg(applicationName()).arg(applicationVersion()) << endl;
+    out << tr("%1 version: %2").arg(qApp->applicationName()).arg(qApp->applicationVersion()) << endl;
     out << tr("Using Qt version: %1").arg(qVersion()) << endl;
 }

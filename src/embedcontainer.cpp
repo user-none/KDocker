@@ -1,6 +1,5 @@
 /*
  *  Copyright (C) 2009 John Schember <john@nachtimwald.com>
- *  Copyright (C) 2004 Girish Ramakrishnan All Rights Reserved.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,41 +17,14 @@
  * USA.
  */
 
-#ifndef _KDOCKER_H
-#define	_KDOCKER_H
+#include <QCloseEvent>
 
-#include <QStringList>
-#include <QObject>
+#include "embedcontainer.h"
 
-#include "trayitemmanager.h"
-
-class KDocker : public QObject {
-    Q_OBJECT
-
-public:
-    KDocker();
-    ~KDocker();
-
-    void undockAll();
-
-    void preProcessCommand(int argc, char **argv);
-    bool x11EventFilter(XEvent *ev);
-
-public slots:
-    void run();
-
-private slots:
-    void handleMessage(const QString &args);
-
-private:
-    void printAbout();
-    void printHelp();
-    void printUsage();
-    void printVersion();
-
-    TrayItemManager *m_trayItemManager;
-    //QTranslator *m_translator;
-
-};
-
-#endif	/* _KDOCKER_H */
+void EmbedContainer::closeEvent(QCloseEvent *event) {
+    if (clientWinId()) {
+        event->ignore();
+    } else {
+        event->accept();
+    }
+}

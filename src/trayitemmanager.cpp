@@ -35,17 +35,8 @@
 #include <stdlib.h>
 #include <sys/types.h>
 
-TrayItemManager *TrayItemManager::g_trayItemManager = 0;
-
 int ignoreXErrors(Display *, XErrorEvent *) {
     return 0;
-}
-
-TrayItemManager *TrayItemManager::instance() {
-    if (!g_trayItemManager) {
-        g_trayItemManager = new TrayItemManager();
-    }
-    return g_trayItemManager;
 }
 
 TrayItemManager::TrayItemManager() {
@@ -62,41 +53,26 @@ TrayItemManager::~TrayItemManager() {
     while (!m_trayItems.isEmpty()) {
         TrayItem *t = m_trayItems.takeFirst();
         delete t;
-        t = 0;
     }
     delete m_scanner;
 }
 
 /*
  * The X11 Event Filter. Pass on events to the TrayItems that we created.
- * The logic and the code below is a bit fuzzy.
- *  a) Events about windows that are being docked need to be processed only by
- *     the TrayItem object that is docking that window.
- *  b) When a TrayItem manages to find the window that is was looking for, we
- *     need not process the event further.
  */
 bool TrayItemManager::x11EventFilter(XEvent *ev) {
-    XAnyEvent *event = (XAnyEvent *) ev;
     QListIterator<TrayItem*> ti(m_trayItems);
-    bool ret = false;
 
-    // We pass on the event to all tray labels
+    // We pass on the event to the tray item with the associated window.
     TrayItem *t;
     while (ti.hasNext()) {
         t = ti.next();
-        Window w = t->dockedWindow();
-        bool res = t->x11EventFilter(ev);
-        if (w == event->window) {
-            return res;
-        }
-        if (w != None) {
-            ret |= res;
-        } else if (res) {
-            return true;
+        if (ev->xclient.window == t->containerWindow() || ev->xclient.window == t->embedWindow()) {
+            return t->x11EventFilter(ev);
         }
     }
 
-    return ret;
+    return false;
 }
 
 void TrayItemManager::processCommand(const QStringList &args) {
@@ -237,7 +213,7 @@ QList<Window> TrayItemManager::dockedWindows() {
 
     QListIterator<TrayItem*> ti(m_trayItems);
     while (ti.hasNext()) {
-        windows.append(ti.next()->dockedWindow());
+        windows.append(ti.next()->containerWindow());
     }
 
     return windows;
@@ -251,6 +227,7 @@ void TrayItemManager::dockWindow(Window window, TrayItemSettings settings) {
     }
 
     TrayItem *ti = new TrayItem(window);
+
     if (!settings.customIcon.isEmpty()) {
         ti->setCustomIcon(settings.customIcon);
     }
@@ -261,11 +238,14 @@ void TrayItemManager::dockWindow(Window window, TrayItemSettings settings) {
     ti->setIconifyObscure(settings.iconifyObscure);
     ti->setIconifyFocusLost(settings.iconifyFocusLost);
     ti->setIconifyOnClose(settings.iconifyOnClose);
+
     connect(ti, SIGNAL(selectAnother()), this, SLOT(selectAndIconify()));
     connect(ti, SIGNAL(dead(TrayItem*)), this, SLOT(remove(TrayItem*)));
     connect(ti, SIGNAL(undock(TrayItem*)), this, SLOT(undock(TrayItem*)));
     connect(ti, SIGNAL(undockAll()), this, SLOT(undockAll()));
+
     ti->show();
+
     if (settings.iconify) {
         ti->iconifyWindow();
     } else {
@@ -273,6 +253,7 @@ void TrayItemManager::dockWindow(Window window, TrayItemSettings settings) {
             ti->skipTaskbar();
         }
     }
+
     m_trayItems.append(ti);
 }
 
@@ -305,8 +286,7 @@ Window TrayItemManager::userSelectWindow(bool checkNormality) {
 
 void TrayItemManager::remove(TrayItem *trayItem) {
     m_trayItems.removeAll(trayItem);
-    delete trayItem;
-    trayItem = 0;
+    trayItem->deleteLater();
 
     checkCount();
 }
@@ -326,22 +306,26 @@ void TrayItemManager::undockAll() {
 }
 
 void TrayItemManager::selectAndIconify() {
-    Window window = userSelectWindow();
+    Window window = userSelectWindow(true);
 
     if (window) {
-        TrayItem *ti = new TrayItem(window);
-        connect(ti, SIGNAL(selectAnother()), this, SLOT(selectAndIconify()));
-        connect(ti, SIGNAL(undock(TrayItem*)), this, SLOT(undock(TrayItem*)));
-        connect(ti, SIGNAL(undockAll()), this, SLOT(undockAll()));
-        ti->show();
-        ti->iconifyWindow();
-        m_trayItems.append(ti);
+        TrayItemSettings settings;
+        settings.balloonTimeout = 4000;
+        settings.iconify = true;
+        settings.skipTaskbar = false;
+        settings.skipPager = false;
+        settings.sticky = false;
+        settings.iconifyObscure = false;
+        settings.iconifyFocusLost = false;
+        settings.iconifyOnClose = true;
+
+        dockWindow(window, settings);
     }
 }
 
 void TrayItemManager::checkCount() {
     if (m_trayItems.isEmpty() && !m_scanner->isRunning()) {
-        ::exit(0);
+        qApp->quit();
     }
 }
 

@@ -1,6 +1,5 @@
 /*
  *  Copyright (C) 2009 John Schember <john@nachtimwald.com>
- *  Copyright (C) 2004 Girish Ramakrishnan All Rights Reserved.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,41 +17,24 @@
  * USA.
  */
 
-#ifndef _KDOCKER_H
-#define	_KDOCKER_H
+#ifndef _APPLICATION_H
+#define	_APPLICATION_H
 
-#include <QStringList>
-#include <QObject>
+#include <QtSingleApplication>
 
-#include "trayitemmanager.h"
+#include "kdocker.h"
 
-class KDocker : public QObject {
+class Application : public QtSingleApplication {
     Q_OBJECT
 
 public:
-    KDocker();
-    ~KDocker();
+    Application(const QString &appId, int &argc, char **argv);
 
-    void undockAll();
-
-    void preProcessCommand(int argc, char **argv);
-    bool x11EventFilter(XEvent *ev);
-
-public slots:
-    void run();
-
-private slots:
-    void handleMessage(const QString &args);
+    void setKDockerInstance(KDocker *kdocker);
+    bool x11EventFilter(XEvent *event);
 
 private:
-    void printAbout();
-    void printHelp();
-    void printUsage();
-    void printVersion();
-
-    TrayItemManager *m_trayItemManager;
-    //QTranslator *m_translator;
-
+    KDocker *m_kdocker;
 };
 
-#endif	/* _KDOCKER_H */
+#endif	/* _APPLICATION_H */

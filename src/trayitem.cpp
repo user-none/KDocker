@@ -36,7 +36,7 @@
 
 #include "mwmutil.h"
 
-TrayItem::TrayItem(Window window, QObject *parent) : QSystemTrayIcon(parent) {
+TrayItem::TrayItem(Window window) {
     m_customIcon = false;
     m_skipTaskbar = false;
     m_skipPager = false;
@@ -71,20 +71,25 @@ TrayItem::TrayItem(Window window, QObject *parent) : QSystemTrayIcon(parent) {
     // Get the window decoration info.
     XGetWindowProperty(display, m_window, wm_hints_atom, 0, sizeof (MotifWmHints) / sizeof (long), false, AnyPropertyType, &wm_type, &wm_format, &wm_nitems, &wm_bytes_after, &wm_data);
 
+    // There is a conflict between QX11EmbedContainer and QSystemTrayIcon with
+    // regard to registering the X11EventFilter. This prevents a segfault.
+    EmbedContainer();
     // Create the container window and place the selected window into it.
-    QX11EmbedContainer();
-    m_container = new QX11EmbedContainer();
+    m_container = new EmbedContainer();
     m_container->embedClient(m_window);
     m_container->show();
 
-    // Allows events from m_container to be forwarded to the x11EventFilter.
+    // Allows events from m_container and m_window to be forwarded to the
+    // x11EventFilter. Only event types that are subscribed to will be sent on.
     subscribe(display, m_container->winId(), StructureNotifyMask | PropertyChangeMask | VisibilityChangeMask | FocusChangeMask, true);
+    subscribe(display, m_window, PropertyChangeMask, true);
+
     // store the desktop on which the window is being shown
-    getCardinalProperty(display, m_container->winId(), XInternAtom(display, "_NET_WM_DESKTOP", True), &m_desktop);
+    getCardinalProperty(display, m_container->winId(), XInternAtom(display, "_NET_WM_DESKTOP", true), &m_desktop);
 
     // Do not close the window when the X button is pressed. This only works
     // Because we have embedded into our own window.
-    Atom wm_delete = XInternAtom(display, "WM_DELETE_WINDOW", False);
+    Atom wm_delete = XInternAtom(display, "WM_DELETE_WINDOW", false);
     XSetWMProtocols(display, m_container->winId(), &wm_delete, 1);
 
     // Set the containers size hints to that of window.
@@ -118,6 +123,7 @@ TrayItem::TrayItem(Window window, QObject *parent) : QSystemTrayIcon(parent) {
     updateToggleAction();
 
     connect(this, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(trayActivated(QSystemTrayIcon::ActivationReason)));
+    //connect(m_container, SIGNAL(clientClosed()), this, SLOT(destroyEvent()));
 }
 
 TrayItem::~TrayItem() {
@@ -125,28 +131,36 @@ TrayItem::~TrayItem() {
     // are children of this menu and Qt will delete all children.
     delete m_contextMenu;
 
+    // Move and resize the embedded window if it is still open to the size and
+    // position of the container.
     QRect geo = m_container->geometry();
     m_container->discardClient();
     delete m_container;
     if (m_window) {
-        XMoveResizeWindow(QX11Info::display(), m_window, geo.x(), geo.y(), (unsigned int)geo.width(), (unsigned int)geo.height());
+        XMoveResizeWindow(QX11Info::display(), m_window, geo.x(), geo.y(), (unsigned int) geo.width(), (unsigned int) geo.height());
     }
 }
 
-Window TrayItem::dockedWindow() {
+Window TrayItem::containerWindow() {
     return m_container->winId();
+}
+
+Window TrayItem::embedWindow() {
+    return m_window;
 }
 
 bool TrayItem::x11EventFilter(XEvent *ev) {
     XAnyEvent *event = (XAnyEvent *) ev;
     if (event->window == m_container->winId()) {
-        if (ev->type == ClientMessage && (ulong) ev->xclient.data.l[0] == XInternAtom(QX11Info::display(), "WM_DELETE_WINDOW", False)) {
-            if (m_iconifyOnClose) {
-                iconifyWindow();
-            } else {
-                close();
+        if (ev->type == ClientMessage) {
+            if ((ulong) ev->xclient.data.l[0] == XInternAtom(QX11Info::display(), "WM_DELETE_WINDOW", false)) {
+                if (m_iconifyOnClose) {
+                    iconifyWindow();
+                    return true;
+                } else {
+                    return false;
+                }
             }
-            return true;
         }
 
         if (event->type == DestroyNotify) {
@@ -162,6 +176,10 @@ bool TrayItem::x11EventFilter(XEvent *ev) {
         } else if (event->type == FocusOut) {
             focusLostEvent();
             return true;
+        }
+    } else if (event->window == m_window) {
+        if (event->type == PropertyNotify) {
+            return updateEmbedProperty(((XPropertyEvent *) event)->atom);
         }
     }
     return false;
@@ -225,12 +243,12 @@ void TrayItem::setCustomIcon(QString path) {
 }
 
 void TrayItem::close() {
-    m_container->discardClient();
     Display *display = QX11Info::display();
     long l[5] = {0, 0, 0, 0, 0};
     restoreWindow();
+    m_container->discardClient();
     sendMessage(display, QX11Info::appRootWindow(), m_window, "_NET_CLOSE_WINDOW", 32, SubstructureNotifyMask | SubstructureRedirectMask, l, sizeof (l));
-    destroyEvent();
+    emit(dead(this));
 }
 
 void TrayItem::selectCustomIcon(bool value) {
@@ -364,18 +382,10 @@ void TrayItem::destroyEvent() {
 
 bool TrayItem::propertyChangeEvent(Atom property) {
     Display *display = QX11Info::display();
-    static Atom WM_NAME = XInternAtom(display, "WM_NAME", True);
-    static Atom WM_ICON = XInternAtom(display, "WM_ICON", True);
     static Atom WM_STATE = XInternAtom(display, "WM_STATE", True);
     static Atom _NET_WM_DESKTOP = XInternAtom(display, "_NET_WM_DESKTOP", True);
 
-    if (property == WM_NAME) {
-        updateTitle();
-        return true;
-    } else if (property == WM_ICON) {
-        updateIcon();
-        return true;
-    } else if (property == _NET_WM_DESKTOP) {
+    if (property == _NET_WM_DESKTOP) {
         getCardinalProperty(display, m_container->winId(), _NET_WM_DESKTOP, &m_desktop);
         return true;
     } else if (property == WM_STATE) {
@@ -389,6 +399,21 @@ bool TrayItem::propertyChangeEvent(Atom property) {
             XFree(data);
             return true;
         }
+    }
+    return false;
+}
+
+bool TrayItem::updateEmbedProperty(Atom property) {
+    Display *display = QX11Info::display();
+    static Atom WM_NAME = XInternAtom(display, "WM_NAME", True);
+    static Atom WM_ICON = XInternAtom(display, "WM_ICON", True);
+
+    if (property == WM_NAME) {
+        updateTitle();
+        return true;
+    } else if (property == WM_ICON) {
+        updateIcon();
+        return true;
     }
     return false;
 }
@@ -479,51 +504,60 @@ void TrayItem::createContextMenu() {
 
     // Options menu
     m_optionsMenu = new QMenu(tr("Options"), m_contextMenu);
+
     m_actionSetIcon = new QAction(tr("Set icon"), m_optionsMenu);
     connect(m_actionSetIcon, SIGNAL(triggered(bool)), this, SLOT(selectCustomIcon(bool)));
     m_optionsMenu->addAction(m_actionSetIcon);
+
     m_actionSkipTaskbar = new QAction(tr("Skip taskbar"), m_optionsMenu);
     m_actionSkipTaskbar->setCheckable(true);
     m_actionSkipTaskbar->setChecked(m_skipTaskbar);
     connect(m_actionSkipTaskbar, SIGNAL(triggered(bool)), this, SLOT(setSkipTaskbar(bool)));
     m_optionsMenu->addAction(m_actionSkipTaskbar);
+
     m_actionSkipPager = new QAction(tr("Skip pager"), m_optionsMenu);
     m_actionSkipPager->setCheckable(true);
     m_actionSkipPager->setChecked(m_skipPager);
     connect(m_actionSkipPager, SIGNAL(triggered(bool)), this, SLOT(setSkipPager(bool)));
     m_optionsMenu->addAction(m_actionSkipPager);
+
     m_actionSticky = new QAction(tr("Sticky"), m_optionsMenu);
     m_actionSticky->setCheckable(true);
     m_actionSticky->setChecked(m_sticky);
     connect(m_actionSticky, SIGNAL(triggered(bool)), this, SLOT(setSticky(bool)));
     m_optionsMenu->addAction(m_actionSticky);
+
     m_actionIconifyMinimized = new QAction(tr("Iconify when minimized"), m_optionsMenu);
     m_actionIconifyMinimized->setCheckable(true);
     m_actionIconifyMinimized->setChecked(m_iconifyMinimized);
     connect(m_actionIconifyMinimized, SIGNAL(triggered(bool)), this, SLOT(setIconifyMinimized(bool)));
     m_optionsMenu->addAction(m_actionIconifyMinimized);
+
     m_actionIconifyObscure = new QAction(tr("Iconify when obscured"), m_optionsMenu);
     m_actionIconifyObscure->setCheckable(true);
     m_actionIconifyObscure->setChecked(m_iconifyObscure);
     connect(m_actionIconifyObscure, SIGNAL(triggered(bool)), this, SLOT(setIconifyObscure(bool)));
     m_optionsMenu->addAction(m_actionIconifyObscure);
+
     m_actionIconifyFocusLost = new QAction(tr("Iconify when focus lost"), m_optionsMenu);
     m_actionIconifyFocusLost->setCheckable(true);
     m_actionIconifyFocusLost->setChecked(m_iconifyFocusLost);
     connect(m_actionIconifyFocusLost, SIGNAL(toggled(bool)), this, SLOT(setIconifyFocusLost(bool)));
     m_optionsMenu->addAction(m_actionIconifyFocusLost);
+
     m_actionIconifyOnClose = new QAction(tr("Iconify on close"), m_optionsMenu);
     m_actionIconifyOnClose->setCheckable(true);
     m_actionIconifyOnClose->setChecked(m_iconifyOnClose);
     connect(m_actionIconifyOnClose, SIGNAL(toggled(bool)), this, SLOT(setIconifyOnClose(bool)));
     m_optionsMenu->addAction(m_actionIconifyOnClose);
+
     m_actionBalloonTitleChanges = new QAction(tr("Balloon title changes"), m_optionsMenu);
     m_actionBalloonTitleChanges->setCheckable(true);
     m_actionBalloonTitleChanges->setChecked(m_balloonTimeout ? true : false);
     connect(m_actionBalloonTitleChanges, SIGNAL(triggered(bool)), this, SLOT(setBalloonTimeout(bool)));
     m_optionsMenu->addAction(m_actionBalloonTitleChanges);
-    m_contextMenu->addMenu(m_optionsMenu);
 
+    m_contextMenu->addMenu(m_optionsMenu);
     m_contextMenu->addAction(QIcon(":/images/another.png"), tr("Dock Another"), this, SLOT(doSelectAnother()));
     m_contextMenu->addAction(tr("Undock All"), this, SLOT(doUndockAll()));
     m_contextMenu->addSeparator();
@@ -532,6 +566,7 @@ void TrayItem::createContextMenu() {
     m_contextMenu->addAction(m_actionToggle);
     m_contextMenu->addAction(tr("Undock"), this, SLOT(doUndock()));
     m_contextMenu->addAction(QIcon(":/images/close.png"), tr("Close"), this, SLOT(close()));
+
     setContextMenu(m_contextMenu);
 }
 
