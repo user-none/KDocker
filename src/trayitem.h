@@ -27,11 +27,10 @@
 #include <QObject>
 #include <QString>
 #include <QSystemTrayIcon>
+#include <QX11EmbedContainer>
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-
-#include "embedcontainer.h"
 
 struct TrayItemSettings {
     QString customIcon;
@@ -118,7 +117,7 @@ private:
     bool m_iconifyOnClose;
     int m_balloonTimeout;
 
-    EmbedContainer *m_container;
+    QX11EmbedContainer *m_container;
 
     XSizeHints m_sizeHint; // SizeHint of m_window
     Window m_window; // The window that is associated with the tray icon.

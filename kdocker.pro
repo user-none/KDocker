@@ -46,14 +46,12 @@ INSTALLS += target icons desktop completion translations
 # Input
 HEADERS += src/application.h \
            src/constants.h \
-           src/embedcontainer.h \
            src/kdocker.h \
            src/scanner.h \
            src/trayitem.h \
            src/trayitemmanager.h \
            src/util.h
 SOURCES += src/application.cpp \
-           src/embedcontainer.cpp \
            src/kdocker.cpp \
            src/main.cpp \
            src/scanner.cpp \

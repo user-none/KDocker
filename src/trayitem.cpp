@@ -73,9 +73,9 @@ TrayItem::TrayItem(Window window) {
 
     // There is a conflict between QX11EmbedContainer and QSystemTrayIcon with
     // regard to registering the X11EventFilter. This prevents a segfault.
-    EmbedContainer();
+    QX11EmbedContainer();
     // Create the container window and place the selected window into it.
-    m_container = new EmbedContainer();
+    m_container = new QX11EmbedContainer();
     m_container->embedClient(m_window);
     m_container->show();
 
