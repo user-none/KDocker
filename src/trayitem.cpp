@@ -156,10 +156,10 @@ bool TrayItem::x11EventFilter(XEvent *ev) {
             if ((ulong) ev->xclient.data.l[0] == XInternAtom(QX11Info::display(), "WM_DELETE_WINDOW", false)) {
                 if (m_iconifyOnClose) {
                     iconifyWindow();
-                    return true;
                 } else {
-                    return false;
+                    close();
                 }
+                return true;
             }
         }
 
@@ -244,11 +244,9 @@ void TrayItem::setCustomIcon(QString path) {
 
 void TrayItem::close() {
     Display *display = QX11Info::display();
-    long l[5] = {0, 0, 0, 0, 0};
+    long l[2] = {XInternAtom(QX11Info::display(), "WM_DELETE_WINDOW", false), CurrentTime};
     restoreWindow();
-    m_container->discardClient();
-    sendMessage(display, QX11Info::appRootWindow(), m_window, "_NET_CLOSE_WINDOW", 32, SubstructureNotifyMask | SubstructureRedirectMask, l, sizeof (l));
-    emit(dead(this));
+    sendMessage(display, m_window, m_window, "WM_PROTOCOLS", 32, NoEventMask, l, sizeof (l));
 }
 
 void TrayItem::selectCustomIcon(bool value) {
