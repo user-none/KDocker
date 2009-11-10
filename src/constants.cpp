@@ -17,22 +17,13 @@
  * USA.
  */
 
-#ifndef _CONSTANTS_H
-#define	_CONSTANTS_H
+#include "constants.h"
 
-#include <QObject>
-#include <QString>
+const QString Constants::ORG_NAME = "net.launchpad.kdocker";
+const QString Constants::DOM_NAME = "launchpad.net/kdocker";
+const QString Constants::APP_NAME = "KDocker";
+const QString Constants::APP_VERSION = "4.3";
 
-class Constants {
-public:
-    static const QString ORG_NAME;
-    static const QString DOM_NAME;
-    static const QString APP_NAME;
-    static const QString APP_VERSION;
+const char *Constants::OPTIONSTRING = "+abcd:fhi:lmn:op:qrstvuw:x:y";
 
-    static const char *OPTIONSTRING;
-
-    static const QString ABOUT_MESSAGE;
-};
-
-#endif	/* _CONSTANTS_H */
+const QString Constants::ABOUT_MESSAGE = QObject::tr("KDocker will help you dock any application into the system tray. This means you can dock openoffice, xmms, firefox, thunderbird, anything! Just point and click. Works for all NET WM compliant window managers - that includes KDE, GNOME, Xfce, Fluxbox and many more.\n\nCreated by %1. Updated and maintained by %2.").arg("Girish Ramakrishnan").arg("John Schember");

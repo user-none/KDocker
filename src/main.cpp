@@ -55,10 +55,10 @@ int main(int argc, char *argv[]) {
     }
     app.installTranslator(&translator);
 
-    app.setOrganizationName(ORG_NAME);
-    app.setOrganizationDomain(DOM_NAME);
-    app.setApplicationName(APP_NAME);
-    app.setApplicationVersion(APP_VERSION);
+    app.setOrganizationName(Constants::ORG_NAME);
+    app.setOrganizationDomain(Constants::DOM_NAME);
+    app.setApplicationName(Constants::APP_NAME);
+    app.setApplicationVersion(Constants::APP_VERSION);
     // Quiting will be handled by the TrayItemManager in the KDocker instance.
     // It will determine when there is nothing left running.
     app.setQuitOnLastWindowClosed(false);

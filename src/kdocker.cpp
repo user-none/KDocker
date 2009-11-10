@@ -75,7 +75,7 @@ void KDocker::handleMessage(const QString &args) {
 void KDocker::preProcessCommand(int argc, char **argv) {
     int option;
     optind = 0; // initialise the getopt static
-    while ((option = getopt(argc, argv, OPTIONSTRING)) != -1) {
+    while ((option = getopt(argc, argv, Constants::OPTIONSTRING)) != -1) {
         switch (option) {
             case '?':
                 printUsage();
@@ -104,7 +104,7 @@ void KDocker::preProcessCommand(int argc, char **argv) {
 void KDocker::printAbout() {
     QTextStream out(stdout);
 
-    out << ABOUT << endl;
+    out << Constants::ABOUT_MESSAGE << endl;
 }
 
 void KDocker::printHelp() {

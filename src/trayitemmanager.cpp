@@ -109,7 +109,7 @@ void TrayItemManager::processCommand(const QStringList &args) {
      * want them to print on the tty the instance was called from.
      */
     optind = 0; // initialise the getopt static
-    while ((option = getopt(argc, const_cast<char **> (argv), OPTIONSTRING)) != -1) {
+    while ((option = getopt(argc, const_cast<char **> (argv), Constants::OPTIONSTRING)) != -1) {
         switch (option) {
             case '?':
                 checkCount();
@@ -297,7 +297,7 @@ void TrayItemManager::about() {
     QMessageBox aboutBox;
     aboutBox.setIconPixmap(QPixmap(":/images/kdocker.png"));
     aboutBox.setWindowTitle(tr("About %1 - %2").arg(qApp->applicationName()).arg(qApp->applicationVersion()));
-    aboutBox.setText(ABOUT);
+    aboutBox.setText(Constants::ABOUT_MESSAGE);
     aboutBox.setInformativeText(tr("See %1 for more information.").arg("<a href=\"https://launchpad.net/kdocker\">https://launchpad.net/kdocker</a>"));
     aboutBox.setStandardButtons(QMessageBox::Ok);
     aboutBox.exec();

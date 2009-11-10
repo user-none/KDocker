@@ -52,6 +52,7 @@ HEADERS += src/application.h \
            src/trayitemmanager.h \
            src/util.h
 SOURCES += src/application.cpp \
+           src/constants.cpp \
            src/kdocker.cpp \
            src/main.cpp \
            src/scanner.cpp \
