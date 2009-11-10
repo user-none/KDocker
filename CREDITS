@@ -1,10 +1,16 @@
-KDocker code maintained and ported to Qt 4 by John Schember (john@nachtimwald.com)
-Original KDocker code by Girish Ramakrishnan. He is not an active member of the project.
+Code
+----
+Maintained by John Schember (john@nachtimwald.com)
+Originally created by Girish Ramakrishnan. He is not an active member of the project.
 
-The wonderful KDocker Icon is artwork of Marcel Dierkes (marcel dot dierkes at gmx dot de)
+
+Artwork
+-------
+KDocker Icon by Marcel Dierkes (marcel dot dierkes at gmx dot de)
+
 
 4.x Translations
-
+------------
 Italian - Alessio Cassibba (x-drum@zerodev.it)
 
 
