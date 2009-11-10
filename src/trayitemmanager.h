@@ -37,12 +37,14 @@ class Scanner;
 class TrayItemManager : public QObject {
     Q_OBJECT
 
+    // The Scanner needs to know which windows are docked.
+    friend class Scanner;
+
 public:
     TrayItemManager();
     ~TrayItemManager();
     bool x11EventFilter(XEvent *ev);
     void processCommand(const QStringList &args);
-    QList<Window> dockedWindows();
 
 public slots:
     void dockWindow(Window window, TrayItemSettings settings);
@@ -50,12 +52,14 @@ public slots:
     void remove(TrayItem *trayItem);
     void undock(TrayItem *trayItem);
     void undockAll();
+    void about();
 
 private slots:
     void selectAndIconify();
     void checkCount();
 
 private:
+    QList<Window> dockedWindows();
     bool isWindowDocked(Window window);
 
     Scanner *m_scanner;

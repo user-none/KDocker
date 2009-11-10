@@ -51,8 +51,6 @@ private:
     void printVersion();
 
     TrayItemManager *m_trayItemManager;
-    //QTranslator *m_translator;
-
 };
 
 #endif	/* _KDOCKER_H */

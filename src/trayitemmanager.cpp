@@ -20,9 +20,7 @@
 
 #include <QByteArray>
 #include <QCoreApplication>
-#include <QList>
 #include <QMessageBox>
-#include <QSystemTrayIcon>
 #include <QTextStream>
 #include <QX11Info>
 
@@ -208,17 +206,6 @@ void TrayItemManager::processCommand(const QStringList &args) {
     }
 }
 
-QList<Window> TrayItemManager::dockedWindows() {
-    QList<Window> windows;
-
-    QListIterator<TrayItem*> ti(m_trayItems);
-    while (ti.hasNext()) {
-        windows.append(ti.next()->containerWindow());
-    }
-
-    return windows;
-}
-
 void TrayItemManager::dockWindow(Window window, TrayItemSettings settings) {
     if (isWindowDocked(window)) {
         QMessageBox::information(0, qApp->applicationName(), tr("This window is already docked.\nClick on system tray icon to toggle docking."));
@@ -243,6 +230,7 @@ void TrayItemManager::dockWindow(Window window, TrayItemSettings settings) {
     connect(ti, SIGNAL(dead(TrayItem*)), this, SLOT(remove(TrayItem*)));
     connect(ti, SIGNAL(undock(TrayItem*)), this, SLOT(undock(TrayItem*)));
     connect(ti, SIGNAL(undockAll()), this, SLOT(undockAll()));
+    connect(ti, SIGNAL(about()), this, SLOT(about()));
 
     ti->show();
 
@@ -250,7 +238,7 @@ void TrayItemManager::dockWindow(Window window, TrayItemSettings settings) {
         ti->iconifyWindow();
     } else {
         if (settings.skipTaskbar) {
-            ti->skipTaskbar();
+            ti->doSkipTaskbar();
         }
     }
 
@@ -294,7 +282,7 @@ void TrayItemManager::remove(TrayItem *trayItem) {
 void TrayItemManager::undock(TrayItem *trayItem) {
     trayItem->restoreWindow();
     trayItem->setSkipTaskbar(false);
-    trayItem->skipTaskbar();
+    trayItem->doSkipTaskbar();
     remove(trayItem);
 }
 
@@ -303,6 +291,16 @@ void TrayItemManager::undockAll() {
     Q_FOREACH(TrayItem *ti, m_trayItems) {
         undock(ti);
     }
+}
+
+void TrayItemManager::about() {
+    QMessageBox aboutBox;
+    aboutBox.setIconPixmap(QPixmap(":/images/kdocker.png"));
+    aboutBox.setWindowTitle(tr("About %1 - %2").arg(qApp->applicationName()).arg(qApp->applicationVersion()));
+    aboutBox.setText(ABOUT);
+    aboutBox.setInformativeText(tr("See %1 for more information.").arg("<a href=\"https://launchpad.net/kdocker\">https://launchpad.net/kdocker</a>"));
+    aboutBox.setStandardButtons(QMessageBox::Ok);
+    aboutBox.exec();
 }
 
 void TrayItemManager::selectAndIconify() {
@@ -327,6 +325,17 @@ void TrayItemManager::checkCount() {
     if (m_trayItems.isEmpty() && !m_scanner->isRunning()) {
         qApp->quit();
     }
+}
+
+QList<Window> TrayItemManager::dockedWindows() {
+    QList<Window> windows;
+
+    QListIterator<TrayItem*> ti(m_trayItems);
+    while (ti.hasNext()) {
+        windows.append(ti.next()->containerWindow());
+    }
+
+    return windows;
 }
 
 bool TrayItemManager::isWindowDocked(Window window) {

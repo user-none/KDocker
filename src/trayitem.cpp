@@ -25,9 +25,9 @@
 #include <QPixmap>
 #include <QRect>
 #include <QStringList>
+#include <QTime>
 #include <QX11Info>
 
-#include "constants.h"
 #include "trayitem.h"
 #include "util.h"
 
@@ -103,15 +103,15 @@ TrayItem::TrayItem(Window window) {
         memset(&hints, 0, sizeof (hints));
         hints.flags = MWM_HINTS_DECORATIONS;
         hints.decorations = MWM_DECOR_ALL;
-        XChangeProperty(display, m_container->winId(), wm_hints_atom, wm_hints_atom, 32, PropModeReplace, (unsigned char *) & hints, sizeof (MotifWmHints) / sizeof (long));
+        XChangeProperty(display, m_container->winId(), wm_hints_atom, wm_hints_atom, 32, PropModeReplace, reinterpret_cast<unsigned char *> (& hints), sizeof (MotifWmHints) / sizeof (long));
     } else {
         MotifWmHints *hints;
-        hints = (MotifWmHints *) wm_data;
+        hints = reinterpret_cast<MotifWmHints *> (wm_data);
         if (!(hints->flags & MWM_HINTS_DECORATIONS)) {
             hints->flags |= MWM_HINTS_DECORATIONS;
             hints->decorations = 0;
         }
-        XChangeProperty(display, m_container->winId(), wm_hints_atom, wm_hints_atom, 32, PropModeReplace, (unsigned char *) hints, sizeof (MotifWmHints) / sizeof (long));
+        XChangeProperty(display, m_container->winId(), wm_hints_atom, wm_hints_atom, 32, PropModeReplace, reinterpret_cast<unsigned char *> (hints), sizeof (MotifWmHints) / sizeof (long));
     }
     XFree(wm_data);
 
@@ -123,7 +123,6 @@ TrayItem::TrayItem(Window window) {
     updateToggleAction();
 
     connect(this, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(trayActivated(QSystemTrayIcon::ActivationReason)));
-    //connect(m_container, SIGNAL(clientClosed()), this, SLOT(destroyEvent()));
 }
 
 TrayItem::~TrayItem() {
@@ -137,7 +136,7 @@ TrayItem::~TrayItem() {
     m_container->discardClient();
     delete m_container;
     if (m_window) {
-        XMoveResizeWindow(QX11Info::display(), m_window, geo.x(), geo.y(), (unsigned int) geo.width(), (unsigned int) geo.height());
+        XMoveResizeWindow(QX11Info::display(), m_window, geo.x(), geo.y(), static_cast<unsigned int> (geo.width()), static_cast<unsigned int> (geo.height()));
     }
 }
 
@@ -150,14 +149,15 @@ Window TrayItem::embedWindow() {
 }
 
 bool TrayItem::x11EventFilter(XEvent *ev) {
-    XAnyEvent *event = (XAnyEvent *) ev;
+    XAnyEvent *event = reinterpret_cast<XAnyEvent *> (ev);
+
     if (event->window == m_container->winId()) {
         if (ev->type == ClientMessage) {
-            if ((ulong) ev->xclient.data.l[0] == XInternAtom(QX11Info::display(), "WM_DELETE_WINDOW", false)) {
+            if (static_cast<unsigned long> (ev->xclient.data.l[0]) == XInternAtom(QX11Info::display(), "WM_DELETE_WINDOW", false)) {
                 if (m_iconifyOnClose) {
                     iconifyWindow();
                 } else {
-                    close();
+                    closeWindow();
                 }
                 return true;
             }
@@ -167,9 +167,9 @@ bool TrayItem::x11EventFilter(XEvent *ev) {
             destroyEvent();
             return true;
         } else if (event->type == PropertyNotify) {
-            return propertyChangeEvent(((XPropertyEvent *) event)->atom);
+            return propertyChangeEvent(reinterpret_cast<XPropertyEvent *> (event)->atom);
         } else if (event->type == VisibilityNotify) {
-            if (((XVisibilityEvent *) event)->state == VisibilityFullyObscured) {
+            if (reinterpret_cast<XVisibilityEvent *> (event)->state == VisibilityFullyObscured) {
                 obscureEvent();
                 return true;
             }
@@ -179,14 +179,13 @@ bool TrayItem::x11EventFilter(XEvent *ev) {
         }
     } else if (event->window == m_window) {
         if (event->type == PropertyNotify) {
-            return updateEmbedProperty(((XPropertyEvent *) event)->atom);
+            return updateEmbedProperty(reinterpret_cast<XPropertyEvent *> (event)->atom);
         }
     }
     return false;
 }
 
 void TrayItem::restoreWindow() {
-    skip_NET_WM_STATE("_NET_WM_STATE_SKIP_TASKBAR", false);
     m_container->show();
 
     Display *display = QX11Info::display();
@@ -202,7 +201,7 @@ void TrayItem::restoreWindow() {
 
     m_container->activateWindow();
     updateToggleAction();
-    skipTaskbar();
+    doSkipTaskbar();
 }
 
 void TrayItem::iconifyWindow() {
@@ -210,26 +209,23 @@ void TrayItem::iconifyWindow() {
     updateToggleAction();
 }
 
-void TrayItem::skip_NET_WM_STATE(const char *type, bool set) {
-    // set, true = add the state to the window. False, remove the state from
-    // the window.
+void TrayItem::closeWindow() {
     Display *display = QX11Info::display();
-    Atom atom = XInternAtom(display, type, False);
-
-    long l[5] = {set ? 1 : 0, atom, 0, 0, 0};
-    sendMessage(display, QX11Info::appRootWindow(), m_container->winId(), "_NET_WM_STATE", 32, SubstructureNotifyMask, l, sizeof (l));
+    long l[2] = {XInternAtom(QX11Info::display(), "WM_DELETE_WINDOW", false), CurrentTime};
+    restoreWindow();
+    sendMessage(display, m_window, m_window, "WM_PROTOCOLS", 32, NoEventMask, l, sizeof (l));
 }
 
-void TrayItem::skipTaskbar() {
-    skip_NET_WM_STATE("_NET_WM_STATE_SKIP_TASKBAR", m_skipTaskbar);
+void TrayItem::doSkipTaskbar() {
+    set_NET_WM_STATE("_NET_WM_STATE_SKIP_TASKBAR", m_skipTaskbar);
 }
 
-void TrayItem::skipPager() {
-    skip_NET_WM_STATE("_NET_WM_STATE_SKIP_PAGER", m_skipPager);
+void TrayItem::doSkipPager() {
+    set_NET_WM_STATE("_NET_WM_STATE_SKIP_PAGER", m_skipPager);
 }
 
-void TrayItem::sticky() {
-    skip_NET_WM_STATE("_NET_WM_STATE_STICKY", m_sticky);
+void TrayItem::doSticky() {
+    set_NET_WM_STATE("_NET_WM_STATE_STICKY", m_sticky);
 }
 
 void TrayItem::setCustomIcon(QString path) {
@@ -240,13 +236,6 @@ void TrayItem::setCustomIcon(QString path) {
     }
 
     setIcon(QIcon(customIcon));
-}
-
-void TrayItem::close() {
-    Display *display = QX11Info::display();
-    long l[2] = {XInternAtom(QX11Info::display(), "WM_DELETE_WINDOW", false), CurrentTime};
-    restoreWindow();
-    sendMessage(display, m_window, m_window, "WM_PROTOCOLS", 32, NoEventMask, l, sizeof (l));
 }
 
 void TrayItem::selectCustomIcon(bool value) {
@@ -275,19 +264,19 @@ void TrayItem::selectCustomIcon(bool value) {
 void TrayItem::setSkipTaskbar(bool value) {
     m_skipTaskbar = value;
     m_actionSkipTaskbar->setChecked(value);
-    skipTaskbar();
+    doSkipTaskbar();
 }
 
 void TrayItem::setSkipPager(bool value) {
     m_skipPager = value;
     m_actionSkipPager->setChecked(value);
-    skipPager();
+    doSkipPager();
 }
 
 void TrayItem::setSticky(bool value) {
     m_sticky = value;
     m_actionSticky->setChecked(value);
-    sticky();
+    doSticky();
 }
 
 void TrayItem::setIconifyMinimized(bool value) {
@@ -346,13 +335,7 @@ void TrayItem::trayActivated(QSystemTrayIcon::ActivationReason reason) {
 }
 
 void TrayItem::doAbout() {
-    QMessageBox aboutBox;
-    aboutBox.setIconPixmap(QPixmap(":/images/kdocker.png"));
-    aboutBox.setWindowTitle(tr("About %1 - %2").arg(qApp->applicationName()).arg(qApp->applicationVersion()));
-    aboutBox.setText(ABOUT);
-    aboutBox.setInformativeText(tr("See %1 for more information.").arg("<a href=\"https://launchpad.net/kdocker\">https://launchpad.net/kdocker</a>"));
-    aboutBox.setStandardButtons(QMessageBox::Ok);
-    aboutBox.exec();
+    emit(about());
 }
 
 void TrayItem::doSelectAnother() {
@@ -392,7 +375,7 @@ bool TrayItem::propertyChangeEvent(Atom property) {
         unsigned long nitems, after;
         unsigned char *data = 0;
         int r = XGetWindowProperty(display, m_container->winId(), WM_STATE, 0, 1, False, AnyPropertyType, &type, &format, &nitems, &after, &data);
-        if ((r == Success) && data && (*(long *) data == IconicState)) {
+        if ((r == Success) && data && (*reinterpret_cast<long *> (data) == IconicState)) {
             minimizeEvent();
             XFree(data);
             return true;
@@ -423,9 +406,27 @@ void TrayItem::obscureEvent() {
 }
 
 void TrayItem::focusLostEvent() {
+    // Wait half a second before checking to ensure the window is properly
+    // focused when being restored.
+    QTime t;
+    t.start();
+    while (t.elapsed() < 500) {
+        qApp->processEvents();
+    }
+
     if (m_iconifyFocusLost && m_container->winId() != activeWindow(QX11Info::display())) {
         iconifyWindow();
     }
+}
+
+void TrayItem::set_NET_WM_STATE(const char *type, bool set) {
+    // set, true = add the state to the window. False, remove the state from
+    // the window.
+    Display *display = QX11Info::display();
+    Atom atom = XInternAtom(display, type, False);
+
+    long l[2] = {set ? 1 : 0, atom};
+    sendMessage(display, QX11Info::appRootWindow(), m_container->winId(), "_NET_WM_STATE", 32, SubstructureNotifyMask, l, sizeof (l));
 }
 
 void TrayItem::readDockedAppName() {
@@ -483,6 +484,7 @@ void TrayItem::updateIcon() {
 void TrayItem::updateToggleAction() {
     QString text;
     QIcon icon;
+
     if (m_container->isVisible()) {
         text = tr("Hide %1").arg(m_dockedAppName);
         icon = QIcon(":/images/iconify.png");
@@ -490,6 +492,7 @@ void TrayItem::updateToggleAction() {
         text = tr("Show %1").arg(m_dockedAppName);
         icon = QIcon(":/images/restore.png");
     }
+
     m_actionToggle->setIcon(icon);
     m_actionToggle->setText(text);
 }
@@ -563,7 +566,7 @@ void TrayItem::createContextMenu() {
     connect(m_actionToggle, SIGNAL(triggered()), this, SLOT(toggleWindow()));
     m_contextMenu->addAction(m_actionToggle);
     m_contextMenu->addAction(tr("Undock"), this, SLOT(doUndock()));
-    m_contextMenu->addAction(QIcon(":/images/close.png"), tr("Close"), this, SLOT(close()));
+    m_contextMenu->addAction(QIcon(":/images/close.png"), tr("Close"), this, SLOT(closeWindow()));
 
     setContextMenu(m_contextMenu);
 }
@@ -578,6 +581,7 @@ QIcon TrayItem::createIcon(Window window) {
     QPixmap appIcon;
     Display *display = QX11Info::display();
     XWMHints *wm_hints = XGetWMHints(display, window);
+
     if (wm_hints != 0) {
         if (!(wm_hints->flags & IconMaskHint))
             wm_hints->icon_mask = None;

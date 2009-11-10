@@ -19,17 +19,13 @@
  */
 
 #include <QCoreApplication>
-#include <QMessageBox>
 #include <QTextStream>
-#include <QX11Info>
 
 #include "constants.h"
 #include "kdocker.h"
 #include "trayitemmanager.h"
-#include "util.h"
 
-#include <stdio.h>
-#include <unistd.h>
+#include <getopt.h>
 
 #include <X11/Xlib.h>
 
@@ -83,7 +79,7 @@ void KDocker::preProcessCommand(int argc, char **argv) {
         switch (option) {
             case '?':
                 printUsage();
-                ::exit(0);
+                ::exit(1);
                 break;
             case 'a':
                 printAbout();

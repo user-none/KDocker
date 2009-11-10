@@ -1,7 +1,8 @@
 for version 4.3
     - Use QtSingleApplication.
-    - Window manager decoration close button can iconify.
+    - Window manager decoration close button can optionally iconify.
     - Changed command line option -c: Disables WM close button iconify.
+    - Restructure large parts of the appplication.
 
 for version 4.2.2
     - Fix installing translation files.

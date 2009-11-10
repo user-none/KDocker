@@ -32,6 +32,7 @@ public:
 
     void setKDockerInstance(KDocker *kdocker);
     bool x11EventFilter(XEvent *event);
+    void close();
 
 private:
     KDocker *m_kdocker;

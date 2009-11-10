@@ -54,19 +54,21 @@ public:
     Window containerWindow();
     Window embedWindow();
 
-    // Pass on all events through this interface
+    // Handle the X11 events we are interested in for the container and
+    // embedded window.
     bool x11EventFilter(XEvent * event);
 
 public slots:
     void restoreWindow();
     void iconifyWindow();
-    void skip_NET_WM_STATE(const char *type, bool set);
-    void skipTaskbar();
-    void skipPager();
-    void sticky();
-    void setCustomIcon(QString path);
-    void close(); // close the docked window
+    // Close the embedded window
+    void closeWindow();
 
+    void doSkipTaskbar();
+    void doSkipPager();
+    void doSticky();
+
+    void setCustomIcon(QString path);
     void selectCustomIcon(bool value);
     void setSkipTaskbar(bool value);
     void setSkipPager(bool value);
@@ -81,30 +83,37 @@ public slots:
 private slots:
     void toggleWindow();
     void trayActivated(QSystemTrayIcon::ActivationReason reason = QSystemTrayIcon::Trigger);
+
     void doAbout();
     void doSelectAnother();
     void doUndock();
     void doUndockAll();
-    void destroyEvent();
 
 signals:
     void selectAnother();
     void dead(TrayItem*);
     void undockAll();
     void undock(TrayItem*);
+    void about();
 
 private:
     void minimizeEvent();
+    void destroyEvent();
     bool propertyChangeEvent(Atom property);
     bool updateEmbedProperty(Atom property);
     void obscureEvent();
     void focusLostEvent();
+
+    void set_NET_WM_STATE(const char *type, bool set);
+
     void readDockedAppName();
     void updateTitle();
     void updateIcon();
     void updateToggleAction();
+
     void createContextMenu();
     QIcon createIcon(Window window);
+
     bool isBadWindow();
 
     bool m_customIcon;

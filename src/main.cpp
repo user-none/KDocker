@@ -18,31 +18,26 @@
  * USA.
  */
 
-#include <QAbstractEventDispatcher>
 #include <QCoreApplication>
 #include <QLocale>
 #include <QObject>
 #include <QTranslator>
 
+#include <signal.h>
+
 #include "application.h"
 #include "constants.h"
 #include "kdocker.h"
 
-#include <signal.h>
-
-KDocker *kdocker = 0;
-
 static void sighandler(int sig) {
     Q_UNUSED(sig);
 
-    if (kdocker) {
-        kdocker->undockAll();
-    }
-    //((KDocker *) qApp)->undockAll();
-    ::exit(0);
+    dynamic_cast<Application*> (qApp)->close();
 }
 
 int main(int argc, char *argv[]) {
+    Application app("KDocker", argc, argv);
+
     // setup signal handlers that undock and quit
     signal(SIGHUP, sighandler);
     signal(SIGSEGV, sighandler);
@@ -50,10 +45,7 @@ int main(int argc, char *argv[]) {
     signal(SIGINT, sighandler);
     signal(SIGUSR1, sighandler);
 
-
-    Application app("KDocker", argc, argv);
-
-    // Setup Translator
+    // Setup the translator
     QTranslator translator;
     QString locale = QString("kdocker_%1").arg(QLocale::system().name());
     if (!translator.load(locale, TRANSLATIONS_PATH)) {
@@ -67,21 +59,27 @@ int main(int argc, char *argv[]) {
     app.setOrganizationDomain(DOM_NAME);
     app.setApplicationName(APP_NAME);
     app.setApplicationVersion(APP_VERSION);
-    //app.setQuitOnLastWindowClosed(false);
-    
-    kdocker = new KDocker();
-    kdocker->preProcessCommand(argc, argv); // this can exit the application
+    // Quiting will be handled by the TrayItemManager in the KDocker instance.
+    // It will determine when there is nothing left running.
+    app.setQuitOnLastWindowClosed(false);
+
+    KDocker kdocker;
+    // This can exit the application. We want the output of any help text output
+    // on the tty the instance has started from so we call this here.
+    kdocker.preProcessCommand(argc, argv);
 
     // Send the arguments in a message to another instance if there is one.
     if (app.sendMessage(QCoreApplication::arguments().join("\n"))) {
         return 0;
     }
 
-    QObject::connect(&app, SIGNAL(messageReceived(const QString&)), kdocker, SLOT(handleMessage(const QString&)));
-    // Run in the Qt event loopt.
-    QMetaObject::invokeMethod(kdocker, "run", Qt::QueuedConnection);
+    // Handle messages from other instance so this can be a single instance app.
+    QObject::connect(&app, SIGNAL(messageReceived(const QString&)), &kdocker, SLOT(handleMessage(const QString&)));
 
-    app.setKDockerInstance(kdocker);
+    // Wait for the Qt event loop to be started before running.
+    QMetaObject::invokeMethod(&kdocker, "run", Qt::QueuedConnection);
+
+    app.setKDockerInstance(&kdocker);
 
     return app.exec();
 }

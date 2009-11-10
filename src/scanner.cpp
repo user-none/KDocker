@@ -21,18 +21,18 @@
 #include <QMessageBox>
 #include <QMutableListIterator>
 #include <QProcess>
-#include <QString>
 #include <QStringList>
 #include <QX11Info>
 
 #include "scanner.h"
 #include "util.h"
 
-#include "signal.h"
+#include <signal.h>
 
 Scanner::Scanner(TrayItemManager *manager) {
     m_manager = manager;
     m_timer = new QTimer();
+    // Check every second if a window has been created.
     m_timer->setInterval(1000);
     connect(m_timer, SIGNAL(timeout()), this, SLOT(check()));
 }
@@ -50,11 +50,10 @@ void Scanner::enqueue(const QString &command, const QStringList &arguments, Tray
     }
     if (windowName.isEmpty()) {
         name = command.split("/").last();
-    }
-    else {
+    } else {
         name = windowName;
     }
-    
+
     if (QProcess::startDetached(command, arguments, "", &pid)) {
         ProcessId processId = {command, (pid_t) pid, settings, 0, maxTime, checkNormality, windowNameMatch, name};
         m_processes.append(processId);
@@ -74,7 +73,7 @@ void Scanner::check() {
         ProcessId id = pi.next();
         id.count++;
         pi.setValue(id);
-        
+
         Window w = None;
         if (id.windowNameMatch || kill(id.pid, 0) == -1) {
             // Check based on window name if force matching by window name is set or the PID is not valid.
@@ -83,7 +82,7 @@ void Scanner::check() {
             // Check based on PID if it is still valid.
             w = pidToWid(QX11Info::display(), QX11Info::appRootWindow(), id.checkNormality, id.pid);
         }
-        
+
         if (w != None) {
             emit(windowFound(w, id.settings));
             pi.remove();

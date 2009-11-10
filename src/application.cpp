@@ -33,3 +33,10 @@ bool Application::x11EventFilter(XEvent *event) {
     }
     return false;
 }
+
+void Application::close() {
+    if (m_kdocker) {
+        m_kdocker->undockAll();
+    }
+    quit();
+}

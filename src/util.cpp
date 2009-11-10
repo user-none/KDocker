@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
  * USA.
  */
-#include <QDebug>
+
 #include "util.h"
 
 #include <X11/Xutil.h>
@@ -234,7 +234,7 @@ Window findWindow(Display *display, Window window, bool checkNormality, const QS
 }
 
 /*
- * Sends ClientMessage to a window
+ * Sends ClientMessage to a window.
  */
 void sendMessage(Display* display, Window to, Window w, const char *type,
         int format, long mask, void* data, int size) {
@@ -249,6 +249,9 @@ void sendMessage(Display* display, Window to, Window w, const char *type,
     XSync(display, False);
 }
 
+/*
+ * Returns the id of the currently active window.
+ */
 Window activeWindow(Display * display) {
     Atom active_window_atom = XInternAtom(display, "_NET_ACTIVE_WINDOW", True);
     Atom type = None;
@@ -306,6 +309,10 @@ Window selectWindow(Display *display, const char **err) {
     return XmuClientWindow(display, selected_window);
 }
 
+/*
+ * Have events associated with mask for the window set in the X11 Event loop
+ * to the application.
+ */
 void subscribe(Display *display, Window w, long mask, bool set) {
     Window root = RootWindow(display, DefaultScreen(display));
     XWindowAttributes attr;
@@ -320,6 +327,9 @@ void subscribe(Display *display, Window w, long mask, bool set) {
     XSync(display, False);
 }
 
+/*
+ * Sets data to the vaule of the requested window property.
+ */
 bool getCardinalProperty(Display *display, Window w, Atom prop, long *data) {
     Atom type;
     int format;

@@ -55,11 +55,14 @@ public:
     ~Scanner();
     void enqueue(const QString &command, const QStringList &arguments, TrayItemSettings settings, int maxTime = 30, bool checkNormality = true, bool windowNameMatch = false, const QString &windowName = QString());
     bool isRunning();
+
 private slots:
     void check();
+
 signals:
     void windowFound(Window, TrayItemSettings);
     void stopping();
+
 private:
     TrayItemManager *m_manager;
     QTimer *m_timer;
