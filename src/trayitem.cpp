@@ -29,7 +29,7 @@
 #include <QX11Info>
 
 #include "trayitem.h"
-#include "util.h"
+#include "xlibutil.h"
 
 #include <Xatom.h>
 #include <X11/xpm.h>
@@ -81,11 +81,11 @@ TrayItem::TrayItem(Window window) {
 
     // Allows events from m_container and m_window to be forwarded to the
     // x11EventFilter. Only event types that are subscribed to will be sent on.
-    subscribe(display, m_container->winId(), StructureNotifyMask | PropertyChangeMask | VisibilityChangeMask | FocusChangeMask, true);
-    subscribe(display, m_window, PropertyChangeMask, true);
+    XLibUtil::subscribe(display, m_container->winId(), StructureNotifyMask | PropertyChangeMask | VisibilityChangeMask | FocusChangeMask, true);
+    XLibUtil::subscribe(display, m_window, PropertyChangeMask, true);
 
     // store the desktop on which the window is being shown
-    getCardinalProperty(display, m_container->winId(), XInternAtom(display, "_NET_WM_DESKTOP", true), &m_desktop);
+    XLibUtil::getCardinalProperty(display, m_container->winId(), XInternAtom(display, "_NET_WM_DESKTOP", true), &m_desktop);
 
     // Do not close the window when the X button is pressed. This only works
     // Because we have embedded into our own window.
@@ -194,10 +194,10 @@ void TrayItem::restoreWindow() {
 
     // Change to the desktop that the window was last on.
     long l_currDesk[2] = {m_desktop, CurrentTime};
-    sendMessage(display, root, root, "_NET_CURRENT_DESKTOP", 32, SubstructureNotifyMask | SubstructureRedirectMask, l_currDesk, sizeof (l_currDesk));
+    XLibUtil::sendMessage(display, root, root, "_NET_CURRENT_DESKTOP", 32, SubstructureNotifyMask | SubstructureRedirectMask, l_currDesk, sizeof (l_currDesk));
     // Set the desktop the window wants to be on.
     long l_wmDesk[2] = {m_desktop, 1}; // 1 == request sent from application. 2 == from pager
-    sendMessage(display, root, m_container->winId(), "_NET_WM_DESKTOP", 32, SubstructureNotifyMask | SubstructureRedirectMask, l_wmDesk, sizeof (l_wmDesk));
+    XLibUtil::sendMessage(display, root, m_container->winId(), "_NET_WM_DESKTOP", 32, SubstructureNotifyMask | SubstructureRedirectMask, l_wmDesk, sizeof (l_wmDesk));
 
     m_container->activateWindow();
     updateToggleAction();
@@ -213,7 +213,7 @@ void TrayItem::closeWindow() {
     Display *display = QX11Info::display();
     long l[2] = {XInternAtom(QX11Info::display(), "WM_DELETE_WINDOW", false), CurrentTime};
     restoreWindow();
-    sendMessage(display, m_window, m_window, "WM_PROTOCOLS", 32, NoEventMask, l, sizeof (l));
+    XLibUtil::sendMessage(display, m_window, m_window, "WM_PROTOCOLS", 32, NoEventMask, l, sizeof (l));
 }
 
 void TrayItem::doSkipTaskbar() {
@@ -326,7 +326,7 @@ void TrayItem::toggleWindow() {
 
 void TrayItem::trayActivated(QSystemTrayIcon::ActivationReason reason) {
     if (reason == QSystemTrayIcon::Trigger) {
-        if (m_container->winId() == activeWindow(QX11Info::display())) {
+        if (m_container->winId() == XLibUtil::activeWindow(QX11Info::display())) {
             iconifyWindow();
         } else {
             restoreWindow();
@@ -367,7 +367,7 @@ bool TrayItem::propertyChangeEvent(Atom property) {
     static Atom _NET_WM_DESKTOP = XInternAtom(display, "_NET_WM_DESKTOP", True);
 
     if (property == _NET_WM_DESKTOP) {
-        getCardinalProperty(display, m_container->winId(), _NET_WM_DESKTOP, &m_desktop);
+        XLibUtil::getCardinalProperty(display, m_container->winId(), _NET_WM_DESKTOP, &m_desktop);
         return true;
     } else if (property == WM_STATE) {
         Atom type = None;
@@ -414,7 +414,7 @@ void TrayItem::focusLostEvent() {
         qApp->processEvents();
     }
 
-    if (m_iconifyFocusLost && m_container->winId() != activeWindow(QX11Info::display())) {
+    if (m_iconifyFocusLost && m_container->winId() != XLibUtil::activeWindow(QX11Info::display())) {
         iconifyWindow();
     }
 }
@@ -426,7 +426,7 @@ void TrayItem::set_NET_WM_STATE(const char *type, bool set) {
     Atom atom = XInternAtom(display, type, False);
 
     long l[2] = {set ? 1 : 0, atom};
-    sendMessage(display, QX11Info::appRootWindow(), m_container->winId(), "_NET_WM_STATE", 32, SubstructureNotifyMask, l, sizeof (l));
+    XLibUtil::sendMessage(display, QX11Info::appRootWindow(), m_container->winId(), "_NET_WM_STATE", 32, SubstructureNotifyMask, l, sizeof (l));
 }
 
 void TrayItem::readDockedAppName() {

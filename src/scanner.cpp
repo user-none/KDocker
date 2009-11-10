@@ -25,7 +25,7 @@
 #include <QX11Info>
 
 #include "scanner.h"
-#include "util.h"
+#include "xlibutil.h"
 
 #include <signal.h>
 
@@ -77,10 +77,10 @@ void Scanner::check() {
         Window w = None;
         if (id.windowNameMatch || kill(id.pid, 0) == -1) {
             // Check based on window name if force matching by window name is set or the PID is not valid.
-            w = findWindow(QX11Info::display(), QX11Info::appRootWindow(), id.checkNormality, id.windowName, m_manager->dockedWindows());
+            w = XLibUtil::findWindow(QX11Info::display(), QX11Info::appRootWindow(), id.checkNormality, id.windowName, m_manager->dockedWindows());
         } else {
             // Check based on PID if it is still valid.
-            w = pidToWid(QX11Info::display(), QX11Info::appRootWindow(), id.checkNormality, id.pid);
+            w = XLibUtil::pidToWid(QX11Info::display(), QX11Info::appRootWindow(), id.checkNormality, id.pid);
         }
 
         if (w != None) {

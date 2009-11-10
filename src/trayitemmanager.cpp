@@ -26,7 +26,7 @@
 
 #include "constants.h"
 #include "trayitemmanager.h"
-#include "util.h"
+#include "xlibutil.h"
 
 #include <getopt.h>
 #include <stdio.h>
@@ -124,7 +124,7 @@ void TrayItemManager::processCommand(const QStringList &args) {
                 maxTime = atoi(optarg);
                 break;
             case 'f':
-                window = activeWindow(QX11Info::display());
+                window = XLibUtil::activeWindow(QX11Info::display());
                 if (!window) {
                     QMessageBox::critical(0, qApp->applicationName(), tr("Cannot dock the active window because no window has focus."));
                     checkCount();
@@ -166,7 +166,7 @@ void TrayItemManager::processCommand(const QStringList &args) {
                     sscanf(optarg, "%x", (unsigned *) & window);
                 else
                     window = (Window) atoi(optarg);
-                if (!isValidWindowId(QX11Info::display(), window)) {
+                if (!XLibUtil::isValidWindowId(QX11Info::display(), window)) {
                     QMessageBox::critical(0, qApp->applicationName(), tr("Invalid window id."));
                     checkCount();
                     return;
@@ -192,7 +192,7 @@ void TrayItemManager::processCommand(const QStringList &args) {
     } else {
         if (!window) {
             if (pid != 0) {
-                window = pidToWid(QX11Info::display(), QX11Info::appRootWindow(), checkNormality, pid, dockedWindows());
+                window = XLibUtil::pidToWid(QX11Info::display(), QX11Info::appRootWindow(), checkNormality, pid, dockedWindows());
             } else {
                 window = userSelectWindow(checkNormality);
             }
@@ -251,7 +251,7 @@ Window TrayItemManager::userSelectWindow(bool checkNormality) {
     out << tr("Click any other mouse button to abort.") << endl;
 
     const char *error = 0;
-    Window window = selectWindow(QX11Info::display(), &error);
+    Window window = XLibUtil::selectWindow(QX11Info::display(), &error);
     if (!window) {
         if (error) {
             QMessageBox::critical(0, qApp->applicationName(), tr(error));
@@ -261,7 +261,7 @@ Window TrayItemManager::userSelectWindow(bool checkNormality) {
     }
 
     if (checkNormality) {
-        if (!isNormalWindow(QX11Info::display(), window)) {
+        if (!XLibUtil::isNormalWindow(QX11Info::display(), window)) {
             if (QMessageBox::warning(0, qApp->applicationName(), tr("The window you are attempting to dock does not seem to be a normal window."), QMessageBox::Abort | QMessageBox::Ignore) == QMessageBox::Abort) {
                 checkCount();
                 return 0;

@@ -18,21 +18,21 @@
  * USA.
  */
 
-#include "util.h"
+#include "xlibutil.h"
+
+#include <stdio.h>
+#include <stdlib.h>
 
 #include <X11/Xutil.h>
 #include <Xmu/WinUtil.h>
 #include <X11/Xatom.h>
 #include <X11/cursorfont.h>
 
-#include <stdio.h>
-#include <stdlib.h>
-
 /*
  * Assert validity of the window id. Get window attributes for the heck of it
  * and see if the request went through.
  */
-bool isValidWindowId(Display *display, Window w) {
+bool XLibUtil::isValidWindowId(Display *display, Window w) {
     XWindowAttributes attrib;
     return (XGetWindowAttributes(display, w, &attrib) != 0);
 }
@@ -44,39 +44,37 @@ bool isValidWindowId(Display *display, Window w) {
  * - Not a purely transient window (with no window type set)
  * - Not a special window (desktop/menu/util) as indicated in the window type
  */
-bool isNormalWindow(Display *display, Window w) {
-    Atom __attribute__((unused)) type;
-    int __attribute__((unused)) format;
-    unsigned long __attribute__((unused)) left;
+bool XLibUtil::isNormalWindow(Display *display, Window w) {
+    Atom type;
+    int format;
+    unsigned long left;
     Atom *data = NULL;
     unsigned long nitems;
     Window transient_for = None;
 
-    static Atom wmState = XInternAtom(display, "WM_STATE", False);
-    static Atom windowState = XInternAtom(display, "_NET_WM_STATE", False);
-    static Atom modalWindow =
-            XInternAtom(display, "_NET_WM_STATE_MODAL", False);
+    static Atom wmState = XInternAtom(display, "WM_STATE", false);
+    static Atom windowState = XInternAtom(display, "_NET_WM_STATE", false);
+    static Atom modalWindow = XInternAtom(display, "_NET_WM_STATE_MODAL", false);
+    static Atom windowType = XInternAtom(display, "_NET_WM_WINDOW_TYPE", false);
+    static Atom normalWindow = XInternAtom(display, "_NET_WM_WINDOW_TYPE_NORMAL", false);
+    static Atom dialogWindow = XInternAtom(display, "_NET_WM_WINDOW_TYPE_DIALOG", false);
 
-    static Atom windowType = XInternAtom(display, "_NET_WM_WINDOW_TYPE", False);
-    static Atom normalWindow =
-            XInternAtom(display, "_NET_WM_WINDOW_TYPE_NORMAL", False);
-    static Atom dialogWindow =
-            XInternAtom(display, "_NET_WM_WINDOW_TYPE_DIALOG", False);
+    int ret = XGetWindowProperty(display, w, wmState, 0, 10, false, AnyPropertyType, &type, &format, &nitems, &left, (unsigned char **) & data);
 
-    int ret = XGetWindowProperty(display, w, wmState, 0,
-            10, False, AnyPropertyType, &type, &format,
-            &nitems, &left, (unsigned char **) & data);
+    if (ret != Success || data == NULL) {
+        return false;
+    }
+    if (data) {
+        XFree(data);
+    }
 
-    if (ret != Success || data == NULL) return false;
-    if (data) XFree(data);
-
-    ret = XGetWindowProperty(display, w, windowState, 0,
-            10, False, AnyPropertyType, &type, &format,
-            &nitems, &left, (unsigned char **) & data);
+    ret = XGetWindowProperty(display, w, windowState, 0, 10, false, AnyPropertyType, &type, &format, &nitems, &left, (unsigned char **) & data);
     if (ret == Success) {
         unsigned int i;
         for (i = 0; i < nitems; i++) {
-            if (data[i] == modalWindow) break;
+            if (data[i] == modalWindow) {
+                break;
+            }
         }
         XFree(data);
         if (i < nitems) {
@@ -86,36 +84,34 @@ bool isNormalWindow(Display *display, Window w) {
 
     XGetTransientForHint(display, w, &transient_for);
 
-    ret = XGetWindowProperty(display, w, windowType, 0,
-            10, False, AnyPropertyType, &type, &format,
-            &nitems, &left, (unsigned char **) & data);
+    ret = XGetWindowProperty(display, w, windowType, 0, 10, false, AnyPropertyType, &type, &format, &nitems, &left, (unsigned char **) & data);
 
     if ((ret == Success) && data) {
         unsigned int i;
         for (i = 0; i < nitems; i++) {
-            if (data[i] != normalWindow && data[i] != dialogWindow) break;
+            if (data[i] != normalWindow && data[i] != dialogWindow) {
+                break;
+            }
         }
         XFree(data);
         return (i == nitems);
-    } else
+    } else {
         return (transient_for == None);
+    }
 }
 
 /*
  * Returns the contents of the _NET_WM_PID (which is supposed to contain the
  * process id of the application that created the window)
  */
-pid_t pid(Display *display, Window w) {
+pid_t XLibUtil::pid(Display *display, Window w) {
     Atom actual_type;
     int actual_format;
     unsigned long nitems, leftover;
     unsigned char *pid;
     pid_t pid_return = -1;
 
-    if (XGetWindowProperty(display, w,
-            XInternAtom(display, "_NET_WM_PID", False), 0,
-            1, False, XA_CARDINAL, &actual_type,
-            &actual_format, &nitems, &leftover, &pid) == Success) {
+    if (XGetWindowProperty(display, w, XInternAtom(display, "_NET_WM_PID", false), 0, 1, false, XA_CARDINAL, &actual_type, &actual_format, &nitems, &leftover, &pid) == Success) {
         if (pid) {
             pid_return = *(pid_t *) pid;
         }
@@ -124,13 +120,13 @@ pid_t pid(Display *display, Window w) {
     return pid_return;
 }
 
-Window pidToWid(Display *display, Window window, bool checkNormality, pid_t epid, QList<Window> dockedWindows) {
+Window XLibUtil::pidToWid(Display *display, Window window, bool checkNormality, pid_t epid, QList<Window> dockedWindows) {
     Window w = None;
-
     Window root;
     Window parent;
     Window *child;
     unsigned int num_child;
+
     if (XQueryTree(display, window, &root, &parent, &child, &num_child) != 0) {
         for (unsigned int i = 0; i < num_child; i++) {
             if (epid == pid(display, child[i])) {
@@ -158,7 +154,7 @@ Window pidToWid(Display *display, Window window, bool checkNormality, pid_t epid
  * The Grand Window Analyzer. Checks if window w has a expected pid of epid
  * or a expected name of ename.
  */
-bool analyzeWindow(Display *display, Window w, const QString &ename) {
+bool XLibUtil::analyzeWindow(Display *display, Window w, const QString &ename) {
     XClassHint ch;
 
     // no plans to analyze windows without a name
@@ -204,9 +200,8 @@ bool analyzeWindow(Display *display, Window w, const QString &ename) {
  * Given a starting window look though all children and try to find a window
  * that matches the ename.
  */
-Window findWindow(Display *display, Window window, bool checkNormality, const QString &ename, QList<Window> dockedWindows) {
+Window XLibUtil::findWindow(Display *display, Window window, bool checkNormality, const QString &ename, QList<Window> dockedWindows) {
     Window w = None;
-
     Window root;
     Window parent;
     Window *child;
@@ -236,37 +231,36 @@ Window findWindow(Display *display, Window window, bool checkNormality, const QS
 /*
  * Sends ClientMessage to a window.
  */
-void sendMessage(Display* display, Window to, Window w, const char *type,
-        int format, long mask, void* data, int size) {
+void XLibUtil::sendMessage(Display* display, Window to, Window w, const char *type, int format, long mask, void* data, int size) {
     XEvent ev;
     memset(&ev, 0, sizeof (ev));
     ev.xclient.type = ClientMessage;
     ev.xclient.window = w;
-    ev.xclient.message_type = XInternAtom(display, type, True);
+    ev.xclient.message_type = XInternAtom(display, type, true);
     ev.xclient.format = format;
     memcpy((char *) & ev.xclient.data, (const char *) data, size);
-    XSendEvent(display, to, False, mask, &ev);
-    XSync(display, False);
+    XSendEvent(display, to, false, mask, &ev);
+    XSync(display, false);
 }
 
 /*
  * Returns the id of the currently active window.
  */
-Window activeWindow(Display * display) {
-    Atom active_window_atom = XInternAtom(display, "_NET_ACTIVE_WINDOW", True);
+Window XLibUtil::activeWindow(Display * display) {
+    Atom active_window_atom = XInternAtom(display, "_NET_ACTIVE_WINDOW", true);
     Atom type = None;
     int format;
     unsigned long nitems, after;
     unsigned char *data = NULL;
     int screen = DefaultScreen(display);
     Window root = RootWindow(display, screen);
-    int r = XGetWindowProperty(display, root, active_window_atom, 0, 1,
-            False, AnyPropertyType, &type, &format, &nitems, &after, &data);
+
+    int r = XGetWindowProperty(display, root, active_window_atom, 0, 1, false, AnyPropertyType, &type, &format, &nitems, &after, &data);
 
     Window w = None;
-    if ((r == Success) && data && (*(Window *) data != None))
+    if ((r == Success) && data && (*reinterpret_cast<Window *> (data) != None)) {
         w = *(Window *) data;
-    else {
+    } else {
         int revert;
         XGetInputFocus(display, &w, &revert);
     }
@@ -277,35 +271,39 @@ Window activeWindow(Display * display) {
  * Requests user to select a window by grabbing the mouse. A left click will
  * select the application. Clicking any other button will abort the selection
  */
-Window selectWindow(Display *display, const char **err) {
+Window XLibUtil::selectWindow(Display *display, const char **err) {
     int screen = DefaultScreen(display);
     Window root = RootWindow(display, screen);
 
-    if (err) *err = NULL;
+    if (err) {
+        *err = NULL;
+    }
 
     Cursor cursor = XCreateFontCursor(display, XC_draped_box);
     if (cursor == None) {
-        if (err) *err = "Failed to create XC_draped_box";
+        if (err) {
+            *err = "Failed to create XC_draped_box";
+        }
         return None;
     }
 
-    if (XGrabPointer(display, root, False, ButtonPressMask | ButtonReleaseMask,
-            GrabModeSync, GrabModeAsync, None, cursor, CurrentTime)
-            != GrabSuccess) {
-        if (err) *err = "Failed to grab mouse";
+    if (XGrabPointer(display, root, false, ButtonPressMask | ButtonReleaseMask, GrabModeSync, GrabModeAsync, None, cursor, CurrentTime) != GrabSuccess) {
+        if (err) {
+            *err = "Failed to grab mouse";
+        }
         return None;
     }
 
     XAllowEvents(display, SyncPointer, CurrentTime);
     XEvent event;
     XWindowEvent(display, root, ButtonPressMask, &event);
-    Window selected_window =
-            (event.xbutton.subwindow == None) ? RootWindow(display, screen)
-            : event.xbutton.subwindow;
+    Window selected_window = (event.xbutton.subwindow == None) ? RootWindow(display, screen) : event.xbutton.subwindow;
     XUngrabPointer(display, CurrentTime);
     XFreeCursor(display, cursor);
 
-    if (event.xbutton.button != Button1) return None;
+    if (event.xbutton.button != Button1) {
+        return None;
+    }
     return XmuClientWindow(display, selected_window);
 }
 
@@ -313,35 +311,40 @@ Window selectWindow(Display *display, const char **err) {
  * Have events associated with mask for the window set in the X11 Event loop
  * to the application.
  */
-void subscribe(Display *display, Window w, long mask, bool set) {
+void XLibUtil::subscribe(Display *display, Window w, long mask, bool set) {
     Window root = RootWindow(display, DefaultScreen(display));
     XWindowAttributes attr;
 
     XGetWindowAttributes(display, w == None ? root : w, &attr);
 
-    if (set && ((attr.your_event_mask & mask) == mask)) return;
-    if (!set && ((attr.your_event_mask | mask) == attr.your_event_mask)) return;
+    // Already subscribed not need to do it again.
+    if (set && ((attr.your_event_mask & mask) == mask)) {
+        return;
+    }
+    // Not subscribed to the mask no need to remove it.
+    if (!set && ((attr.your_event_mask | mask) == attr.your_event_mask)) {
+        return;
+    }
 
-    XSelectInput(display, w == None ? root : w,
-            set ? attr.your_event_mask | mask : attr.your_event_mask & mask);
-    XSync(display, False);
+    XSelectInput(display, w == None ? root : w, set ? attr.your_event_mask | mask : attr.your_event_mask & mask);
+    XSync(display, false);
 }
 
 /*
  * Sets data to the vaule of the requested window property.
  */
-bool getCardinalProperty(Display *display, Window w, Atom prop, long *data) {
+bool XLibUtil::getCardinalProperty(Display *display, Window w, Atom prop, long *data) {
     Atom type;
     int format;
     unsigned long nitems, bytes;
     unsigned char *d = NULL;
 
-    if (XGetWindowProperty(display, w, prop, 0, 1, False, XA_CARDINAL, &type,
-            &format, &nitems, &bytes, &d) == Success && d) {
-        if (data) *data = *(long *) d;
+    if (XGetWindowProperty(display, w, prop, 0, 1, false, XA_CARDINAL, &type, &format, &nitems, &bytes, &d) == Success && d) {
+        if (data) {
+            *data = *reinterpret_cast<long *> (d);
+        }
         XFree(d);
         return true;
     }
     return false;
 }
-
