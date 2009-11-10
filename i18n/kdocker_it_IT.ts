@@ -8,9 +8,6 @@
         <source>KDocker will help you dock any application into the system tray. This means you can dock openoffice, xmms, firefox, thunderbird, anything! Just point and click. Works for all NET WM compliant window managers - that includes KDE, GNOME, Xfce, Fluxbox and many more.
 
 Created by %1. Updated and maintained by %2.</source>
-        <translatorcomment>KDocker ti permetterà di ridurre ad icona nel vassoio di sistema qualsiasi applicazione. Questo significa che potrai ridurre ad icona openoffice, xmms, firefox, thunderbird, qualsiasi cosa! Semplicemente puntando e cliccando. Funziona con tutti i window managers conformi a NET WM come KDE, GNOME, Xfce, Fluxbox e molti altri ancora.
-
-Creato da %1. Aggiornato e mantenuto da: %2.</translatorcomment>
         <translation>KDocker ti permetterà di ridurre ad icona nel vassoio di sistema qualsiasi applicazione. Questo significa che potrai ridurre ad icona openoffice, xmms, firefox, thunderbird, qualsiasi cosa! Semplicemente puntando e cliccando. Funziona con tutti i window managers conformi a NET WM come KDE, GNOME, Xfce, Fluxbox e molti altri ancora.
 
 Creato da %1. Aggiornato e mantenuto da: %2.</translation>
@@ -65,7 +62,7 @@ Creato da %1. Aggiornato e mantenuto da: %2.</translation>
     <message>
         <location filename="../src/kdocker.cpp" line="123"/>
         <source>Don&apos;t iconify on close</source>
-        <translation type="unfinished"></translation>
+        <translation>Non ridurre ad icona se chiuso</translation>
     </message>
     <message>
         <location filename="../src/kdocker.cpp" line="124"/>
@@ -280,7 +277,7 @@ Creato da %1. Aggiornato e mantenuto da: %2.</translation>
     <message>
         <location filename="../src/trayitem.cpp" line="549"/>
         <source>Iconify on close</source>
-        <translation type="unfinished"></translation>
+        <translation>Riduci ad icona quando chiuso</translation>
     </message>
     <message>
         <location filename="../src/trayitem.cpp" line="555"/>
@@ -367,12 +364,12 @@ Clicca sull&apos;icona corrispondente nel vassoio di sistema per commutare.</tra
     <message>
         <location filename="../src/xlibutil.cpp" line="280"/>
         <source>Failed to create XC_draped_box</source>
-        <translation type="unfinished"></translation>
+        <translation>Impossibile creare XC_draped_box</translation>
     </message>
     <message>
         <location filename="../src/xlibutil.cpp" line="285"/>
         <source>Failed to grab mouse</source>
-        <translation type="unfinished"></translation>
+        <translation>Impossibile catturare il mouse</translation>
     </message>
 </context>
 </TS>
