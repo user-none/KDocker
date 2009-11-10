@@ -23,7 +23,9 @@
 #include <QObject>
 #include <QString>
 
-class Constants {
+class Constants : QObject {
+    Q_OBJECT
+
 public:
     static const QString ORG_NAME;
     static const QString DOM_NAME;

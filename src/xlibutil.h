@@ -22,13 +22,16 @@
 #define _XLIBUTIL_H
 
 #include <QList>
+#include <QObject>
 #include <QString>
 
 #include <sys/types.h>
 
 #include <X11/Xlib.h>
 
-class XLibUtil {
+class XLibUtil : public QObject {
+    Q_OBJECT
+
 public:
     static bool isNormalWindow(Display *display, Window w);
     static bool isValidWindowId(Display *display, Window w);
@@ -38,7 +41,7 @@ public:
     static Window findWindow(Display *display, Window w, bool checkNormality, const QString &ename, QList<Window> dockedWindows = QList<Window>());
     static void sendMessage(Display *display, Window to, Window w, const char *type, int format, long mask, void *data, int size);
     static Window activeWindow(Display *display);
-    static Window selectWindow(Display *display, const char **err = 0);
+    static Window selectWindow(Display *display, QString &error);
     static void subscribe(Display *display, Window w, long mask, bool set);
     static bool getCardinalProperty(Display *display, Window w, Atom prop, long *data);
 };

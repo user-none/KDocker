@@ -271,26 +271,18 @@ Window XLibUtil::activeWindow(Display * display) {
  * Requests user to select a window by grabbing the mouse. A left click will
  * select the application. Clicking any other button will abort the selection
  */
-Window XLibUtil::selectWindow(Display *display, const char **err) {
+Window XLibUtil::selectWindow(Display *display, QString &error) {
     int screen = DefaultScreen(display);
     Window root = RootWindow(display, screen);
 
-    if (err) {
-        *err = NULL;
-    }
-
     Cursor cursor = XCreateFontCursor(display, XC_draped_box);
     if (cursor == None) {
-        if (err) {
-            *err = "Failed to create XC_draped_box";
-        }
+        error = tr("Failed to create XC_draped_box");
         return None;
     }
 
     if (XGrabPointer(display, root, false, ButtonPressMask | ButtonReleaseMask, GrabModeSync, GrabModeAsync, None, cursor, CurrentTime) != GrabSuccess) {
-        if (err) {
-            *err = "Failed to grab mouse";
-        }
+        error = tr("Failed to grab mouse");
         return None;
     }
 

@@ -599,7 +599,7 @@ QIcon TrayItem::createIcon(Window window) {
     if (!window_icon) {
         appIcon.load(":/images/question.png");
     } else {
-        appIcon = QPixmap((const char **) window_icon);
+        appIcon = QPixmap(const_cast<const char **> (window_icon));
     }
     if (window_icon) {
         XpmFree(window_icon);

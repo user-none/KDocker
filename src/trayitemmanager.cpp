@@ -250,11 +250,11 @@ Window TrayItemManager::userSelectWindow(bool checkNormality) {
     out << tr("Select the application/window to dock with the left mouse button.") << endl;
     out << tr("Click any other mouse button to abort.") << endl;
 
-    const char *error = 0;
-    Window window = XLibUtil::selectWindow(QX11Info::display(), &error);
+    QString error;
+    Window window = XLibUtil::selectWindow(QX11Info::display(), error);
     if (!window) {
-        if (error) {
-            QMessageBox::critical(0, qApp->applicationName(), tr(error));
+        if (error != QString()) {
+            QMessageBox::critical(0, qApp->applicationName(), error);
         }
         checkCount();
         return 0;
