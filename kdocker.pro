@@ -1,5 +1,5 @@
 TEMPLATE = app
-CONFIG += qt debug
+CONFIG += qt
 TARGET = kdocker
 
 include(solutions/qtsingleapplication/qtsingleapplication.pri)
@@ -9,7 +9,7 @@ INCLUDEPATH += . src  /usr/include/X11
 LIBPATH += /usr/X11/lib
 LIBS = -lX11 -lXpm -lXmu
 
-INSTALL_PATH = /usr/local/share/kdocker
+INSTALL_PATH = /usr/share/kdocker
 
 TRANSLATIONS += i18n/kdocker_it_IT.ts
 
@@ -39,7 +39,7 @@ desktop.files = helpers/kdocker.desktop
 completion.path = /etc/bash_completion.d
 completion.files = helpers/kdocker
 
-target.path = /usr/local/bin
+target.path = /usr/bin
 
 INSTALLS += target icons desktop completion translations
 
