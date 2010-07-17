@@ -1,7 +1,7 @@
 for version 4.4
     - Remove window manager decoration close button can optionally iconify. It
       ended up causing many issues. Fixes:
-      - Drag and drop
+      - Drag and drop.
       - Moving borderless windows (chrome).
       - Windows moving slightly when undocking.
       - Focus bug (#600045).
