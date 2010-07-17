@@ -27,7 +27,6 @@
 #include <QObject>
 #include <QString>
 #include <QSystemTrayIcon>
-#include <QX11EmbedContainer>
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -41,7 +40,6 @@ struct TrayItemSettings {
     bool sticky;
     bool iconifyObscure;
     bool iconifyFocusLost;
-    bool iconifyOnClose;
 };
 
 class TrayItem : public QSystemTrayIcon {
@@ -51,17 +49,15 @@ public:
     TrayItem(Window window);
     ~TrayItem();
 
-    Window containerWindow();
-    Window embedWindow();
+    Window dockedWindow();
 
-    // Handle the X11 events we are interested in for the container and
-    // embedded window.
+    // Pass on all events through this interface
     bool x11EventFilter(XEvent * event);
 
 public slots:
     void restoreWindow();
     void iconifyWindow();
-    // Close the embedded window
+    // Close the window
     void closeWindow();
 
     void doSkipTaskbar();
@@ -76,7 +72,6 @@ public slots:
     void setIconifyMinimized(bool value);
     void setIconifyObscure(bool value);
     void setIconifyFocusLost(bool value);
-    void setIconifyOnClose(bool value);
     void setBalloonTimeout(int value);
     void setBalloonTimeout(bool value);
 
@@ -100,7 +95,6 @@ private:
     void minimizeEvent();
     void destroyEvent();
     bool propertyChangeEvent(Atom property);
-    bool updateEmbedProperty(Atom property);
     void obscureEvent();
     void focusLostEvent();
 
@@ -116,6 +110,7 @@ private:
 
     bool isBadWindow();
 
+    bool m_iconified;
     bool m_customIcon;
     bool m_skipTaskbar;
     bool m_skipPager;
@@ -123,13 +118,12 @@ private:
     bool m_iconifyMinimized;
     bool m_iconifyObscure;
     bool m_iconifyFocusLost;
-    bool m_iconifyOnClose;
     int m_balloonTimeout;
 
-    QX11EmbedContainer *m_container;
-
-    XSizeHints m_sizeHint; // SizeHint of m_window
-    Window m_window; // The window that is associated with the tray icon.
+    // SizeHint of m_window
+    XSizeHints m_sizeHint;
+    // The window that is associated with the tray icon.
+    Window m_window;
     long m_desktop;
     QString m_dockedAppName;
 
@@ -142,7 +136,6 @@ private:
     QAction *m_actionIconifyMinimized;
     QAction *m_actionIconifyObscure;
     QAction *m_actionIconifyFocusLost;
-    QAction *m_actionIconifyOnClose;
     QAction *m_actionBalloonTitleChanges;
     QAction *m_actionToggle;
 

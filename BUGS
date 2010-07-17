@@ -4,7 +4,4 @@ Bugs and wishes to https://bugs.launchpad.net/kdocker
 Known issues:
 ---
 * Robust error reporting from 1.x have not been implemented in 4.x.
-* Drag-and-drop does not work correctly for docked windows.
-* Borderless windows have to be moved with Alt+Left click.
-* Helper windows (XMMS equalizer) will not be iconified when iconifing main window.
 

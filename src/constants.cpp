@@ -22,8 +22,8 @@
 const QString Constants::ORG_NAME = "net.launchpad.kdocker";
 const QString Constants::DOM_NAME = "launchpad.net/kdocker";
 const QString Constants::APP_NAME = "KDocker";
-const QString Constants::APP_VERSION = "4.3";
+const QString Constants::APP_VERSION = "4.4";
 
-const char *Constants::OPTIONSTRING = "+abcd:fhi:lmn:op:qrstvuw:x:y";
+const char *Constants::OPTIONSTRING = "+abd:fhi:lmn:op:qrstvuw:x:y";
 
 const QString Constants::ABOUT_MESSAGE = tr("KDocker will help you dock any application into the system tray. This means you can dock openoffice, xmms, firefox, thunderbird, anything! Just point and click. Works for all NET WM compliant window managers - that includes KDE, GNOME, Xfce, Fluxbox and many more.\n\nCreated by %1. Updated and maintained by %2.").arg("Girish Ramakrishnan").arg("John Schember");

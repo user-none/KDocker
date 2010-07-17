@@ -1,3 +1,15 @@
+for version 4.4
+    - Remove window manager decoration close button can optionally iconify. It
+      ended up causing many issues. Fixes:
+      - Drag and drop
+      - Moving borderless windows (chrome).
+      - Windows moving slightly when undocking.
+      - Focus bug (#600045).
+    - Remove -c option.
+    - Add help text for -i option.
+    - Update INSTALL.
+    - Default install path is now /usr instead of /usr/local.
+
 for version 4.3
     - Use QtSingleApplication.
     - Window manager decoration close button can optionally iconify.

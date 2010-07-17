@@ -65,7 +65,7 @@ bool TrayItemManager::x11EventFilter(XEvent *ev) {
     TrayItem *t;
     while (ti.hasNext()) {
         t = ti.next();
-        if (ev->xclient.window == t->containerWindow() || ev->xclient.window == t->embedWindow()) {
+        if (ev->xclient.window == t->dockedWindow()) {
             return t->x11EventFilter(ev);
         }
     }
@@ -89,7 +89,6 @@ void TrayItemManager::processCommand(const QStringList &args) {
     settings.sticky = false;
     settings.iconifyObscure = false;
     settings.iconifyFocusLost = false;
-    settings.iconifyOnClose = true;
 
     // Turn the QStringList of arguments into something getopt can use.
     QList<QByteArray> bargs;
@@ -116,9 +115,6 @@ void TrayItemManager::processCommand(const QStringList &args) {
                 return;
             case 'b':
                 checkNormality = false;
-                break;
-            case 'c':
-                settings.iconifyOnClose = false;
                 break;
             case 'd':
                 maxTime = atoi(optarg);
@@ -224,7 +220,6 @@ void TrayItemManager::dockWindow(Window window, TrayItemSettings settings) {
     ti->setSkipTaskbar(settings.skipTaskbar);
     ti->setIconifyObscure(settings.iconifyObscure);
     ti->setIconifyFocusLost(settings.iconifyFocusLost);
-    ti->setIconifyOnClose(settings.iconifyOnClose);
 
     connect(ti, SIGNAL(selectAnother()), this, SLOT(selectAndIconify()));
     connect(ti, SIGNAL(dead(TrayItem*)), this, SLOT(remove(TrayItem*)));
@@ -315,7 +310,6 @@ void TrayItemManager::selectAndIconify() {
         settings.sticky = false;
         settings.iconifyObscure = false;
         settings.iconifyFocusLost = false;
-        settings.iconifyOnClose = true;
 
         dockWindow(window, settings);
     }
@@ -332,7 +326,7 @@ QList<Window> TrayItemManager::dockedWindows() {
 
     QListIterator<TrayItem*> ti(m_trayItems);
     while (ti.hasNext()) {
-        windows.append(ti.next()->containerWindow());
+        windows.append(ti.next()->dockedWindow());
     }
 
     return windows;
