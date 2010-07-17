@@ -1,4 +1,5 @@
 build/
 nbproject/
 kdocker
+kdocker.pro.user
 Makefile
