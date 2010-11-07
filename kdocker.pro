@@ -6,7 +6,7 @@ include(solutions/qtsingleapplication/qtsingleapplication.pri)
 
 DEPENDPATH += src
 INCLUDEPATH += . src  /usr/include/X11
-LIBPATH += /usr/X11/lib
+QMAKE_LIBDIR += /usr/X11/lib
 LIBS = -lX11 -lXpm -lXmu
 
 INSTALL_PATH = /usr/share/kdocker

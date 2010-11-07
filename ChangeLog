@@ -1,3 +1,11 @@
+for version 4.5
+    - Change -n option behavior:
+      - -n now acts as -n -y.
+      - Name matching now matches any running application. Previously it would
+        only match when launching an application.
+    - Remove -y option.
+    - Change a number of casts from C style to C++ style.
+
 for version 4.4
     - Remove window manager decoration close button can optionally iconify. It
       ended up causing many issues. Fixes:

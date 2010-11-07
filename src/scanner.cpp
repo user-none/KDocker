@@ -41,21 +41,23 @@ Scanner::~Scanner() {
     delete m_timer;
 }
 
-void Scanner::enqueue(const QString &command, const QStringList &arguments, TrayItemSettings settings, int maxTime, bool checkNormality, bool windowNameMatch, const QString &windowName) {
-    qint64 pid;
-    QString name;
+void Scanner::enqueue(const QString &command, const QStringList &arguments, TrayItemSettings settings, int maxTime, bool checkNormality, const QString &windowName) {
+    qint64 pid = 0;
+    bool started = true;
 
     if (maxTime <= 0) {
         maxTime = 1;
     }
-    if (windowName.isEmpty()) {
-        name = command.split("/").last();
-    } else {
-        name = windowName;
+
+    ProcessId processId = {command, 0, settings, 0, maxTime, checkNormality, windowName};
+    if (!command.isEmpty()) {
+        // Launched the requested application.
+        started = QProcess::startDetached(command, arguments, "", &pid);
     }
 
-    if (QProcess::startDetached(command, arguments, "", &pid)) {
-        ProcessId processId = {command, (pid_t) pid, settings, 0, maxTime, checkNormality, windowNameMatch, name};
+    if (started) {
+        // Either the application started properly or we are matching by name.
+        processId.pid = static_cast<pid_t>(pid);
         m_processes.append(processId);
         m_timer->start();
     } else {
@@ -75,12 +77,12 @@ void Scanner::check() {
         pi.setValue(id);
 
         Window w = None;
-        if (id.windowNameMatch || kill(id.pid, 0) == -1) {
-            // Check based on window name if force matching by window name is set or the PID is not valid.
-            w = XLibUtil::findWindow(QX11Info::display(), QX11Info::appRootWindow(), id.checkNormality, id.windowName, m_manager->dockedWindows());
-        } else {
-            // Check based on PID if it is still valid.
+        if (id.windowName.isEmpty()) {
+            // Check based on PID.
             w = XLibUtil::pidToWid(QX11Info::display(), QX11Info::appRootWindow(), id.checkNormality, id.pid);
+        } else {
+            // Check based on window name if the user specified a window name to match with.
+            w = XLibUtil::findWindow(QX11Info::display(), QX11Info::appRootWindow(), id.checkNormality, id.windowName, m_manager->dockedWindows());
         }
 
         if (w != None) {

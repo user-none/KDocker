@@ -126,7 +126,7 @@ void KDocker::printHelp() {
     out << "-i file\t" << tr("Set the tray icon to file") << endl;
     out << "-l     \t" << tr("Iconify when focus lost") << endl;
     out << "-m     \t" << tr("Keep application window showing (dont hide on dock)") << endl;
-    out << "-n name\t" << tr("Name used for matching when running command (fall back in case command is a launcher so pid and command won't match the window tile or class)") << endl;
+    out << "-n name\t" << tr("Match window based on window title") << endl;
     out << "-o     \t" << tr("Iconify when obscured") << endl;
     out << "-p secs\t" << tr("Set ballooning timeout (popup time)") << endl;
     out << "-q     \t" << tr("Disable ballooning title changes (quiet)") << endl;
@@ -134,9 +134,8 @@ void KDocker::printHelp() {
     out << "-s     \t" << tr("Make the window sticky (appears on all desktops)") << endl;
     out << "-t     \t" << tr("Remove this application from the taskbar") << endl;
     out << "-v     \t" << tr("Display version") << endl;
-    out << "-w wid \t" << tr("Window id of the application to dock") << endl;
-    out << "-x pid \t" << tr("Process id of the application to dock") << endl;
-    out << "-y     \t" << tr("Force matching of command by using name instead of pid") << endl;
+    out << "-w wid \t" << tr("Window id of the application to dock. Assumes hex number of the form 0x###...") << endl;
+    out << "-x pid \t" << tr("Process id of the application to dock. Assumes decimal number of the form ###...") << endl;
     out << endl;
     out << tr("Bugs and wishes to https://bugs.launchpad.net/kdocker") << endl;
     out << tr("Project information at https://launchpad.net/kdocker") << endl;

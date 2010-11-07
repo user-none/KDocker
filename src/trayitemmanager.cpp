@@ -78,7 +78,6 @@ void TrayItemManager::processCommand(const QStringList &args) {
     pid_t pid = 0;
     Window window = 0;
     bool checkNormality = true;
-    bool windowNameMatch = false;
     int maxTime = 5;
     QString windowName;
     TrayItemSettings settings;
@@ -158,10 +157,11 @@ void TrayItemManager::processCommand(const QStringList &args) {
                 settings.skipTaskbar = true;
                 break;
             case 'w':
-                if ((optarg[1] == 'x') || (optarg[1] == 'X'))
-                    sscanf(optarg, "%x", (unsigned *) & window);
-                else
-                    window = (Window) atoi(optarg);
+                if (((sizeof(optarg) / sizeof(*optarg)) > 2) && (optarg[1] == 'x') || (optarg[1] == 'X')) {
+                    sscanf(optarg, "%x", dynamic_cast<unsigned *>(&window));
+                } else {
+                    window = static_cast<Window>(atoi(optarg));
+                }
                 if (!XLibUtil::isValidWindowId(QX11Info::display(), window)) {
                     QMessageBox::critical(0, qApp->applicationName(), tr("Invalid window id."));
                     checkCount();
@@ -171,19 +171,24 @@ void TrayItemManager::processCommand(const QStringList &args) {
             case 'x':
                 pid = atol(optarg);
                 break;
-            case 'y':
-                windowNameMatch = true;
-                break;
         } // switch (option)
     } // while (getopt)
 
-    if (optind < argc) {
-        QString command = argv[optind];
+    if (optind < argc || !windowName.isEmpty()) {
+        // We are either launching an application and or matching by name.
+        QString command;
         QStringList arguments;
-        for (int i = optind + 1; i < argc; i++) {
-            arguments << QString::fromLocal8Bit(argv[i]);
+
+        // Store the command and it's arguments if the user specified them.
+        if (optind < argc) {
+            command = argv[optind];
+            for (int i = optind + 1; i < argc; i++) {
+                arguments << QString::fromLocal8Bit(argv[i]);
+            }
         }
-        m_scanner->enqueue(command, arguments, settings, maxTime, checkNormality, windowNameMatch, windowName);
+
+        // Add the parameters the scanner should use to match. If a command was specified it will be started by the scanner.
+        m_scanner->enqueue(command, arguments, settings, maxTime, checkNormality, windowName);
         checkCount();
     } else {
         if (!window) {

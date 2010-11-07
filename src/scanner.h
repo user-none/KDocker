@@ -41,7 +41,6 @@ struct ProcessId {
     int count;
     int maxCount;
     bool checkNormality;
-    bool windowNameMatch;
     QString windowName;
 };
 
@@ -53,7 +52,7 @@ class Scanner : public QObject {
 public:
     Scanner(TrayItemManager *manager);
     ~Scanner();
-    void enqueue(const QString &command, const QStringList &arguments, TrayItemSettings settings, int maxTime = 30, bool checkNormality = true, bool windowNameMatch = false, const QString &windowName = QString());
+    void enqueue(const QString &command, const QStringList &arguments, TrayItemSettings settings, int maxTime = 30, bool checkNormality = true, const QString &windowName = QString());
     bool isRunning();
 
 private slots:
