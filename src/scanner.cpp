@@ -80,7 +80,7 @@ void Scanner::check() {
         if (id.windowName.isEmpty()) {
             if (kill(id.pid, 0) == -1) {
                 // PID does not exist; fall back to name matching.
-                id.windowName = command.split("/").last();
+                id.windowName = id.command.split("/").last();
                 pi.setValue(id);
             } else {
                 // Check based on PID.
