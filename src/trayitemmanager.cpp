@@ -157,8 +157,8 @@ void TrayItemManager::processCommand(const QStringList &args) {
                 settings.skipTaskbar = true;
                 break;
             case 'w':
-                if (((sizeof(optarg) / sizeof(*optarg)) > 2) && (optarg[1] == 'x') || (optarg[1] == 'X')) {
-                    sscanf(optarg, "%x", dynamic_cast<unsigned *>(&window));
+                if (((sizeof(optarg) / sizeof(*optarg)) > 2) && ((optarg[1] == 'x') || (optarg[1] == 'X'))) {
+                    sscanf(optarg, "%x", reinterpret_cast<unsigned *>(&window));
                 } else {
                     window = static_cast<Window>(atoi(optarg));
                 }
