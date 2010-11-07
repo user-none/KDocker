@@ -78,9 +78,17 @@ void Scanner::check() {
 
         Window w = None;
         if (id.windowName.isEmpty()) {
-            // Check based on PID.
-            w = XLibUtil::pidToWid(QX11Info::display(), QX11Info::appRootWindow(), id.checkNormality, id.pid);
-        } else {
+            if (kill(id.pid, 0) == -1) {
+                // PID does not exist; fall back to name matching.
+                id.windowName = command.split("/").last();
+                pi.setValue(id);
+            } else {
+                // Check based on PID.
+                w = XLibUtil::pidToWid(QX11Info::display(), QX11Info::appRootWindow(), id.checkNormality, id.pid);
+            }
+        }
+        // Use an if instead of else because the windowName could be set previously if the PID does not exist.
+        if (!id.windowName.isEmpty()) {
             // Check based on window name if the user specified a window name to match with.
             w = XLibUtil::findWindow(QX11Info::display(), QX11Info::appRootWindow(), id.checkNormality, id.windowName, m_manager->dockedWindows());
         }
