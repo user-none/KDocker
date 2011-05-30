@@ -1,3 +1,8 @@
+for version 4.6
+    - Fix bug with windows not showing after being restored when KWin is the
+      WM.
+    - Fix bug with restored windows not gaining focus when KWin is the WM.
+
 for version 4.5
     - Change -n option behavior:
       - -n now acts as -n -y.

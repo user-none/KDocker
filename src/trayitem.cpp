@@ -46,6 +46,8 @@ TrayItem::TrayItem(Window window) {
     m_dockedAppName = "";
     m_window = window;
 
+    m_is_restoring = false;
+
     Display *display = QX11Info::display();
 
     // Allows events from m_window to be forwarded to the x11EventFilter.
@@ -113,6 +115,8 @@ void TrayItem::restoreWindow() {
         return;
     }
 
+    m_is_restoring = true;
+
     Display *display = QX11Info::display();
     Window root = QX11Info::appRootWindow();
 
@@ -135,7 +139,7 @@ void TrayItem::restoreWindow() {
 
         updateToggleAction();
     }
-    XRaiseWindow(display, m_window);
+    XMapRaised(display, m_window);
 
     // Change to the desktop that the window was last on.
     long l_currDesk[2] = {m_desktop, CurrentTime};
@@ -145,17 +149,33 @@ void TrayItem::restoreWindow() {
     XLibUtil::sendMessage(display, root, m_window, "_NET_WM_DESKTOP", 32, SubstructureNotifyMask | SubstructureRedirectMask, l_wmDesk, sizeof (l_wmDesk));
 
     // Make it the active window
-    // 1 == request sent from application. 2 == from pager
-    long l_active[2] = {1, CurrentTime};
+    // 1 == request sent from application. 2 == from pager.
+    // We use 2 because KWin doesn't always give the window focus with 1.
+    long l_active[2] = {2, CurrentTime};
     XLibUtil::sendMessage(display, root, m_window, "_NET_ACTIVE_WINDOW", 32, SubstructureNotifyMask | SubstructureRedirectMask, l_active, sizeof (l_active));
     XSetInputFocus(display, m_window, RevertToParent, CurrentTime);
 
     updateToggleAction();
     doSkipTaskbar();
+
+    /*
+     * Wait half a second to ensure the window is fully restored.
+     * This and m_is_restoring are a work around for KWin.
+     * KWin is the only WM that will send a PropertyNotify
+     * event with the Iconic state set because of the above
+     * XIconifyWindow call.
+     */
+    QTime t;
+    t.start();
+    while (t.elapsed() < 500) {
+        qApp->processEvents();
+    }
+
+    m_is_restoring = false;
 }
 
 void TrayItem::iconifyWindow() {
-    if (isBadWindow()) {
+    if (isBadWindow() || m_is_restoring) {
         return;
     }
 
@@ -287,7 +307,7 @@ void TrayItem::setBalloonTimeout(bool value) {
 }
 
 void TrayItem::toggleWindow() {
-    if (m_iconified) {
+    if (m_iconified || m_window != XLibUtil::activeWindow(QX11Info::display())) {
         restoreWindow();
     } else {
         iconifyWindow();

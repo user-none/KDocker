@@ -22,7 +22,7 @@
 const QString Constants::ORG_NAME = "net.launchpad.kdocker";
 const QString Constants::DOM_NAME = "launchpad.net/kdocker";
 const QString Constants::APP_NAME = "KDocker";
-const QString Constants::APP_VERSION = "4.5";
+const QString Constants::APP_VERSION = "4.6";
 
 const char *Constants::OPTIONSTRING = "+abd:fhi:lmn:op:qrstvuw:x:";
 

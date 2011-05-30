@@ -120,6 +120,8 @@ private:
     bool m_iconifyFocusLost;
     int m_balloonTimeout;
 
+    bool m_is_restoring;
+
     // SizeHint of m_window
     XSizeHints m_sizeHint;
     // The window that is associated with the tray icon.
