@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2009 John Schember <john@nachtimwald.com>
+ *  Copyright (C) 2009, 2012 John Schember <john@nachtimwald.com>
  *  Copyright (C) 2004 Girish Ramakrishnan All Rights Reserved.
  *
  * This is free software; you can redistribute it and/or modify
@@ -121,9 +121,12 @@ void KDocker::printHelp() {
     out << "-a     \t" << tr("Show author information") << endl;
     out << "-b     \t" << tr("Don't warn about non-normal windows (blind mode)") << endl;
     out << "-d secs\t" << tr("Maximum time in seconds to allow for command to start and open a window (defaults to 5 sec)") << endl;
+    out << "-e type\t" << tr("Name matting syntax. Choices are 'n', 'r', 'u', 'w', 'x'. n = normal, substring matching (default). r = regex. u = unix wildcard. w = wildcard. x = W3C XML Schema 1.1.") << endl;
     out << "-f     \t" << tr("Dock window that has focus (active window)") << endl;
     out << "-h     \t" << tr("Display this help") << endl;
     out << "-i file\t" << tr("Set the tray icon to file") << endl;
+    out << "-j     \t" << tr("Case senstive name (title) matching") << endl;
+    out << "-k     \t" << tr("Regex minimal matching") << endl;
     out << "-l     \t" << tr("Iconify when focus lost") << endl;
     out << "-m     \t" << tr("Keep application window showing (dont hide on dock)") << endl;
     out << "-n name\t" << tr("Match window based on window title") << endl;

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2009 John Schember <john@nachtimwald.com>
+ *  Copyright (C) 2009, 2012 John Schember <john@nachtimwald.com>
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 
 #include <QList>
 #include <QObject>
+#include <QRegExp>
 #include <QString>
 #include <QTimer>
 
@@ -41,7 +42,7 @@ struct ProcessId {
     int count;
     int maxCount;
     bool checkNormality;
-    QString windowName;
+    QRegExp windowName;
 };
 
 // Launches commands and looks for the window ids they create.
@@ -52,7 +53,7 @@ class Scanner : public QObject {
 public:
     Scanner(TrayItemManager *manager);
     ~Scanner();
-    void enqueue(const QString &command, const QStringList &arguments, TrayItemSettings settings, int maxTime = 30, bool checkNormality = true, const QString &windowName = QString());
+    void enqueue(const QString &command, const QStringList &arguments, TrayItemSettings settings, int maxTime = 30, bool checkNormality = true, const QRegExp &windowName = QRegExp());
     bool isRunning();
 
 private slots:

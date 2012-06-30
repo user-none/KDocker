@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2009 John Schember <john@nachtimwald.com>
+ *  Copyright (C) 2009, 2012 John Schember <john@nachtimwald.com>
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@ Scanner::~Scanner() {
     delete m_timer;
 }
 
-void Scanner::enqueue(const QString &command, const QStringList &arguments, TrayItemSettings settings, int maxTime, bool checkNormality, const QString &windowName) {
+void Scanner::enqueue(const QString &command, const QStringList &arguments, TrayItemSettings settings, int maxTime, bool checkNormality, const QRegExp &windowName) {
     qint64 pid = 0;
     bool started = true;
 
@@ -80,7 +80,8 @@ void Scanner::check() {
         if (id.windowName.isEmpty()) {
             if (kill(id.pid, 0) == -1) {
                 // PID does not exist; fall back to name matching.
-                id.windowName = id.command.split("/").last();
+                id.windowName.setPattern(id.command.split("/").last());
+                id.windowName.setPatternSyntax(QRegExp::FixedString);
                 pi.setValue(id);
             } else {
                 // Check based on PID.

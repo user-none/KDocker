@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2009 John Schember <john@nachtimwald.com>
+ *  Copyright (C) 2009, 2012 John Schember <john@nachtimwald.com>
  *  Copyright (C) 2004 Girish Ramakrishnan All Rights Reserved.
  *
  * This is free software; you can redistribute it and/or modify
@@ -79,7 +79,8 @@ void TrayItemManager::processCommand(const QStringList &args) {
     Window window = 0;
     bool checkNormality = true;
     int maxTime = 5;
-    QString windowName;
+    QRegExp windowName;
+    windowName.setPatternSyntax(QRegExp::FixedString);
     TrayItemSettings settings;
     settings.balloonTimeout = 4000;
     settings.iconify = true;
@@ -118,6 +119,22 @@ void TrayItemManager::processCommand(const QStringList &args) {
             case 'd':
                 maxTime = atoi(optarg);
                 break;
+            case 'e':
+                if (QString::fromLocal8Bit(optarg).compare("n") == 0) {
+                    windowName.setPatternSyntax(QRegExp::FixedString);
+                } else if (QString::fromLocal8Bit(optarg).compare("r") == 0) {
+                    windowName.setPatternSyntax(QRegExp::RegExp2);
+                } else if (QString::fromLocal8Bit(optarg).compare("u") == 0) {
+                    windowName.setPatternSyntax(QRegExp::WildcardUnix);
+                } else if (QString::fromLocal8Bit(optarg).compare("w") == 0) {
+                    windowName.setPatternSyntax(QRegExp::Wildcard);
+                } else if (QString::fromLocal8Bit(optarg).compare("x") == 0) {
+                    windowName.setPatternSyntax(QRegExp::W3CXmlSchema11);
+                } else {
+                    QMessageBox::critical(0, qApp->applicationName(), tr("Invalid name matting option: %1.\n\nChoices are: %2.").arg(optarg).arg("n, r, u, w, x"));
+                    checkCount();
+                    return;
+                }
             case 'f':
                 window = XLibUtil::activeWindow(QX11Info::display());
                 if (!window) {
@@ -129,6 +146,12 @@ void TrayItemManager::processCommand(const QStringList &args) {
             case 'i':
                 settings.customIcon = QString::fromLocal8Bit(optarg);
                 break;
+            case 'j':
+                windowName.setCaseSensitivity(Qt::CaseSensitive);
+                break;
+            case 'k':
+                windowName.setMinimal(true);
+                break;
             case 'l':
                 settings.iconifyFocusLost = true;
                 break;
@@ -136,7 +159,7 @@ void TrayItemManager::processCommand(const QStringList &args) {
                 settings.iconify = false;
                 break;
             case 'n':
-                windowName = QString::fromLocal8Bit(optarg);
+                windowName.setPattern(QString::fromLocal8Bit(optarg));
                 break;
             case 'o':
                 settings.iconifyObscure = true;

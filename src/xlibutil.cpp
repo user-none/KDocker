@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2009 John Schember <john@nachtimwald.com>
+ *  Copyright (C) 2009, 2012 John Schember <john@nachtimwald.com>
  *  Copyright (C) 2004 Girish Ramakrishnan All Rights Reserved.
  *	
  * This is free software; you can redistribute it and/or modify
@@ -154,7 +154,7 @@ Window XLibUtil::pidToWid(Display *display, Window window, bool checkNormality, 
  * The Grand Window Analyzer. Checks if window w has a expected pid of epid
  * or a expected name of ename.
  */
-bool XLibUtil::analyzeWindow(Display *display, Window w, const QString &ename) {
+bool XLibUtil::analyzeWindow(Display *display, Window w, const QRegExp &ename) {
     XClassHint ch;
 
     // no plans to analyze windows without a name
@@ -171,15 +171,15 @@ bool XLibUtil::analyzeWindow(Display *display, Window w, const QString &ename) {
     bool this_is_our_man = false;
     // lets try the program name
     if (XGetClassHint(display, w, &ch)) {
-        if (QString(ch.res_name).indexOf(ename, 0, Qt::CaseInsensitive) != -1) {
+        if (QString(ch.res_name).contains(ename)) {
             this_is_our_man = true;
-        } else if (QString(ch.res_class).indexOf(ename, 0, Qt::CaseInsensitive) != -1) {
+        } else if (QString(ch.res_class).contains(ename)) {
             this_is_our_man = true;
         } else {
             // sheer desperation
             char *wm_name = NULL;
             XFetchName(display, w, &wm_name);
-            if (wm_name && (QString(wm_name).indexOf(ename, 0, Qt::CaseInsensitive) != -1)) {
+            if (wm_name && QString(wm_name).contains(ename)) {
                 this_is_our_man = true;
             }
         }
@@ -192,7 +192,7 @@ bool XLibUtil::analyzeWindow(Display *display, Window w, const QString &ename) {
         }
     }
 
-    // its probably a good idea to check (obsolete) WM_COMMAND here
+    // it's probably a good idea to check (obsolete) WM_COMMAND here
     return this_is_our_man;
 }
 
@@ -200,7 +200,7 @@ bool XLibUtil::analyzeWindow(Display *display, Window w, const QString &ename) {
  * Given a starting window look though all children and try to find a window
  * that matches the ename.
  */
-Window XLibUtil::findWindow(Display *display, Window window, bool checkNormality, const QString &ename, QList<Window> dockedWindows) {
+Window XLibUtil::findWindow(Display *display, Window window, bool checkNormality, const QRegExp &ename, QList<Window> dockedWindows) {
     Window w = None;
     Window root;
     Window parent;

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2009 John Schember <john@nachtimwald.com>
+ *  Copyright (C) 2009, 2012 John Schember <john@nachtimwald.com>
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,6 @@ const QString Constants::DOM_NAME = "launchpad.net/kdocker";
 const QString Constants::APP_NAME = "KDocker";
 const QString Constants::APP_VERSION = "4.7";
 
-const char *Constants::OPTIONSTRING = "+abd:fhi:lmn:op:qrstvuw:x:";
+const char *Constants::OPTIONSTRING = "+abd:e:fhi:jklmn:op:qrstvuw:x:";
 
 const QString Constants::ABOUT_MESSAGE = tr("KDocker will help you dock any application into the system tray. This means you can dock openoffice, xmms, firefox, thunderbird, anything! Just point and click. Works for all NET WM compliant window managers - that includes KDE, GNOME, Xfce, Fluxbox and many more.\n\nCreated by %1. Updated and maintained by %2.").arg("Girish Ramakrishnan").arg("John Schember");
