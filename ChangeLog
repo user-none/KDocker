@@ -1,3 +1,9 @@
+for version 4.8
+	- Add option -e option to specify pattern matching type.
+	  Accepts n = normal, r = regex, u = unix wildcard, w = wildcard,
+	  x = xml schema 1.1.
+	- Add option -j to enable case senstive matching.
+	- Add option -k to set regex minimal matching.
 for version 4.7
     - Fix install location of icon referenced by .desktop file so that it
       shows properly.
