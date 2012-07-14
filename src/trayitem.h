@@ -22,6 +22,7 @@
 #define	_TRAYITEM_H
 
 #include <QAction>
+#include <QEvent>
 #include <QIcon>
 #include <QMenu>
 #include <QObject>
@@ -90,6 +91,9 @@ signals:
     void undockAll();
     void undock(TrayItem*);
     void about();
+
+protected:
+    bool event(QEvent *e);
 
 private:
     void minimizeEvent();

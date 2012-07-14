@@ -1,9 +1,12 @@
 for version 4.8
-	- Add option -e option to specify pattern matching type.
-	  Accepts n = normal, r = regex, u = unix wildcard, w = wildcard,
-	  x = xml schema 1.1.
-	- Add option -j to enable case senstive matching.
-	- Add option -k to set regex minimal matching.
+    - Scrolling (mouse scroll wheel event) on icon can raise and iconify
+      window.
+    - Add option -e option to specify pattern matching type.
+      Accepts n = normal, r = regex, u = unix wildcard, w = wildcard,
+      x = xml schema 1.1.
+    - Add option -j to enable case senstive matching.
+    - Add option -k to set regex minimal matching.
+
 for version 4.7
     - Fix install location of icon referenced by .desktop file so that it
       shows properly.
@@ -106,7 +109,7 @@ for version 1.1
 for version 1.0 CR1
     - Russian translations by Aleksey Kirpichnikov
     - Brazilian Portugese translations by Paulo Ruthes
-	
+
 for version 1.0
     - Spanish translations are back in (Thanks Edulix)
     - Yet another fix for xmms
@@ -120,7 +123,7 @@ for version 1.0 rc2
     - Czech translations by Jiri Hofman
     - Drag and drop support for Antonio C. Censi
     - Xmms+PlayList fix (for KDE)
- 
+
 for version 1.0 rc1
     - Session Management support (XSMP) for KDE and GNOME
     - AutoLaunch application support that do not support Session Management
@@ -129,7 +132,7 @@ for version 1.0 rc1
     - Fix GNOME docked icon resize issue
     - Track tray label appearance and disappearance handling
     - Major code refactoring. QTrayLabel is now a very reusable class
-   
+
 for version 0.9
     - Support to dock the active window (useful with keyboard shortcuts) -f
       Was requested by Daniel
@@ -159,7 +162,7 @@ for version 0.5
     - Support to remember the position
     - Support to close application
     - Support to remove application from the task bar
- 
+
 for version 0.4
     - Add dock on obscure
     - Add dock on minimise

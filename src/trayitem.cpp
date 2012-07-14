@@ -26,6 +26,7 @@
 #include <QStringList>
 #include <QTime>
 #include <QX11Info>
+#include <QWheelEvent>
 
 #include "trayitem.h"
 #include "xlibutil.h"
@@ -327,6 +328,20 @@ void TrayItem::trayActivated(QSystemTrayIcon::ActivationReason reason) {
 
 void TrayItem::doAbout() {
     emit(about());
+}
+
+bool TrayItem::event(QEvent *e) {
+    if (e->type() == QEvent::Wheel) {
+        QWheelEvent *we = static_cast<QWheelEvent*>(e);
+        if (we->delta() < 0) {
+            restoreWindow();
+        }
+        else {
+            iconifyWindow();
+        }
+        return true;
+    }
+    return QSystemTrayIcon::event(e);
 }
 
 void TrayItem::doSelectAnother() {
