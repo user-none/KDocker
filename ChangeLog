@@ -1,4 +1,5 @@
 for version 4.8
+	- Format help output.
     - Scrolling (mouse scroll wheel event) on icon can raise and iconify
       window.
     - Add option -e option to specify pattern matching type.

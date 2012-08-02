@@ -21,8 +21,10 @@
 #ifndef _KDOCKER_H
 #define	_KDOCKER_H
 
-#include <QStringList>
+#include <QList>
 #include <QObject>
+#include <QPair>
+#include <QStringList>
 
 #include "trayitemmanager.h"
 
@@ -45,6 +47,7 @@ private slots:
     void handleMessage(const QString &args);
 
 private:
+    QString formatHelpArgs(QList<QPair<QString, QString> > commands);
     void printAbout();
     void printHelp();
     void printUsage();
