@@ -2,7 +2,11 @@ TEMPLATE = app
 CONFIG += qt
 TARGET = kdocker
 
-include(solutions/qtsingleapplication/qtsingleapplication.pri)
+isEmpty(SYSTEMQTSA) {
+	include(3rdparty/qtsingleapplication/qtsingleapplication.pri)
+} else {
+	CONFIG += qtsingleapplication
+}
 
 DEPENDPATH += src
 INCLUDEPATH += . src  /usr/include/X11
