@@ -86,7 +86,7 @@ Creato da %1. Aggiornato e mantenuto da: %2.</translation>
     </message>
     <message>
         <location filename="../src/kdocker.cpp" line="128"/>
-        <source>Keep application window showing (dont hide on dock)</source>
+        <source>Keep application window showing (don't hide on dock)</source>
         <translation>Mantieni in primo piano la finestra (non nascondere quando agganciata)</translation>
     </message>
     <message>

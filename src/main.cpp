@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
     app.setOrganizationDomain(Constants::DOM_NAME);
     app.setApplicationName(Constants::APP_NAME);
     app.setApplicationVersion(Constants::APP_VERSION);
-    // Quiting will be handled by the TrayItemManager in the KDocker instance.
+    // Quitting will be handled by the TrayItemManager in the KDocker instance.
     // It will determine when there is nothing left running.
     app.setQuitOnLastWindowClosed(false);
 
@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    // Handle messages from other instance so this can be a single instance app.
+    // Handle messages from another instance so this can be a single instance app.
     QObject::connect(&app, SIGNAL(messageReceived(const QString&)), &kdocker, SLOT(handleMessage(const QString&)));
 
     // Wait for the Qt event loop to be started before running.

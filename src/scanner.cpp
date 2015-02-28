@@ -51,7 +51,7 @@ void Scanner::enqueue(const QString &command, const QStringList &arguments, Tray
 
     ProcessId processId = {command, 0, settings, 0, maxTime, checkNormality, windowName};
     if (!command.isEmpty()) {
-        // Launched the requested application.
+        // Launch the requested application.
         started = QProcess::startDetached(command, arguments, "", &pid);
     }
 

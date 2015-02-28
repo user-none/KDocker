@@ -80,7 +80,7 @@ Created by %1. Updated and maintained by %2.</source>
     </message>
     <message>
         <location filename="../src/kdocker.cpp" line="128"/>
-        <source>Keep application window showing (dont hide on dock)</source>
+        <source>Keep application window showing (don't hide on dock)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

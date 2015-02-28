@@ -74,7 +74,7 @@ void KDocker::handleMessage(const QString &args) {
  * handle arguments that output information to the user. We want to handle
  * them here so they are printed on the tty that the application is run from.
  * If we left it up to TrayItemManager with the rest of the arguments these
- * would be printed on the tty the instace was started on not the instance the
+ * would be printed on the tty the instance was started on not the instance the
  * user is calling from.
  */
 void KDocker::preProcessCommand(int argc, char **argv) {
@@ -106,7 +106,7 @@ void KDocker::preProcessCommand(int argc, char **argv) {
     }
 }
 
-// It would be much faster to just format help args appropriately but that would put
+// It would be much faster to just format help args appropriately but that would
 // require that translators put new lines in the translation. We just run the args
 // through this function to format the text properly so they don't have to worry
 // about it.
@@ -114,14 +114,14 @@ QString KDocker::formatHelpArgs(QList<QPair<QString, QString> > commands) {
     int padding = 0;
     QString out;
 
-    // Figure out what the loggest arg but we have a max length.
+    // Find the longest arg below max length.
     for (int i = 0; i < commands.count(); ++i) {
         int length = commands.at(i).first.length();
         if (length > padding && length < ARG_MAX_LEN) {
             padding = length;
         }
     }
-    // We pad spaces before and after the longest arg.
+    // Pad spaces before and after the longest arg.
     padding += ARG_PRE_PAD + ARG_POST_PAD;
 
     // Build a formatted string from the arg and its description.
@@ -202,7 +202,7 @@ void KDocker::printHelp() {
     commands.append(qMakePair(QString("-j"),      tr("Case senstive name (title) matching")));
     commands.append(qMakePair(QString("-k"),      tr("Regex minimal matching")));
     commands.append(qMakePair(QString("-l"),      tr("Iconify when focus lost")));
-    commands.append(qMakePair(QString("-m"),      tr("Keep application window showing (dont hide on dock)")));
+    commands.append(qMakePair(QString("-m"),      tr("Keep application window showing (don't hide on dock)")));
     commands.append(qMakePair(QString("-n name"), tr("Match window based on window title")));
     commands.append(qMakePair(QString("-o"),      tr("Iconify when obscured")));
     commands.append(qMakePair(QString("-p secs"), tr("Set ballooning timeout (popup time)")));
