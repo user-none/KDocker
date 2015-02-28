@@ -432,7 +432,7 @@ void TrayItem::set_NET_WM_STATE(const char *type, bool set) {
     Display *display = QX11Info::display();
     Atom atom = XInternAtom(display, type, False);
 
-    long l[2] = {set ? 1 : 0, atom};
+    qint64 l[2] = {set ? 1 : 0, static_cast<qint64>(atom)};
     XLibUtil::sendMessage(display, QX11Info::appRootWindow(), m_window, "_NET_WM_STATE", 32, SubstructureNotifyMask, l, sizeof (l));
 }
 
