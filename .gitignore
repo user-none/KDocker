@@ -1,0 +1,8 @@
+build/
+nbproject/
+kdocker
+kdocker.pro.user
+Makefile
+
+# Keep empty directories:
+!*/.git*

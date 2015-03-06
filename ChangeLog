@@ -1,0 +1,170 @@
+for version 4.8
+    - Format help argument output so that it wraps at a 79 characters.
+    - Scrolling (mouse scroll wheel event) on icon can raise and iconify
+      window.
+    - Add option -e option to specify pattern matching type.
+      Accepts n = normal, r = regex, u = unix wildcard, w = wildcard,
+      x = xml schema 1.1.
+    - Add option -j to enable case senstive matching.
+    - Add option -k to set regex minimal matching.
+
+for version 4.7
+    - Fix install location of icon referenced by .desktop file so that it
+      shows properly.
+    - Fix bug where build fails with GCC-4.7.
+
+for version 4.6
+    - Fix bug with windows not showing after being restored when KWin is the
+      WM.
+    - Fix bug with restored windows not gaining focus when KWin is the WM.
+
+for version 4.5
+    - Change -n option behavior:
+      - -n now acts as -n -y.
+      - Name matching now matches any running application. Previously it would
+        only match when launching an application.
+    - Remove -y option.
+    - Change a number of casts from C style to C++ style.
+
+for version 4.4
+    - Remove window manager decoration close button can optionally iconify. It
+      ended up causing many issues. Fixes:
+      - Drag and drop.
+      - Moving borderless windows (chrome).
+      - Windows moving slightly when undocking.
+      - Focus bug (#600045).
+    - Remove -c option.
+    - Add help text for -i option.
+    - Update INSTALL.
+    - Default install path is now /usr instead of /usr/local.
+
+for version 4.3
+    - Use QtSingleApplication.
+    - Window manager decoration close button can optionally iconify.
+    - Changed command line option -c: Disables WM close button iconify.
+    - Restructure large parts of the appplication.
+
+for version 4.2.2
+    - Fix installing translation files.
+
+for version 4.2.1
+    - Fix type in .pro file that prevents all files from installing.
+
+for version 4.2
+    - Fix disabling balloon title changes menu option.
+    - Ignore docked windows and continue looking when matching command by name
+      and when matching by specified pid.
+    - Bash completion
+    - Italian Translation thanks to Alessio Cassibba
+    - Change behavior of tray activation. Raise window when not active, and
+      iconify when active.
+    - Change to the desktop the window was last on when restoring. Only works
+      with WMs that support _NET_CURRENT_DESKTOP.
+    - Iconify when focus lost.
+
+for version 4.1
+    - Fix bug 431297: Fall back to window title and class name when launching if
+      pid becomes invalid. Allows commands that detach and get a new pid (rox)
+      to dock correctly.
+    - New command line option -n: Specify the string to use for fall back when
+      launching a command and a pid match cannot be determined.
+    - New command line option -y: Force matching command by title and class
+      name.
+    - New command line option -x: Specify PID of application to dock.
+    - Fix a bug that prevented the time out for trying to dock and launched
+      command from increasing.
+    - Menu item for setting the tray icon.
+    - Fix bug: Do not quit when closing docked application from tray menu.
+
+for version 4.0
+    - 4.0 rewrite complete.
+
+for version 4.0-preview-1
+    - Preview release of Qt 4 port.
+
+for version 1.3
+    - Fix bug when reading back balloon timeout on session restoration
+    - AutoLaunch enhancement (Request user to provide program name when
+      autodetection failed)
+    - Indonesian translations from Eko Prasetiyo
+    - Italian translations from Alessio Cassibba
+    - Updated Brazilian Portuguese and polish translations
+
+for version 1.2
+    - Polish translations from KonMan
+    - Check WM_NAME to support programs like LimeWire (for lavacube)
+    - Store entire application path as part of session
+    - Move around command line handling code
+    - Configure balloon timeout using "-p" (for roopesh)
+
+for version 1.1
+    - German translations from Thomas Runge
+    - Dialog detection bug. I replaced all LOG with TRACE (Thanks to Novoselic
+      who raised a question which helped me notice it)
+    - -v Displays the version
+    - -b Suppress the warning when docking non-normal dialogs
+      (For John Pettigrew)
+    - Fix issue when passing large command line to previous instance 
+      (Reported by Arseniy Akopyan)
+
+for version 1.0 CR1
+    - Russian translations by Aleksey Kirpichnikov
+    - Brazilian Portugese translations by Paulo Ruthes
+
+for version 1.0
+    - Spanish translations are back in (Thanks Edulix)
+    - Yet another fix for xmms
+
+for version 1.0 rc2
+    - "make install" support (with QMake)
+    - Multiple desktop awareness (for Sharon)
+    - Icons from Marcel Dierkes
+    - Use XDND type mechanism to pass arguments to previous instance
+    - Spanish translations are out.
+    - Czech translations by Jiri Hofman
+    - Drag and drop support for Antonio C. Censi
+    - Xmms+PlayList fix (for KDE)
+
+for version 1.0 rc1
+    - Session Management support (XSMP) for KDE and GNOME
+    - AutoLaunch application support that do not support Session Management
+    - Wait until system tray comes up on session restoration (Requested by
+      Normen)
+    - Fix GNOME docked icon resize issue
+    - Track tray label appearance and disappearance handling
+    - Major code refactoring. QTrayLabel is now a very reusable class
+
+for version 0.9
+    - Support to dock the active window (useful with keyboard shortcuts) -f
+      Was requested by Daniel
+    - Small security fix
+    - ToolTip positioning issue (reported by Alex)
+    - CLI Support to disabling ballooning of title changes. -q (requested by
+      Marcel Dierkes)
+    - French Translations (Thanks to Al)
+
+for version 0.8
+    - Custom Icons. Accessible through menu or CLI
+    - Fixes for KDE (ObscureEvent, BringToFront, SkippingTaskbar)
+    - Code refactoring
+    - Changes to have only a single instance of KDocker running all the time!
+
+for version 0.7
+    - Use WM_COMMAND to identify windows
+    - Warn when attemping to dock non-normal windows
+    - Issue with tool tips fixed
+
+for version 0.6
+    - Start up applications
+    - CLI support
+    - Spanish Translation and i18n support
+
+for version 0.5
+    - Support to remember the position
+    - Support to close application
+    - Support to remove application from the task bar
+
+for version 0.4
+    - Add dock on obscure
+    - Add dock on minimise
+

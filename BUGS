@@ -1,0 +1,7 @@
+Bugs and wishes to https://bugs.launchpad.net/kdocker
+
+
+Known issues:
+---
+* Robust error reporting from 1.x have not been implemented in 4.x.
+

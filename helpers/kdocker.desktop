@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=KDocker
+GenericName=Docking utility
+Comment=Docks any application into system tray
+Exec=kdocker
+TryExec=kdocker
+Icon=kdocker
+Terminal=false
+Type=Application
+Categories=Utility;
