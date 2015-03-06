@@ -1,3 +1,6 @@
+for version 4.9
+    - Assorted bug fixed (mostly minimal).
+
 for version 4.8
     - Format help argument output so that it wraps at a 79 characters.
     - Scrolling (mouse scroll wheel event) on icon can raise and iconify
