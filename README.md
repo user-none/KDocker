@@ -28,7 +28,7 @@ automatically docked. Thanks to Daniel for this neat feature request.
 
 Reporting Bugs 
 --------------
-Bugs and wishes to https://bugs.launchpad.net/kdocker
+Bugs and wishes to https://github.com/user-none/KDocker
 
 Send Girish a postcard!
 -------------------
@@ -41,5 +41,5 @@ Hoysala Nagar,
 Bangalore,
 Karnataka, India
 
-https://launchpad.net/kdocker for updates
+https://github.com/user-none/KDocker for updates
 
