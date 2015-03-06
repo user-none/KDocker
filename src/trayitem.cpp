@@ -119,7 +119,9 @@ void TrayItem::restoreWindow() {
     m_is_restoring = true;
 
     Display *display = QX11Info::display();
-    Window root = QX11Info::appRootWindow();
+    XWindowAttributes wattr;
+    XGetWindowAttributes(display, m_window, &wattr);
+    Window root = wattr.screen->root;
 
     if (m_iconified) {
         m_iconified = false;
@@ -130,10 +132,12 @@ void TrayItem::restoreWindow() {
          * window go through Withdrawn->Map->Iconify->Normal state.
          */
         XMapWindow(display, m_window);
+        /*
         XIconifyWindow(display, m_window, DefaultScreen(display));
         XSync(display, False);
         long l_state[1] = {NormalState};
         XLibUtil::sendMessage(display, root, m_window, "WM_CHANGE_STATE", 32, SubstructureNotifyMask | SubstructureRedirectMask, l_state, sizeof (l_state));
+        */
 
         m_sizeHint.flags = USPosition;
         XSetWMNormalHints(display, m_window, &m_sizeHint);
@@ -141,6 +145,7 @@ void TrayItem::restoreWindow() {
         updateToggleAction();
     }
     XMapRaised(display, m_window);
+    XFlush(display);     // DfB - as xdotool
 
     // Change to the desktop that the window was last on.
     long l_currDesk[2] = {m_desktop, CurrentTime};
@@ -182,8 +187,11 @@ void TrayItem::iconifyWindow() {
 
     m_iconified = true;
 
+    /* Get screen number */
     Display *display = QX11Info::display();
-    int screen = DefaultScreen(display);
+    XWindowAttributes attr;
+    XGetWindowAttributes(display, m_window, &attr);
+    int screen = XScreenNumberOfScreen(attr.screen);
     long dummy;
 
     XGetWMNormalHints(display, m_window, &m_sizeHint, &dummy);
@@ -192,7 +200,7 @@ void TrayItem::iconifyWindow() {
      * A simple call to XWithdrawWindow wont do. Here is what we do:
      * 1. Iconify. This will make the application hide all its other windows. For
      *    example, xmms would take off the playlist and equalizer window.
-     * 2. Withdrawn the window so we will be removed from the taskbar.
+     * 2. Withdraw the window to remove it from the taskbar.
      */
     XIconifyWindow(display, m_window, screen); // good for effects too
     XSync(display, False);
@@ -207,9 +215,12 @@ void TrayItem::closeWindow() {
     }
 
     Display *display = QX11Info::display();
+    XWindowAttributes wattr;
+    XGetWindowAttributes(display, m_window, &wattr);
+    Window root = wattr.screen->root;
     long l[5] = {0, 0, 0, 0, 0};
     restoreWindow();
-    XLibUtil::sendMessage(display, QX11Info::appRootWindow(), m_window, "_NET_CLOSE_WINDOW", 32, SubstructureNotifyMask | SubstructureRedirectMask, l, sizeof (l));
+    XLibUtil::sendMessage(display, root, m_window, "_NET_CLOSE_WINDOW", 32, SubstructureNotifyMask | SubstructureRedirectMask, l, sizeof (l));
 }
 
 void TrayItem::doSkipTaskbar() {
@@ -430,10 +441,13 @@ void TrayItem::set_NET_WM_STATE(const char *type, bool set) {
     // set, true = add the state to the window. False, remove the state from
     // the window.
     Display *display = QX11Info::display();
+    XWindowAttributes wattr;
+    XGetWindowAttributes(display, m_window, &wattr);
+    Window root = wattr.screen->root;
     Atom atom = XInternAtom(display, type, False);
 
     qint64 l[2] = {set ? 1 : 0, static_cast<qint64>(atom)};
-    XLibUtil::sendMessage(display, QX11Info::appRootWindow(), m_window, "_NET_WM_STATE", 32, SubstructureNotifyMask, l, sizeof (l));
+    XLibUtil::sendMessage(display, root, m_window, "_NET_WM_STATE", 32, SubstructureNotifyMask, l, sizeof (l));
 }
 
 void TrayItem::readDockedAppName() {
