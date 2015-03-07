@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2009, 2012 John Schember <john@nachtimwald.com>
+ *  Copyright (C) 2009, 2012, 2015 John Schember <john@nachtimwald.com>
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@
 
 #include <sys/types.h>
 
-#include <X11/Xlib.h>
+#include "myXlib.h"
 
 class TrayItemManager;
 

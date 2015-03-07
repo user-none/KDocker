@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2009, 2012 John Schember <john@nachtimwald.com>
+ *  Copyright (C) 2009, 2012, 2015 John Schember <john@nachtimwald.com>
  *  Copyright (C) 2004 Girish Ramakrishnan All Rights Reserved.
  *	
  * This is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  * USA.
  */
 
-#include "xlibutil.h"
+#include <QMetaType>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,6 +27,9 @@
 #include <Xmu/WinUtil.h>
 #include <X11/Xatom.h>
 #include <X11/cursorfont.h>
+
+#include "xlibutil.h"
+
 
 /*
  * Assert validity of the window id. Get window attributes for the heck of it
@@ -52,16 +55,18 @@ bool XLibUtil::isNormalWindow(Display *display, Window w) {
     unsigned long nitems;
     Window transient_for = None;
 
-    static Atom wmState = XInternAtom(display, "WM_STATE", false);
-    static Atom windowState = XInternAtom(display, "_NET_WM_STATE", false);
-    static Atom modalWindow = XInternAtom(display, "_NET_WM_STATE_MODAL", false);
-    static Atom windowType = XInternAtom(display, "_NET_WM_WINDOW_TYPE", false);
+    static Atom wmState      = XInternAtom(display, "WM_STATE", false);
+    static Atom windowState  = XInternAtom(display, "_NET_WM_STATE", false);
+    static Atom modalWindow  = XInternAtom(display, "_NET_WM_STATE_MODAL", false);
+    static Atom windowType   = XInternAtom(display, "_NET_WM_WINDOW_TYPE", false);
     static Atom normalWindow = XInternAtom(display, "_NET_WM_WINDOW_TYPE_NORMAL", false);
     static Atom dialogWindow = XInternAtom(display, "_NET_WM_WINDOW_TYPE_DIALOG", false);
 
     int ret = XGetWindowProperty(display, w, wmState, 0, 10, false, AnyPropertyType, &type, &format, &nitems, &left, (unsigned char **) & data);
 
     if (ret != Success || data == NULL) {
+        if (data != NULL)
+            XFree(data);
         return false;
     }
     if (data) {
@@ -272,7 +277,7 @@ Window XLibUtil::activeWindow(Display * display) {
  * select the application. Clicking any other button will abort the selection
  */
 Window XLibUtil::selectWindow(Display *display, QString &error) {
-    int screen = DefaultScreen(display);
+    int screen  = DefaultScreen(display);
     Window root = RootWindow(display, screen);
 
     Cursor cursor = XCreateFontCursor(display, XC_draped_box);

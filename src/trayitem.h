@@ -29,8 +29,9 @@
 #include <QString>
 #include <QSystemTrayIcon>
 
-#include <X11/Xlib.h>
 #include <X11/Xutil.h>
+
+#include "myXlib.h"
 
 struct TrayItemSettings {
     QString customIcon;

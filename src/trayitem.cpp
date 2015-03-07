@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2009 John Schember <john@nachtimwald.com>
+ *  Copyright (C) 2009, 2015 John Schember <john@nachtimwald.com>
  *  Copyright (C) 2004 Girish Ramakrishnan All Rights Reserved.
  *
  * This is free software; you can redistribute it and/or modify
@@ -28,11 +28,12 @@
 #include <QX11Info>
 #include <QWheelEvent>
 
+#include <Xatom.h>
+#include <X11/xpm.h>
+
 #include "trayitem.h"
 #include "xlibutil.h"
 
-#include <Xatom.h>
-#include <X11/xpm.h>
 
 TrayItem::TrayItem(Window window) {
     m_iconified = false;
@@ -119,9 +120,7 @@ void TrayItem::restoreWindow() {
     m_is_restoring = true;
 
     Display *display = QX11Info::display();
-    XWindowAttributes wattr;
-    XGetWindowAttributes(display, m_window, &wattr);
-    Window root = wattr.screen->root;
+    Window root = QX11Info::appRootWindow();
 
     if (m_iconified) {
         m_iconified = false;
@@ -132,12 +131,10 @@ void TrayItem::restoreWindow() {
          * window go through Withdrawn->Map->Iconify->Normal state.
          */
         XMapWindow(display, m_window);
-        /*
         XIconifyWindow(display, m_window, DefaultScreen(display));
         XSync(display, False);
         long l_state[1] = {NormalState};
         XLibUtil::sendMessage(display, root, m_window, "WM_CHANGE_STATE", 32, SubstructureNotifyMask | SubstructureRedirectMask, l_state, sizeof (l_state));
-        */
 
         m_sizeHint.flags = USPosition;
         XSetWMNormalHints(display, m_window, &m_sizeHint);
@@ -189,9 +186,7 @@ void TrayItem::iconifyWindow() {
 
     /* Get screen number */
     Display *display = QX11Info::display();
-    XWindowAttributes attr;
-    XGetWindowAttributes(display, m_window, &attr);
-    int screen = XScreenNumberOfScreen(attr.screen);
+    int screen = DefaultScreen(display);
     long dummy;
 
     XGetWMNormalHints(display, m_window, &m_sizeHint, &dummy);
@@ -215,12 +210,9 @@ void TrayItem::closeWindow() {
     }
 
     Display *display = QX11Info::display();
-    XWindowAttributes wattr;
-    XGetWindowAttributes(display, m_window, &wattr);
-    Window root = wattr.screen->root;
     long l[5] = {0, 0, 0, 0, 0};
     restoreWindow();
-    XLibUtil::sendMessage(display, root, m_window, "_NET_CLOSE_WINDOW", 32, SubstructureNotifyMask | SubstructureRedirectMask, l, sizeof (l));
+    XLibUtil::sendMessage(display, QX11Info::appRootWindow(), m_window, "_NET_CLOSE_WINDOW", 32, SubstructureNotifyMask | SubstructureRedirectMask, l, sizeof (l));
 }
 
 void TrayItem::doSkipTaskbar() {
@@ -441,13 +433,10 @@ void TrayItem::set_NET_WM_STATE(const char *type, bool set) {
     // set, true = add the state to the window. False, remove the state from
     // the window.
     Display *display = QX11Info::display();
-    XWindowAttributes wattr;
-    XGetWindowAttributes(display, m_window, &wattr);
-    Window root = wattr.screen->root;
     Atom atom = XInternAtom(display, type, False);
 
     qint64 l[2] = {set ? 1 : 0, static_cast<qint64>(atom)};
-    XLibUtil::sendMessage(display, root, m_window, "_NET_WM_STATE", 32, SubstructureNotifyMask, l, sizeof (l));
+    XLibUtil::sendMessage(display, QX11Info::appRootWindow(), m_window, "_NET_WM_STATE", 32, SubstructureNotifyMask, l, sizeof (l));
 }
 
 void TrayItem::readDockedAppName() {

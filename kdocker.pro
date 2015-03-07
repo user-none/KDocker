@@ -1,9 +1,10 @@
 TEMPLATE = app
-CONFIG += qt
-TARGET = kdocker
+CONFIG  += qt 
+QT      += x11extras
+TARGET   = kdocker
 
 isEmpty(SYSTEMQTSA) {
-	include(3rdparty/qtsingleapplication/qtsingleapplication.pri)
+	include(3rdparty/qtsingleapplication/src/qtsingleapplication.pri)
 } else {
 	CONFIG += qtsingleapplication
 }

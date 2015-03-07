@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2009, 2012 John Schember <john@nachtimwald.com>
+ *  Copyright (C) 2009, 2012, 2015 John Schember <john@nachtimwald.com>
  *  Copyright (C) 2004 Girish Ramakrishnan All Rights Reserved.
  *
  * This is free software; you can redistribute it and/or modify

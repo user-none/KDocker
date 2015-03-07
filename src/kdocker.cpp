@@ -27,7 +27,7 @@
 
 #include <getopt.h>
 
-#include <X11/Xlib.h>
+#include "myXlib.h"
 
 #define ARG_MAX_LEN 30
 #define ARG_PRE_PAD 2
