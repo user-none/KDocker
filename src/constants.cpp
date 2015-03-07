@@ -19,10 +19,10 @@
 
 #include "constants.h"
 
-const QString Constants::ORG_NAME = "net.launchpad.kdocker";
-const QString Constants::DOM_NAME = "launchpad.net/kdocker";
+const QString Constants::ORG_NAME = "com.kdocker";
+const QString Constants::DOM_NAME = "kdocker.com";
 const QString Constants::APP_NAME = "KDocker";
-const QString Constants::APP_VERSION = "4.9";
+const QString Constants::APP_VERSION = "5.0";
 
 const char *Constants::OPTIONSTRING = "+abd:e:fhi:jklmn:op:qrstvuw:x:";
 

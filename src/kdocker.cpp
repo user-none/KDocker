@@ -216,8 +216,8 @@ void KDocker::printHelp() {
     out << formatHelpArgs(commands);
 
     out << endl;
-    out << tr("Bugs and wishes to https://bugs.launchpad.net/kdocker") << endl;
-    out << tr("Project information at https://launchpad.net/kdocker") << endl;
+    out << tr("Bugs and wishes to https://github.com/user-none/KDocker") << endl;
+    out << tr("Project information at https://github.com/user-none/KDocker") << endl;
 }
 
 void KDocker::printUsage() {

@@ -16,23 +16,23 @@ LIBS = -lX11 -lXpm -lXmu
 
 INSTALL_PATH = /usr/share/kdocker
 
-TRANSLATIONS += i18n/kdocker_it_IT.ts
+#TRANSLATIONS += i18n/
 
 isEmpty(QMAKE_LRELEASE) {
     QMAKE_LRELEASE = $$[QT_INSTALL_BINS]/lrelease
     !exists($$QMAKE_LRELEASE) { QMAKE_LRELEASE = lrelease-qt4 }
 }
 
-updateqm.input = TRANSLATIONS
-updateqm.output = build/i18n/${QMAKE_FILE_BASE}.qm
-updateqm.commands = $$QMAKE_LRELEASE -silent ${QMAKE_FILE_IN} -qm build/i18n/${QMAKE_FILE_BASE}.qm
-updateqm.CONFIG += no_link target_predeps
-QMAKE_EXTRA_COMPILERS += updateqm
+#updateqm.input = TRANSLATIONS
+#updateqm.output = build/i18n/${QMAKE_FILE_BASE}.qm
+#updateqm.commands = $$QMAKE_LRELEASE -silent ${QMAKE_FILE_IN} -qm build/i18n/${QMAKE_FILE_BASE}.qm
+#updateqm.CONFIG += no_link target_predeps
+#QMAKE_EXTRA_COMPILERS += updateqm
 
 TRANSLATIONS_PATH = $$INSTALL_PATH
 DEFINES += TRANSLATIONS_PATH=\\\"$${TRANSLATIONS_PATH}/i18n\\\"
-translations.path = $$TRANSLATIONS_PATH
-translations.files = build/i18n
+#translations.path = $$TRANSLATIONS_PATH
+#translations.files = build/i18n
 
 icons.path = /usr/share/pixmaps
 icons.files = resources/images/kdocker.png
@@ -45,7 +45,8 @@ completion.files = helpers/kdocker
 
 target.path = /usr/bin
 
-INSTALLS += target icons desktop completion translations
+#INSTALLS += target icons desktop completion translations
+INSTALLS += target icons desktop completion
 
 # Input
 HEADERS += src/application.h \
