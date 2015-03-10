@@ -1,0 +1,121 @@
+
+=head1 NAME
+
+ kdocker - dock any application in the system tray
+
+=head1 SYNOPSIS
+
+B<kdocker> [I<options>]I<>
+
+=head1 DESCRIPTION
+
+ KDocker is a program that will dock any application to the system tray
+
+=head1 OPTIONS
+
+=over
+
+=item B<-a>
+
+ Show author information
+
+=item B<-b>
+
+ Suppress the warning dialog when docking non-normal windows (blind mode)
+
+=item B<-d> I<secs>
+
+ Maximum time in seconds to allow for a command to start and open a window
+ [default: 5 seconds]
+
+=item B<-e> I<type>
+
+ Name matching syntax. Choices are:
+  n = normal, substring matching [default]
+  r = regex (regular expression)
+  u = unix wildcard
+  w = wildcard
+  x = W3C XML Schema 1.1
+
+=item B<-f>
+
+ Dock window that has focus (active window)
+
+=item B<-h>
+
+ Display this help, then exit
+
+=item B<-i> I<file>
+
+ Custom icon path
+
+=item B<-j>
+
+ Case sensitive name (title) matching
+
+=item B<-k>
+
+ Regex minimal matching
+
+=item B<-l>
+
+ Iconify when focus lost
+
+=item B<-m>
+
+ Keep application window showing (don't hide on dock)
+
+=item B<-n> I<name>
+
+ Match window based on its title
+
+=item B<-o>
+
+ Iconify when obscured by other windows
+
+=item B<-p> I<secs>
+
+ By default, when the title of the application changes,
+ a popup is displayed from the system tray for 4 seconds
+ Works well with xmms
+
+=item B<-q>
+
+ Disable ballooning title changes (quiet)
+
+=item B<-r>
+
+ Remove this application from the pager
+
+=item B<-s>
+
+ Make the window sticky (appears on all desktops)
+
+=item B<-t>
+
+ Remove this application from the taskbar
+
+=item B<-v, --version>
+
+ Show the KDocker version string, then exit
+
+=item B<-w> I<wid>
+
+ Window id of the application to dock
+ Assumes hex number of the form 0x###...
+
+=item B<-x> I<pid>
+
+ Process id of the application to dock
+ Assumes decimal number of the form ###...
+
+=back
+
+=head1 AUTHOR
+
+ KDocker was written by Girish Ramakrishnan
+ Revised and maintained by John Schember
+
+=head1 REPORTING BUGS
+
+Bugs and wishes to the L<KDocker Home Page|https://github.com/user-none/KDocker>
