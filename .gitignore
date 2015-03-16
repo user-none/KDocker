@@ -1,7 +1,7 @@
 build/
 nbproject/
 kdocker
-kdocker.pro.user
+kdocker.pro.user*
 Makefile
 
 # Keep empty directories:
