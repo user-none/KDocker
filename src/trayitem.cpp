@@ -65,7 +65,8 @@ TrayItem::TrayItem(Window window) {
     createContextMenu();
     updateToggleAction();
 
-    connect(this, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(trayActivated(QSystemTrayIcon::ActivationReason)));
+    connect(this, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
+            this, SLOT(trayActivated(QSystemTrayIcon::ActivationReason)));
 }
 
 TrayItem::~TrayItem() {
@@ -322,17 +323,8 @@ void TrayItem::toggleWindow() {
 
 void TrayItem::trayActivated(QSystemTrayIcon::ActivationReason reason) {
     if (reason == QSystemTrayIcon::Trigger) {
-        if (m_iconified || m_window != XLibUtil::activeWindow(QX11Info::display())) {
-            restoreWindow();
-        }
-        else {
-            iconifyWindow();
-        }
+        toggleWindow();
     }
-}
-
-void TrayItem::doAbout() {
-    emit(about());
 }
 
 bool TrayItem::event(QEvent *e) {
@@ -349,16 +341,8 @@ bool TrayItem::event(QEvent *e) {
     return QSystemTrayIcon::event(e);
 }
 
-void TrayItem::doSelectAnother() {
-    emit(selectAnother());
-}
-
 void TrayItem::doUndock() {
-    emit(undock(this));
-}
-
-void TrayItem::doUndockAll() {
-    emit(undockAll());
+    emit undock(this);
 }
 
 void TrayItem::minimizeEvent() {
@@ -369,7 +353,7 @@ void TrayItem::minimizeEvent() {
 
 void TrayItem::destroyEvent() {
     m_window = 0;
-    emit(dead(this));
+    emit dead(this);
 }
 
 bool TrayItem::propertyChangeEvent(Atom property) {
@@ -515,7 +499,7 @@ void TrayItem::updateToggleAction() {
 void TrayItem::createContextMenu() {
     m_contextMenu = new QMenu();
 
-    m_contextMenu->addAction(QIcon(":/images/about.png"), tr("About %1").arg(qApp->applicationName()), this, SLOT(doAbout()));
+    m_contextMenu->addAction(QIcon(":/images/about.png"), tr("About %1").arg(qApp->applicationName()), this, SIGNAL(about()));
     m_contextMenu->addSeparator();
 
     // Options menu
@@ -568,8 +552,8 @@ void TrayItem::createContextMenu() {
     m_optionsMenu->addAction(m_actionBalloonTitleChanges);
 
     m_contextMenu->addMenu(m_optionsMenu);
-    m_contextMenu->addAction(QIcon(":/images/another.png"), tr("Dock Another"), this, SLOT(doSelectAnother()));
-    m_contextMenu->addAction(tr("Undock All"), this, SLOT(doUndockAll()));
+    m_contextMenu->addAction(QIcon(":/images/another.png"), tr("Dock Another"), this, SIGNAL(selectAnother()));
+    m_contextMenu->addAction(tr("Undock All"), this, SIGNAL(undockAll()));
     m_contextMenu->addSeparator();
     m_actionToggle = new QAction(tr("Toggle"), m_contextMenu);
     connect(m_actionToggle, SIGNAL(triggered()), this, SLOT(toggleWindow()));

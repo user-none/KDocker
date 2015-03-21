@@ -95,7 +95,7 @@ void Scanner::check() {
         }
 
         if (w != None) {
-            emit(windowFound(w, id.settings));
+            emit windowFound(w, id.settings);
             pi.remove();
         } else {
             if (id.count >= id.maxCount) {
@@ -106,6 +106,6 @@ void Scanner::check() {
     }
     if (m_processes.isEmpty()) {
         m_timer->stop();
-        emit(stopping());
+        emit stopping();
     }
 }

@@ -56,16 +56,15 @@ public:
     // Pass on all events through this interface
     bool x11EventFilter(XEvent * event);
 
-public slots:
     void restoreWindow();
     void iconifyWindow();
-    // Close the window
-    void closeWindow();
 
     void doSkipTaskbar();
     void doSkipPager();
     void doSticky();
 
+public slots:
+    void closeWindow();
     void setCustomIcon(QString path);
     void selectCustomIcon(bool value);
     void setSkipTaskbar(bool value);
@@ -80,11 +79,7 @@ public slots:
 private slots:
     void toggleWindow();
     void trayActivated(QSystemTrayIcon::ActivationReason reason = QSystemTrayIcon::Trigger);
-
-    void doAbout();
-    void doSelectAnother();
     void doUndock();
-    void doUndockAll();
 
 signals:
     void selectAnother();
