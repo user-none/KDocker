@@ -26,12 +26,10 @@
 #include <QString>
 #include <QTimer>
 
-#include "trayitem.h"
-#include "trayitemmanager.h"
-
 #include <sys/types.h>
 
-#include "myXlib.h"
+#include "trayitemmanager.h"
+
 
 class TrayItemManager;
 

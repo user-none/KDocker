@@ -27,7 +27,7 @@
 
 #include <getopt.h>
 
-#include "myXlib.h"
+#include <Xlib.h>
 
 #define ARG_MAX_LEN 30
 #define ARG_PRE_PAD 2
@@ -45,17 +45,15 @@ KDocker::~KDocker() {
     }
 }
 
+TrayItemManager *KDocker::getTrayItemManager()
+{
+    return m_trayItemManager;
+}
+
 void KDocker::undockAll() {
     if (m_trayItemManager) {
         m_trayItemManager->undockAll();
     }
-}
-
-bool KDocker::x11EventFilter(XEvent *ev) {
-    if (m_trayItemManager) {
-        return m_trayItemManager->x11EventFilter(ev);
-    }
-    return false;
 }
 
 void KDocker::run() {

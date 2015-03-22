@@ -28,6 +28,7 @@
 
 #include "trayitemmanager.h"
 
+
 class KDocker : public QObject {
     Q_OBJECT
 
@@ -35,10 +36,11 @@ public:
     KDocker();
     ~KDocker();
 
+    TrayItemManager *getTrayItemManager();
+
     void undockAll();
 
     void preProcessCommand(int argc, char **argv);
-    bool x11EventFilter(XEvent *ev);
 
 public slots:
     void run();

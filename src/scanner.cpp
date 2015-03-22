@@ -24,10 +24,13 @@
 #include <QStringList>
 #include <QX11Info>
 
+#include <signal.h>
+
 #include "scanner.h"
 #include "xlibutil.h"
 
-#include <signal.h>
+#include <Xlib.h>
+
 
 Scanner::Scanner(TrayItemManager *manager) {
     m_manager = manager;

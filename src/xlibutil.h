@@ -25,10 +25,28 @@
 #include <QObject>
 #include <QRegExp>
 #include <QString>
+#include <QTimer>
+#include <QEventLoop>
 
 #include <sys/types.h>
 
-#include "myXlib.h"
+#include <X11/Xlib-xcb.h>
+#include <X11/Xutil.h>
+#include <Xmu/WinUtil.h>
+#undef Bool
+
+
+typedef struct GrabInfo {
+
+    QTimer     *qtimer;
+    QEventLoop *qloop;
+
+    Window       window;
+    unsigned int button;
+    bool         isGrabbing;
+
+} GrabInfo;
+
 
 class XLibUtil : public QObject {
     Q_OBJECT
@@ -42,7 +60,7 @@ public:
     static Window findWindow(Display *display, Window w, bool checkNormality, const QRegExp &ename, QList<Window> dockedWindows = QList<Window>());
     static void sendMessage(Display *display, Window to, Window w, const char *type, int format, long mask, void *data, int size);
     static Window activeWindow(Display *display);
-    static Window selectWindow(Display *display, QString &error);
+    static Window selectWindow(Display *display, GrabInfo &grabInfo, QString &error);
     static void subscribe(Display *display, Window w, long mask);
     static void unSubscribe(Display *display, Window w);
     static bool getCardinalProperty(Display *display, Window w, Atom prop, long *data);

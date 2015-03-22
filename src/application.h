@@ -31,11 +31,11 @@ public:
     Application(const QString &appId, int &argc, char **argv);
 
     void setKDockerInstance(KDocker *kdocker);
-    bool x11EventFilter(XEvent *event);
     void close();
 
 private:
     KDocker *m_kdocker;
+    TrayItemManager *m_filter;
 };
 
 #endif	/* _APPLICATION_H */
