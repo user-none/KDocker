@@ -53,7 +53,7 @@ TrayItem::TrayItem(Window window) {
     Display *display = QX11Info::display();
 
     // Allows events from m_window to be forwarded to the x11EventFilter.
-    XLibUtil::subscribe(display, m_window, StructureNotifyMask | PropertyChangeMask | VisibilityChangeMask | FocusChangeMask, true);
+    XLibUtil::subscribe(display, m_window, StructureNotifyMask | PropertyChangeMask | VisibilityChangeMask | FocusChangeMask);
 
     // Store the desktop on which the window is being shown.
     XLibUtil::getCardinalProperty(display, m_window, XInternAtom(display, "_NET_WM_DESKTOP", True), &m_desktop);
@@ -69,6 +69,8 @@ TrayItem::TrayItem(Window window) {
 }
 
 TrayItem::~TrayItem() {
+    // No further interest in events from undocked window.
+    XLibUtil::unSubscribe(QX11Info::display(), m_window);
     // Only the main menu needs to be deleted. The rest of the menus and actions
     // are children of this menu and Qt will delete all children.
     delete m_contextMenu;

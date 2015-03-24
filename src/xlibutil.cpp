@@ -308,22 +308,19 @@ Window XLibUtil::selectWindow(Display *display, QString &error) {
  * Have events associated with mask for the window set in the X11 Event loop
  * to the application.
  */
-void XLibUtil::subscribe(Display *display, Window w, long mask, bool set) {
+void XLibUtil::subscribe(Display *display, Window w, long mask) {
     Window root = RootWindow(display, DefaultScreen(display));
     XWindowAttributes attr;
 
     XGetWindowAttributes(display, w == None ? root : w, &attr);
 
-    // Already subscribed not need to do it again.
-    if (set && ((attr.your_event_mask & mask) == mask)) {
-        return;
-    }
-    // Not subscribed to the mask no need to remove it.
-    if (!set && ((attr.your_event_mask | mask) == attr.your_event_mask)) {
-        return;
-    }
+    XSelectInput(display, w == None ? root : w, attr.your_event_mask | mask);
+    XSync(display, false);
+}
 
-    XSelectInput(display, w == None ? root : w, set ? attr.your_event_mask | mask : attr.your_event_mask & mask);
+void XLibUtil::unSubscribe(Display *display, Window w)
+{
+    XSelectInput(display, w, NoEventMask);
     XSync(display, false);
 }
 

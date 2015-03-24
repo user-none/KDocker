@@ -43,7 +43,8 @@ public:
     static void sendMessage(Display *display, Window to, Window w, const char *type, int format, long mask, void *data, int size);
     static Window activeWindow(Display *display);
     static Window selectWindow(Display *display, QString &error);
-    static void subscribe(Display *display, Window w, long mask, bool set);
+    static void subscribe(Display *display, Window w, long mask);
+    static void unSubscribe(Display *display, Window w);
     static bool getCardinalProperty(Display *display, Window w, Atom prop, long *data);
 };
 
