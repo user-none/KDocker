@@ -151,7 +151,7 @@ QString KDocker::formatHelpArgs(QList<QPair<QString, QString> > commands) {
 
             offset += MAX_HELP_LINE_LEN - padding;
             if (offset < desc_len) {
-                while (desc.at(offset) != ' ' && offset > last_offset) {
+                while (offset > last_offset && desc.at(offset) != ' ') {
                     offset--;
                 }
                 if (offset == last_offset) {
@@ -163,7 +163,7 @@ QString KDocker::formatHelpArgs(QList<QPair<QString, QString> > commands) {
 
             out += desc.mid(last_offset, offset - last_offset) + '\n';
             // Skip any spaces because we're going to start on a new line.
-            while (desc.at(offset) == ' ' && offset < desc_len) {
+            while (offset < desc_len && desc.at(offset) == ' ') {
                 offset++;
             }
             last_offset = offset;
