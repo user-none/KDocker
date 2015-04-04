@@ -47,7 +47,7 @@ public:
     void processCommand(const QStringList &args);
 
 public slots:
-    void dockWindow(Window window, TrayItemSettings settings);
+    void dockWindow(Window window, const TrayItemArgs settings);
     Window userSelectWindow(bool checkNormality = true);
     void remove(TrayItem *trayItem);
     void undock(TrayItem *trayItem);
@@ -66,6 +66,7 @@ private:
     bool isWindowDocked(Window window);
 
     Scanner *m_scanner;
+    TrayItemArgs m_initArgs;  // 'const' initializer (unset values)
     QList<TrayItem*> m_trayItems;
     GrabInfo m_grabInfo;
 };

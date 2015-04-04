@@ -36,7 +36,7 @@ class TrayItemManager;
 struct ProcessId {
     QString command;
     pid_t pid;
-    TrayItemSettings settings;
+    TrayItemArgs settings;
     int count;
     int maxCount;
     bool checkNormality;
@@ -51,14 +51,14 @@ class Scanner : public QObject {
 public:
     Scanner(TrayItemManager *manager);
     ~Scanner();
-    void enqueue(const QString &command, const QStringList &arguments, TrayItemSettings settings, int maxTime = 30, bool checkNormality = true, const QRegExp &windowName = QRegExp());
+    void enqueue(const QString &command, const QStringList &arguments, TrayItemArgs settings, int maxTime = 30, bool checkNormality = true, const QRegExp &windowName = QRegExp());
     bool isRunning();
 
 private slots:
     void check();
 
 signals:
-    void windowFound(Window, TrayItemSettings);
+    void windowFound(Window, TrayItemArgs);
     void stopping();
 
 private:
