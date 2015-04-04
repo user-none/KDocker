@@ -43,9 +43,13 @@ int ignoreXErrors(Display *, XErrorEvent *) {
 
 TrayItemManager::TrayItemManager() {
     m_scanner = new Scanner(this);
-    connect(m_scanner, SIGNAL(windowFound(Window, TrayItemSettings)), this, SLOT(dockWindow(Window, TrayItemSettings)));
+    connect(m_scanner, SIGNAL(windowFound(Window, TrayItemArgs)), this, SLOT(dockWindow(Window, TrayItemArgs)));
     connect(m_scanner, SIGNAL(stopping()), this, SLOT(checkCount()));
-
+    // 'const' TrayItemArgs initializer
+    m_initArgs.iBalloonTimeout = -1;
+    for (int opt=0; opt < Option_MAX; opt++) {
+        m_initArgs.opt[opt] = NOARG;  // unset all
+    }
     m_grabInfo.qtimer = new QTimer;
     m_grabInfo.qloop  = new QEventLoop;
     m_grabInfo.isGrabbing = false;
@@ -151,15 +155,7 @@ void TrayItemManager::processCommand(const QStringList &args) {
     int maxTime = 5;
     QRegExp windowName;
     windowName.setPatternSyntax(QRegExp::FixedString);
-    TrayItemSettings settings;
-    settings.balloonTimeout = 4000;
-    settings.iconify = true;
-    settings.skipTaskbar = false;
-    settings.skipPager = false;
-    settings.sticky = false;
-    settings.iconifyObscure = false;
-    settings.iconifyFocusLost = false;
-
+    TrayItemArgs settings = m_initArgs;
     // Turn the QStringList of arguments into something getopt can use.
     QList<QByteArray> bargs;
 
@@ -214,7 +210,7 @@ void TrayItemManager::processCommand(const QStringList &args) {
                 }
                 break;
             case 'i':
-                settings.customIcon = QString::fromLocal8Bit(optarg);
+                settings.sCustomIcon = QString::fromLocal8Bit(optarg);
                 break;
             case 'j':
                 windowName.setCaseSensitivity(Qt::CaseSensitive);
@@ -223,31 +219,31 @@ void TrayItemManager::processCommand(const QStringList &args) {
                 windowName.setMinimal(true);
                 break;
             case 'l':
-                settings.iconifyFocusLost = true;
+                settings.opt[IconifyFocusLost] = true;
                 break;
             case 'm':
-                settings.iconify = false;
+                settings.opt[IconifyMinimized] = false;
                 break;
             case 'n':
                 windowName.setPattern(QString::fromLocal8Bit(optarg));
                 break;
             case 'o':
-                settings.iconifyObscure = true;
+                settings.opt[IconifyObscured] = true;
                 break;
             case 'p':
-                settings.balloonTimeout = atoi(optarg) * 1000; // convert to ms
+                settings.iBalloonTimeout = atoi(optarg) * 1000;   // convert to ms
                 break;
             case 'q':
-                settings.balloonTimeout = 0; // same as '-p 0'
+                settings.iBalloonTimeout = 0;   // same as '-p 0'
                 break;
             case 'r':
-                settings.skipPager = true;
+                settings.opt[SkipPager] = true;
                 break;
             case 's':
-                settings.sticky = true;
+                settings.opt[Sticky] = true;
                 break;
             case 't':
-                settings.skipTaskbar = true;
+                settings.opt[SkipTaskbar] = true;
                 break;
             case 'w':
                 if (((sizeof(optarg) / sizeof(*optarg)) > 2) && ((optarg[1] == 'x') || (optarg[1] == 'X'))) {
@@ -300,24 +296,14 @@ void TrayItemManager::processCommand(const QStringList &args) {
     }
 }
 
-void TrayItemManager::dockWindow(Window window, TrayItemSettings settings) {
+void TrayItemManager::dockWindow(Window window, const TrayItemArgs settings) {
     if (isWindowDocked(window)) {
         QMessageBox::information(0, qApp->applicationName(), tr("This window is already docked.\nClick on system tray icon to toggle docking."));
         checkCount();
         return;
     }
 
-    TrayItem *ti = new TrayItem(window);
-
-    if (!settings.customIcon.isEmpty()) {
-        ti->setCustomIcon(settings.customIcon);
-    }
-    ti->setBalloonTimeout(settings.balloonTimeout);
-    ti->setSticky(settings.sticky);
-    ti->setSkipPager(settings.skipPager);
-    ti->setSkipTaskbar(settings.skipTaskbar);
-    ti->setIconifyObscure(settings.iconifyObscure);
-    ti->setIconifyFocusLost(settings.iconifyFocusLost);
+    TrayItem *ti = new TrayItem(window, settings);
 
     connect(ti, SIGNAL(selectAnother()), this, SLOT(selectAndIconify()));
     connect(ti, SIGNAL(dead(TrayItem*)), this, SLOT(remove(TrayItem*)));
@@ -325,15 +311,7 @@ void TrayItemManager::dockWindow(Window window, TrayItemSettings settings) {
     connect(ti, SIGNAL(undockAll()), this, SLOT(undockAll()));
     connect(ti, SIGNAL(about()), this, SLOT(about()));
 
-    ti->show();
-
-    if (settings.iconify) {
-        ti->iconifyWindow();
-    } else {
-        if (settings.skipTaskbar) {
-            ti->doSkipTaskbar();
-        }
-    }
+    ti->showWindow();
 
     m_trayItems.append(ti);
 }
@@ -400,16 +378,7 @@ void TrayItemManager::selectAndIconify() {
     Window window = userSelectWindow(true);
 
     if (window) {
-        TrayItemSettings settings;
-        settings.balloonTimeout = 4000;
-        settings.iconify = true;
-        settings.skipTaskbar = false;
-        settings.skipPager = false;
-        settings.sticky = false;
-        settings.iconifyObscure = false;
-        settings.iconifyFocusLost = false;
-
-        dockWindow(window, settings);
+        dockWindow(window, m_initArgs);
     }
 }
 

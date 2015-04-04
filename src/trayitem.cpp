@@ -34,20 +34,13 @@
 #include "xlibutil.h"
 
 
-TrayItem::TrayItem(Window window) {
+TrayItem::TrayItem(Window window, const TrayItemArgs args) {
     m_iconified = false;
+    m_is_restoring = false;
     m_customIcon = false;
-    m_skipTaskbar = false;
-    m_skipPager = false;
-    m_sticky = false;
-    m_iconifyMinimized = true;
-    m_iconifyObscure = false;
-    m_iconifyFocusLost = false;
-    m_balloonTimeout = 4000;
+
     m_dockedAppName = "";
     m_window = window;
-
-    m_is_restoring = false;
 
     Display *display = QX11Info::display();
 
@@ -58,11 +51,32 @@ TrayItem::TrayItem(Window window) {
     XLibUtil::getCardinalProperty(display, m_window, XInternAtom(display, "_NET_WM_DESKTOP", True), &m_desktop);
 
     readDockedAppName();
+
+    m_settings.sCustomIcon           = readSetting(args.sCustomIcon,           "CustomIcon",       DEFAULT_CustomIcon);
+    m_settings.iBalloonTimeout       = readSetting(args.iBalloonTimeout,       "BalloonTimeout",   DEFAULT_BalloonTimeout);
+    m_settings.opt[Sticky]           = readSetting(args.opt[Sticky],           "Sticky",           DEFAULT_Sticky);
+    m_settings.opt[SkipPager]        = readSetting(args.opt[SkipPager],        "SkipPager",        DEFAULT_SkipPager);
+    m_settings.opt[SkipTaskbar]      = readSetting(args.opt[SkipTaskbar],      "SkipTaskbar",      DEFAULT_SkipTaskbar);
+    m_settings.opt[IconifyMinimized] = readSetting(args.opt[IconifyMinimized], "IconifyMinimized", DEFAULT_IconifyMinimized);
+    m_settings.opt[IconifyObscured]  = readSetting(args.opt[IconifyObscured],  "IconifyObscured",  DEFAULT_IconifyObscured);
+    m_settings.opt[IconifyFocusLost] = readSetting(args.opt[IconifyFocusLost], "IconifyFocusLost", DEFAULT_IconifyFocusLost);
+
     updateTitle();
     updateIcon();
 
     createContextMenu();
     updateToggleAction();
+
+    if (!m_settings.sCustomIcon.isEmpty()) {
+        setCustomIcon(m_settings.sCustomIcon);
+    }
+    setBalloonTimeout(m_settings.iBalloonTimeout);
+    setSticky(m_settings.opt[Sticky]);
+    setSkipPager(m_settings.opt[SkipPager]);
+    setSkipTaskbar(m_settings.opt[SkipTaskbar]);
+    setIconifyMinimized(m_settings.opt[IconifyMinimized]);
+    setIconifyObscured(m_settings.opt[IconifyObscured]);
+    setIconifyFocusLost(m_settings.opt[IconifyFocusLost]);
 
     connect(this, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
             this, SLOT(trayActivated(QSystemTrayIcon::ActivationReason)));
@@ -76,7 +90,127 @@ TrayItem::~TrayItem() {
     delete m_contextMenu;
 }
 
+bool TrayItem::readSetting(int8_t argSetting, QString key, bool kdockerDefault) {
+    /* Precedence:
+     * 1) Command line overrides         (argSetting, if positive)
+     * 2) User app-specific defaults     (QSettings: "<m_dockedAppName>/<key>")
+     * 3) User global defaults           (QSettings: "_GLOBAL_DEFAULTS/<key>")
+     * 4) KDocker defaults               (#define DEFAULT_keyname)
+     */
+    if (argSetting != NOARG) {
+        return (argSetting != 0);
+    }
+    key.prepend("%1/");   // Add formatting to local QString copy
+    return m_config.value(key.arg(m_dockedAppName),
+            m_config.value(key.arg("_GLOBAL_DEFAULTS"), kdockerDefault)).toBool();
+}
 
+int TrayItem::readSetting(int argSetting, QString key, int kdockerDefault) {
+    if (argSetting >= 0) {
+        return argSetting;
+    }
+    key.prepend("%1/");
+    return m_config.value(key.arg(m_dockedAppName),
+            m_config.value(key.arg("_GLOBAL_DEFAULTS"), kdockerDefault)).toInt();
+}
+
+QString TrayItem::readSetting(QString argSetting, QString key, QString kdockerDefault) {
+    if (!argSetting.isEmpty()) {
+        return argSetting;
+    }
+    key.prepend("%1/");
+    return m_config.value(key.arg(m_dockedAppName),
+            m_config.value(key.arg("_GLOBAL_DEFAULTS"), kdockerDefault)).toString();
+}
+
+int TrayItem::nonZeroBalloonTimeout() {
+    QString fmt = "%1/BalloonTimeout";
+    int bto = m_config.value(fmt.arg(m_dockedAppName), 0).toInt();
+    if (!bto) {
+        bto = m_config.value(fmt.arg("_GLOBAL_DEFAULTS"), 0).toInt();
+    }
+    return bto ? bto : DEFAULT_BalloonTimeout;
+}
+
+TrayItemConfig TrayItem::readConfigGlobals() {
+    TrayItemConfig config;
+
+    m_config.beginGroup("_GLOBAL_DEFAULTS");
+      config.sCustomIcon           = m_config.value("CustomIcon",       DEFAULT_CustomIcon).toString();
+      config.iBalloonTimeout       = m_config.value("BalloonTimeout",   DEFAULT_BalloonTimeout).toInt();
+      config.opt[Sticky]           = m_config.value("Sticky",           DEFAULT_Sticky).toBool();
+      config.opt[SkipPager]        = m_config.value("SkipPager",        DEFAULT_SkipPager).toBool();
+      config.opt[SkipTaskbar]      = m_config.value("SkipTaskbar",      DEFAULT_SkipTaskbar).toBool();
+      config.opt[IconifyMinimized] = m_config.value("IconifyMinimized", DEFAULT_IconifyMinimized).toBool();
+      config.opt[IconifyObscured]  = m_config.value("IconifyObscured",  DEFAULT_IconifyObscured).toBool();
+      config.opt[IconifyFocusLost] = m_config.value("IconifyFocusLost", DEFAULT_IconifyFocusLost).toBool();
+    m_config.endGroup();
+
+    return config;
+}
+
+void TrayItem::saveSettingsGlobal()
+{
+    m_config.beginGroup("_GLOBAL_DEFAULTS");
+      saveSettings();
+    m_config.endGroup();
+}
+
+void TrayItem::saveSettingsApp()
+{
+    TrayItemConfig globals = readConfigGlobals();
+
+    m_config.beginGroup(m_dockedAppName);
+      QVariant keyval;
+
+      if (!m_settings.sCustomIcon.isEmpty()) {
+          m_config.setValue("CustomIcon", m_settings.sCustomIcon);
+      }
+      saveSettings();
+
+      // Remove app-specific settings if they match their default values
+
+      keyval = m_config.value("BalloonTimeout");
+      if (keyval.isValid() && (keyval.toInt()  == globals.iBalloonTimeout)) {
+          m_config.remove("BalloonTimeout");
+      }
+      keyval = m_config.value("Sticky");
+      if (keyval.isValid() && keyval.toBool() == globals.opt[Sticky]) {
+          m_config.remove("Sticky");
+      }
+      keyval = m_config.value("SkipPager");
+      if (keyval.isValid() && keyval.toBool() == globals.opt[SkipPager]) {
+          m_config.remove("SkipPager");
+      }
+      keyval = m_config.value("SkipTaskbar");
+      if (keyval.isValid() && keyval.toBool() == globals.opt[SkipTaskbar]) {
+          m_config.remove("SkipTaskbar");
+      }
+      keyval = m_config.value("IconifyMinimized");
+      if (keyval.isValid() && keyval.toBool() == globals.opt[IconifyMinimized]) {
+          m_config.remove("IconifyMinimized");
+      }
+      keyval = m_config.value("IconifyObscured");
+      if (keyval.isValid() && keyval.toBool() == globals.opt[IconifyObscured]) {
+          m_config.remove("IconifyObscured");
+      }
+      keyval = m_config.value("IconifyFocusLost");
+      if (keyval.isValid() && keyval.toBool() == globals.opt[IconifyFocusLost]) {
+          m_config.remove("IconifyFocusLost");
+      }
+    m_config.endGroup();
+}
+
+void TrayItem::saveSettings() {    /*  "/home/<user>/.config/com.kdocker/KDocker.conf"    //  <==  m_config.fileName();  */
+    // Group is set by caller
+    m_config.setValue("BalloonTimeout",   m_settings.iBalloonTimeout);
+    m_config.setValue("Sticky",           m_settings.opt[Sticky]);
+    m_config.setValue("SkipPager",        m_settings.opt[SkipPager]);
+    m_config.setValue("SkipTaskbar",      m_settings.opt[SkipTaskbar]);
+    m_config.setValue("IconifyMinimized", m_settings.opt[IconifyMinimized]);
+    m_config.setValue("IconifyObscured",  m_settings.opt[IconifyObscured]);
+    m_config.setValue("IconifyFocusLost", m_settings.opt[IconifyFocusLost]);
+}
 
 bool TrayItem::xcbEventFilter(xcb_generic_event_t *event, xcb_window_t dockedWindow) {
     if (!isBadWindow() && static_cast<Window>(dockedWindow) == m_window) {
@@ -117,6 +251,19 @@ bool TrayItem::xcbEventFilter(xcb_generic_event_t *event, xcb_window_t dockedWin
 
 Window TrayItem::dockedWindow() {
     return m_window;
+}
+
+void TrayItem::showWindow() {
+
+    show();
+
+    if (m_settings.opt[IconifyMinimized]) {
+        iconifyWindow();
+    } else {
+        if (m_settings.opt[SkipTaskbar]) {
+            doSkipTaskbar();
+        }
+    }
 }
 
 void TrayItem::restoreWindow() {
@@ -212,21 +359,23 @@ void TrayItem::closeWindow() {
 }
 
 void TrayItem::doSkipTaskbar() {
-    set_NET_WM_STATE("_NET_WM_STATE_SKIP_TASKBAR", m_skipTaskbar);
+    set_NET_WM_STATE("_NET_WM_STATE_SKIP_TASKBAR", m_settings.opt[SkipTaskbar]);
 }
 
 void TrayItem::doSkipPager() {
-    set_NET_WM_STATE("_NET_WM_STATE_SKIP_PAGER", m_skipPager);
+    set_NET_WM_STATE("_NET_WM_STATE_SKIP_PAGER", m_settings.opt[SkipPager]);
 }
 
 void TrayItem::doSticky() {
-    set_NET_WM_STATE("_NET_WM_STATE_STICKY", m_sticky);
+    set_NET_WM_STATE("_NET_WM_STATE_STICKY", m_settings.opt[Sticky]);
 }
 
 void TrayItem::setCustomIcon(QString path) {
     m_customIcon = true;
     QPixmap customIcon;
-    if (!customIcon.load(path)) {
+    if (customIcon.load(path)) {
+        m_settings.sCustomIcon = path;
+    } else {
         customIcon.load(":/images/question.png");
     }
 
@@ -257,35 +406,35 @@ void TrayItem::selectCustomIcon(bool value) {
 }
 
 void TrayItem::setSkipTaskbar(bool value) {
-    m_skipTaskbar = value;
+    m_settings.opt[SkipTaskbar] = value;
     m_actionSkipTaskbar->setChecked(value);
     doSkipTaskbar();
 }
 
 void TrayItem::setSkipPager(bool value) {
-    m_skipPager = value;
+    m_settings.opt[SkipPager] = value;
     m_actionSkipPager->setChecked(value);
     doSkipPager();
 }
 
 void TrayItem::setSticky(bool value) {
-    m_sticky = value;
+    m_settings.opt[Sticky] = value;
     m_actionSticky->setChecked(value);
     doSticky();
 }
 
 void TrayItem::setIconifyMinimized(bool value) {
-    m_iconifyMinimized = value;
+    m_settings.opt[IconifyMinimized] = value;
     m_actionIconifyMinimized->setChecked(value);
 }
 
-void TrayItem::setIconifyObscure(bool value) {
-    m_iconifyObscure = value;
-    m_actionIconifyObscure->setChecked(value);
+void TrayItem::setIconifyObscured(bool value) {
+    m_settings.opt[IconifyObscured] = value;
+    m_actionIconifyObscured->setChecked(value);
 }
 
 void TrayItem::setIconifyFocusLost(bool value) {
-    m_iconifyFocusLost = value;
+    m_settings.opt[IconifyFocusLost] = value;
     m_actionIconifyFocusLost->setChecked(value);
     focusLostEvent();
 }
@@ -294,7 +443,7 @@ void TrayItem::setBalloonTimeout(int value) {
     if (value < 0) {
         value = 0;
     }
-    m_balloonTimeout = value;
+    m_settings.iBalloonTimeout = value;
     m_actionBalloonTitleChanges->setChecked(value ? true : false);
 }
 
@@ -302,7 +451,7 @@ void TrayItem::setBalloonTimeout(bool value) {
     if (!value) {
         setBalloonTimeout(-1);
     } else {
-        setBalloonTimeout(4000);
+        setBalloonTimeout(nonZeroBalloonTimeout());
     }
 }
 
@@ -341,7 +490,7 @@ void TrayItem::doUndock() {
 }
 
 void TrayItem::minimizeEvent() {
-    if (m_iconifyMinimized) {
+    if (m_settings.opt[IconifyMinimized]) {
         iconifyWindow();
     }
 }
@@ -382,7 +531,7 @@ void TrayItem::propertyChangeEvent(Atom property) {
 }
 
 void TrayItem::obscureEvent() {
-    if (m_iconifyObscure) {
+    if (m_settings.opt[IconifyObscured]) {
         iconifyWindow();
     }
 }
@@ -396,7 +545,7 @@ void TrayItem::focusLostEvent() {
         qApp->processEvents();
     }
 
-    if (m_iconifyFocusLost && m_window != XLibUtil::activeWindow(QX11Info::display())) {
+    if (m_settings.opt[IconifyFocusLost] && m_window != XLibUtil::activeWindow(QX11Info::display())) {
         iconifyWindow();
     }
 }
@@ -457,8 +606,8 @@ void TrayItem::updateTitle() {
     }
 
     setToolTip(QString("%1 [%2]").arg(title).arg(m_dockedAppName));
-    if (m_balloonTimeout > 0) {
-        showMessage(m_dockedAppName, title, QSystemTrayIcon::Information, m_balloonTimeout);
+    if (m_settings.iBalloonTimeout > 0) {
+        showMessage(m_dockedAppName, title, QSystemTrayIcon::Information, m_settings.iBalloonTimeout);
     }
 }
 
@@ -494,6 +643,7 @@ void TrayItem::createContextMenu() {
 
     // Options menu
     m_optionsMenu = new QMenu(tr("Options"), m_contextMenu);
+    m_optionsMenu-> setIcon(QIcon(":/images/options.png"));
 
     m_actionSetIcon = new QAction(tr("Set icon..."), m_optionsMenu);
     connect(m_actionSetIcon, SIGNAL(triggered(bool)), this, SLOT(selectCustomIcon(bool)));
@@ -501,47 +651,64 @@ void TrayItem::createContextMenu() {
 
     m_actionSkipTaskbar = new QAction(tr("Skip taskbar"), m_optionsMenu);
     m_actionSkipTaskbar->setCheckable(true);
-    m_actionSkipTaskbar->setChecked(m_skipTaskbar);
+    m_actionSkipTaskbar->setChecked(m_settings.opt[SkipTaskbar]);
     connect(m_actionSkipTaskbar, SIGNAL(triggered(bool)), this, SLOT(setSkipTaskbar(bool)));
     m_optionsMenu->addAction(m_actionSkipTaskbar);
 
     m_actionSkipPager = new QAction(tr("Skip pager"), m_optionsMenu);
     m_actionSkipPager->setCheckable(true);
-    m_actionSkipPager->setChecked(m_skipPager);
+    m_actionSkipPager->setChecked(m_settings.opt[SkipPager]);
     connect(m_actionSkipPager, SIGNAL(triggered(bool)), this, SLOT(setSkipPager(bool)));
     m_optionsMenu->addAction(m_actionSkipPager);
 
     m_actionSticky = new QAction(tr("Sticky"), m_optionsMenu);
     m_actionSticky->setCheckable(true);
-    m_actionSticky->setChecked(m_sticky);
+    m_actionSticky->setChecked(m_settings.opt[Sticky]);
     connect(m_actionSticky, SIGNAL(triggered(bool)), this, SLOT(setSticky(bool)));
     m_optionsMenu->addAction(m_actionSticky);
 
     m_actionIconifyMinimized = new QAction(tr("Iconify when minimized"), m_optionsMenu);
     m_actionIconifyMinimized->setCheckable(true);
-    m_actionIconifyMinimized->setChecked(m_iconifyMinimized);
+    m_actionIconifyMinimized->setChecked(m_settings.opt[IconifyMinimized]);
     connect(m_actionIconifyMinimized, SIGNAL(triggered(bool)), this, SLOT(setIconifyMinimized(bool)));
     m_optionsMenu->addAction(m_actionIconifyMinimized);
 
-    m_actionIconifyObscure = new QAction(tr("Iconify when obscured"), m_optionsMenu);
-    m_actionIconifyObscure->setCheckable(true);
-    m_actionIconifyObscure->setChecked(m_iconifyObscure);
-    connect(m_actionIconifyObscure, SIGNAL(triggered(bool)), this, SLOT(setIconifyObscure(bool)));
-    m_optionsMenu->addAction(m_actionIconifyObscure);
+    m_actionIconifyObscured = new QAction(tr("Iconify when obscured"), m_optionsMenu);
+    m_actionIconifyObscured->setCheckable(true);
+    m_actionIconifyObscured->setChecked(m_settings.opt[IconifyObscured]);
+    connect(m_actionIconifyObscured, SIGNAL(triggered(bool)), this, SLOT(setIconifyObscured(bool)));
+    m_optionsMenu->addAction(m_actionIconifyObscured);
 
     m_actionIconifyFocusLost = new QAction(tr("Iconify when focus lost"), m_optionsMenu);
     m_actionIconifyFocusLost->setCheckable(true);
-    m_actionIconifyFocusLost->setChecked(m_iconifyFocusLost);
+    m_actionIconifyFocusLost->setChecked(m_settings.opt[IconifyFocusLost]);
     connect(m_actionIconifyFocusLost, SIGNAL(toggled(bool)), this, SLOT(setIconifyFocusLost(bool)));
     m_optionsMenu->addAction(m_actionIconifyFocusLost);
 
     m_actionBalloonTitleChanges = new QAction(tr("Balloon title changes"), m_optionsMenu);
     m_actionBalloonTitleChanges->setCheckable(true);
-    m_actionBalloonTitleChanges->setChecked(m_balloonTimeout ? true : false);
+    m_actionBalloonTitleChanges->setChecked(m_settings.iBalloonTimeout ? true : false);
     connect(m_actionBalloonTitleChanges, SIGNAL(triggered(bool)), this, SLOT(setBalloonTimeout(bool)));
     m_optionsMenu->addAction(m_actionBalloonTitleChanges);
 
     m_contextMenu->addMenu(m_optionsMenu);
+
+    // Save settings menu
+    m_optionsMenu->addSeparator();
+    m_defaultsMenu = new QMenu(tr("Save settings"), m_optionsMenu);
+    m_defaultsMenu-> setIcon(QIcon(":/images/config.png"));
+
+    m_actionSaveSettingsApp = new QAction(tr("%1 only").arg(m_dockedAppName), m_defaultsMenu);
+    connect(m_actionSaveSettingsApp, SIGNAL(triggered()), this, SLOT(saveSettingsApp()));
+    m_defaultsMenu->addAction(m_actionSaveSettingsApp);
+
+    m_actionSaveSettingsGlobal = new QAction(tr("Global (all new)"), m_defaultsMenu);
+    connect(m_actionSaveSettingsGlobal, SIGNAL(triggered()), this, SLOT(saveSettingsGlobal()));
+    m_defaultsMenu->addAction(m_actionSaveSettingsGlobal);
+
+    m_optionsMenu->addMenu(m_defaultsMenu);
+    // ---
+
     m_contextMenu->addAction(QIcon(":/images/another.png"), tr("Dock Another"), this, SIGNAL(selectAnother()));
     m_contextMenu->addAction(tr("Undock All"), this, SIGNAL(undockAll()));
     m_contextMenu->addSeparator();
