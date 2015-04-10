@@ -1,5 +1,5 @@
 for version 5.0
-	- Support Qt 5.
+    - Support Qt 5.
 
 for version 4.9
     - Assorted bug fixed (mostly minimal).
