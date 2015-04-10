@@ -34,6 +34,7 @@
 
 #include <Xlib.h>
 
+
 #define  ESC_key  9
 
 int ignoreXErrors(Display *, XErrorEvent *) {
@@ -67,19 +68,14 @@ TrayItemManager::~TrayItemManager() {
     delete m_scanner;
 }
 
-/*
- * The X11 Event Filter. Pass on events to the TrayItems that we created.
- */
-
-bool TrayItemManager::nativeEventFilter(const QByteArray &eventType, void *message, long *result)
-{
+/* The X11 Event Filter. Pass on events to the TrayItems that we created. */
+bool TrayItemManager::nativeEventFilter(const QByteArray &eventType, void *message, long *result) {
     Q_UNUSED(eventType); // Platform string; not used
     Q_UNUSED(result);    // Win* OS only
 
     static xcb_window_t dockedWindow = 0;  //     zero: event ignored (default) ...
                                            // non-zero: pass to TrayItem::xcbEventFilter
-    switch (static_cast<xcb_generic_event_t *>(message)-> response_type & ~0x80)
-    {
+    switch (static_cast<xcb_generic_event_t *>(message)-> response_type & ~0x80) {
 		case XCB_FOCUS_OUT:          // -> TrayItem::xcbEventFilter
             dockedWindow = static_cast<xcb_focus_out_event_t *>(message)-> event;
 			break;
@@ -105,8 +101,7 @@ bool TrayItemManager::nativeEventFilter(const QByteArray &eventType, void *messa
             break;
 
 		case XCB_BUTTON_PRESS:
-            if (m_grabInfo.isGrabbing)
-            {
+            if (m_grabInfo.isGrabbing) {
                 m_grabInfo.isGrabbing = false;   // Cancel immediately
 
                 m_grabInfo.button = static_cast<xcb_button_press_event_t *>(message)-> detail;
@@ -118,8 +113,7 @@ bool TrayItemManager::nativeEventFilter(const QByteArray &eventType, void *messa
             break;
 
 		case XCB_KEY_RELEASE:
-            if (m_grabInfo.isGrabbing)
-            {
+            if (m_grabInfo.isGrabbing) {
                 if (static_cast<xcb_key_release_event_t *>(message)-> detail == ESC_key)
                 {
                     m_grabInfo.isGrabbing = false;
@@ -131,8 +125,7 @@ bool TrayItemManager::nativeEventFilter(const QByteArray &eventType, void *messa
 			break;
 	}
 
-    if (dockedWindow)
-    {
+    if (dockedWindow) {
         // Pass on the event to the tray item with the associated window.
         QListIterator<TrayItem*> ti(m_trayItems);
         static TrayItem *t;

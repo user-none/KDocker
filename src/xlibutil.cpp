@@ -28,11 +28,11 @@
 
 #include "xlibutil.h"
 
+
 #define BIT0  (1 << 0)
 #define BIT1  (1 << 1)
 #define BIT2  (1 << 2)
 #define BIT3  (1 << 3)
-
 
 /*
  * Assert validity of the window id. Get window attributes for the heck of it
@@ -299,8 +299,7 @@ Window XLibUtil::selectWindow(Display *display, GrabInfo &grabInfo, QString &err
     //  Cannot use 'AnyModifier' here in case, say, CTRL+ESC is in use (results in failure to grab at all)
     //
     KeyCode keyEsc = XKeysymToKeycode(display, XK_Escape);
-    for (int b = 0; b < BIT3; b++)  // 000..111 (grab eight Escape key combinations)
-    {
+    for (int b = 0; b < BIT3; b++)  // 000..111 (grab eight Escape key combinations) {
         int modifiers = ((b & BIT0) ? LockMask : 0) |   // CAPS_lock
                         ((b & BIT1) ? Mod2Mask : 0) |   // NUM_lock
                         ((b & BIT2) ? Mod5Mask : 0);    // SCROLL_lock
@@ -324,8 +323,7 @@ Window XLibUtil::selectWindow(Display *display, GrabInfo &grabInfo, QString &err
     XSelectInput(display, root, NoEventMask);
     XFreeCursor(display, cursor);
 
-    if (grabInfo.button != Button1 || !grabInfo.window || !grabInfo.qtimer-> isActive())
-    {
+    if (grabInfo.button != Button1 || !grabInfo.window || !grabInfo.qtimer-> isActive()) {
         return None;
     }
 
@@ -346,8 +344,7 @@ void XLibUtil::subscribe(Display *display, Window w, long mask) {
     XSync(display, false);
 }
 
-void XLibUtil::unSubscribe(Display *display, Window w)
-{
+void XLibUtil::unSubscribe(Display *display, Window w) {
     XSelectInput(display, w, NoEventMask);
     XSync(display, false);
 }

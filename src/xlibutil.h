@@ -33,8 +33,9 @@
 #include <X11/Xlib-xcb.h>
 #include <X11/Xutil.h>
 #include <Xmu/WinUtil.h>
-#undef Bool
 
+
+#undef Bool
 
 typedef struct GrabInfo {
 

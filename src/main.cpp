@@ -29,6 +29,7 @@
 #include "constants.h"
 #include "kdocker.h"
 
+
 static void sighandler(int sig) {
     Q_UNUSED(sig);
 

@@ -78,12 +78,9 @@ TrayItem::~TrayItem() {
 
 
 
-bool TrayItem::xcbEventFilter(xcb_generic_event_t *event, xcb_window_t dockedWindow)
-{
-    if ( ! isBadWindow() && static_cast<Window>(dockedWindow) == m_window)
-    {
-        switch (event-> response_type & ~0x80)
-        {
+bool TrayItem::xcbEventFilter(xcb_generic_event_t *event, xcb_window_t dockedWindow) {
+    if (!isBadWindow() && static_cast<Window>(dockedWindow) == m_window) {
+        switch (event-> response_type & ~0x80) {
             case XCB_FOCUS_OUT:
                 focusLostEvent();
                 break;
@@ -112,9 +109,7 @@ bool TrayItem::xcbEventFilter(xcb_generic_event_t *event, xcb_window_t dockedWin
 
             case XCB_PROPERTY_NOTIFY:
                 propertyChangeEvent(static_cast<Atom>(reinterpret_cast<xcb_property_notify_event_t *>(event)-> atom));
-
                 break;
-
         }
     }
     return false;
@@ -390,20 +385,13 @@ void TrayItem::propertyChangeEvent(Atom property) {
     static Atom WM_STATE        = XInternAtom(display, "WM_STATE", True);
     static Atom _NET_WM_DESKTOP = XInternAtom(display, "_NET_WM_DESKTOP", True);
 
-    if      (property == WM_NAME)
-    {
+    if (property == WM_NAME) {
         updateTitle();
-    }
-    else if (property == WM_ICON)
-    {
+    } else if (property == WM_ICON) {
         updateIcon();
-    }
-    else if (property == _NET_WM_DESKTOP)
-    {
+    } else if (property == _NET_WM_DESKTOP) {
         XLibUtil::getCardinalProperty(display, m_window, _NET_WM_DESKTOP, &m_desktop);
-    }
-    else if (property == WM_STATE)
-    {
+    } else if (property == WM_STATE) {
         Atom type = None;
         int format;
         unsigned long nitems, after;

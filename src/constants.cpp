@@ -19,6 +19,7 @@
 
 #include "constants.h"
 
+
 const QString Constants::ORG_NAME = "com.kdocker";
 const QString Constants::DOM_NAME = "kdocker.com";
 const QString Constants::APP_NAME = "KDocker";

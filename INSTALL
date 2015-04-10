@@ -1,5 +1,5 @@
 Prerequisites
-1. Make sure you have Qt 4 installed and working. If you dont know what Qt is,
+1. Make sure you have Qt 5 installed and working. If you dont know what Qt is,
 go to http://qt.nokia.com/products/. You will need qmake to compile.
 
 Building

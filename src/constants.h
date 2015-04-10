@@ -23,6 +23,7 @@
 #include <QObject>
 #include <QString>
 
+
 class Constants : QObject {
     Q_OBJECT
 

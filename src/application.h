@@ -24,6 +24,7 @@
 
 #include "kdocker.h"
 
+
 class Application : public QtSingleApplication {
     Q_OBJECT
 

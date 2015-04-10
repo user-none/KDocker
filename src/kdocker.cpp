@@ -29,6 +29,7 @@
 
 #include <Xlib.h>
 
+
 #define ARG_MAX_LEN 30
 #define ARG_PRE_PAD 2
 #define ARG_POST_PAD 2
@@ -45,8 +46,7 @@ KDocker::~KDocker() {
     }
 }
 
-TrayItemManager *KDocker::getTrayItemManager()
-{
+TrayItemManager *KDocker::getTrayItemManager() {
     return m_trayItemManager;
 }
 
