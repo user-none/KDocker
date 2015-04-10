@@ -18,20 +18,23 @@
  * USA.
  */
 
-#include <QByteArray>
 #include <QCoreApplication>
+#include <QByteArray>
 #include <QMessageBox>
 #include <QTextStream>
 #include <QX11Info>
 
 #include "constants.h"
 #include "trayitemmanager.h"
-#include "xlibutil.h"
 
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
+
+#include <Xlib.h>
+
+#define  ESC_key  9
 
 int ignoreXErrors(Display *, XErrorEvent *) {
     return 0;
@@ -41,6 +44,13 @@ TrayItemManager::TrayItemManager() {
     m_scanner = new Scanner(this);
     connect(m_scanner, SIGNAL(windowFound(Window, TrayItemSettings)), this, SLOT(dockWindow(Window, TrayItemSettings)));
     connect(m_scanner, SIGNAL(stopping()), this, SLOT(checkCount()));
+
+    m_grabInfo.qtimer = new QTimer;
+    m_grabInfo.qloop  = new QEventLoop;
+    m_grabInfo.isGrabbing = false;
+    connect(m_grabInfo.qtimer, SIGNAL(timeout()), m_grabInfo.qloop, SLOT(quit()));
+    connect(this, SIGNAL(quitMouseGrab()),        m_grabInfo.qloop, SLOT(quit()));
+
     // This will prevent x errors from being written to the console.
     // The isValidWindowId function in util.cpp will generate errors if the
     // window is not valid while it is checking.
@@ -52,21 +62,86 @@ TrayItemManager::~TrayItemManager() {
         TrayItem *t = m_trayItems.takeFirst();
         delete t;
     }
+    delete m_grabInfo.qtimer;
+    delete m_grabInfo.qloop;
     delete m_scanner;
 }
 
 /*
  * The X11 Event Filter. Pass on events to the TrayItems that we created.
  */
-bool TrayItemManager::x11EventFilter(XEvent *ev) {
-    QListIterator<TrayItem*> ti(m_trayItems);
 
-    // We pass on the event to the tray item with the associated window.
-    TrayItem *t;
-    while (ti.hasNext()) {
-        t = ti.next();
-        if (ev->xclient.window == t->dockedWindow()) {
-            return t->x11EventFilter(ev);
+bool TrayItemManager::nativeEventFilter(const QByteArray &eventType, void *message, long *result)
+{
+    Q_UNUSED(eventType); // Platform string; not used
+    Q_UNUSED(result);    // Win* OS only
+
+    static xcb_window_t dockedWindow = 0;  //     zero: event ignored (default) ...
+                                           // non-zero: pass to TrayItem::xcbEventFilter
+    switch (static_cast<xcb_generic_event_t *>(message)-> response_type & ~0x80)
+    {
+		case XCB_FOCUS_OUT:          // -> TrayItem::xcbEventFilter
+            dockedWindow = static_cast<xcb_focus_out_event_t *>(message)-> event;
+			break;
+
+		case XCB_DESTROY_NOTIFY:     // -> TrayItem::xcbEventFilter
+            dockedWindow = static_cast<xcb_destroy_notify_event_t *>(message)-> window;
+			break;
+
+		case XCB_UNMAP_NOTIFY:       // -> TrayItem::xcbEventFilter
+            dockedWindow = static_cast<xcb_unmap_notify_event_t *>(message)-> window;
+            break;
+
+		case XCB_MAP_NOTIFY:         // -> TrayItem::xcbEventFilter
+            dockedWindow = static_cast<xcb_map_notify_event_t *>(message)-> window;
+			break;
+
+        case XCB_VISIBILITY_NOTIFY:  // -> TrayItem::xcbEventFilter
+            dockedWindow = static_cast<xcb_visibility_notify_event_t *>(message)-> window;
+            break;
+
+        case XCB_PROPERTY_NOTIFY:    // -> TrayItem::xcbEventFilter
+            dockedWindow = static_cast<xcb_visibility_notify_event_t *>(message)-> window;
+            break;
+
+		case XCB_BUTTON_PRESS:
+            if (m_grabInfo.isGrabbing)
+            {
+                m_grabInfo.isGrabbing = false;   // Cancel immediately
+
+                m_grabInfo.button = static_cast<xcb_button_press_event_t *>(message)-> detail;
+                m_grabInfo.window = static_cast<xcb_button_press_event_t *>(message)-> child;
+
+                emit quitMouseGrab();            // Interrupt QTimer waiting for grab
+                return true;                     // Event has been handled - don't propagate
+            }
+            break;
+
+		case XCB_KEY_RELEASE:
+            if (m_grabInfo.isGrabbing)
+            {
+                if (static_cast<xcb_key_release_event_t *>(message)-> detail == ESC_key)
+                {
+                    m_grabInfo.isGrabbing = false;
+
+                    emit quitMouseGrab();        // Interrupt QTimer waiting for grab
+                    return true;                 // Event has been handled - don't propagate
+                }
+            }
+			break;
+	}
+
+    if (dockedWindow)
+    {
+        // Pass on the event to the tray item with the associated window.
+        QListIterator<TrayItem*> ti(m_trayItems);
+        static TrayItem *t;
+
+        while (ti.hasNext()) {
+            t = ti.next();
+            if (t-> dockedWindow() == static_cast<Window>(dockedWindow)) {
+                return t-> xcbEventFilter(static_cast<xcb_generic_event_t *>(message), dockedWindow);
+            }
         }
     }
 
@@ -274,7 +349,7 @@ Window TrayItemManager::userSelectWindow(bool checkNormality) {
     out << tr("Click any other mouse button to abort.") << endl;
 
     QString error;
-    Window window = XLibUtil::selectWindow(QX11Info::display(), error);
+    Window window = XLibUtil::selectWindow(QX11Info::display(), m_grabInfo, error);
     if (!window) {
         if (error != QString()) {
             QMessageBox::critical(0, qApp->applicationName(), error);

@@ -23,7 +23,6 @@
 #include <QImageReader>
 #include <QMessageBox>
 #include <QPixmap>
-#include <QStringList>
 #include <QTime>
 #include <QX11Info>
 #include <QWheelEvent>
@@ -53,7 +52,7 @@ TrayItem::TrayItem(Window window) {
     Display *display = QX11Info::display();
 
     // Allows events from m_window to be forwarded to the x11EventFilter.
-    XLibUtil::subscribe(display, m_window, StructureNotifyMask | PropertyChangeMask | VisibilityChangeMask | FocusChangeMask, true);
+    XLibUtil::subscribe(display, m_window, StructureNotifyMask | PropertyChangeMask | VisibilityChangeMask | FocusChangeMask);
 
     // Store the desktop on which the window is being shown.
     XLibUtil::getCardinalProperty(display, m_window, XInternAtom(display, "_NET_WM_DESKTOP", True), &m_desktop);
@@ -65,51 +64,65 @@ TrayItem::TrayItem(Window window) {
     createContextMenu();
     updateToggleAction();
 
-    connect(this, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(trayActivated(QSystemTrayIcon::ActivationReason)));
+    connect(this, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
+            this, SLOT(trayActivated(QSystemTrayIcon::ActivationReason)));
 }
 
 TrayItem::~TrayItem() {
+    // No further interest in events from undocked window.
+    XLibUtil::unSubscribe(QX11Info::display(), m_window);
     // Only the main menu needs to be deleted. The rest of the menus and actions
     // are children of this menu and Qt will delete all children.
     delete m_contextMenu;
 }
 
-Window TrayItem::dockedWindow() {
-    return m_window;
-}
 
-bool TrayItem::x11EventFilter(XEvent *ev) {
-    if (isBadWindow()) {
-        return false;
-    }
 
-    XAnyEvent *event = reinterpret_cast<XAnyEvent *> (ev);
+bool TrayItem::xcbEventFilter(xcb_generic_event_t *event, xcb_window_t dockedWindow)
+{
+    if ( ! isBadWindow() && static_cast<Window>(dockedWindow) == m_window)
+    {
+        switch (event-> response_type & ~0x80)
+        {
+            case XCB_FOCUS_OUT:
+                focusLostEvent();
+                break;
 
-    if (event->window == m_window) {
-        if (event->type == DestroyNotify) {
-            destroyEvent();
-            return true;
-        } else if (event->type == PropertyNotify) {
-            return propertyChangeEvent(reinterpret_cast<XPropertyEvent *> (event)->atom);
-        } else if (event->type == VisibilityNotify) {
-            if (reinterpret_cast<XVisibilityEvent *> (event)->state == VisibilityFullyObscured) {
-                obscureEvent();
-                return true;
-            }
-        } else if (event->type == FocusOut) {
-            focusLostEvent();
-            return true;
-        } else if (event->type == MapNotify) {
-            m_iconified = false;
-            updateToggleAction();
-            return true;
-        } else if (event->type == UnmapNotify) {
-            m_iconified = true;
-            updateToggleAction();
-            return true;
+            case XCB_DESTROY_NOTIFY:
+                destroyEvent();
+                // return true;
+                break;
+
+            case XCB_UNMAP_NOTIFY:
+                m_iconified = true;
+                updateToggleAction();
+                break;
+
+            case XCB_MAP_NOTIFY:
+                m_iconified = false;
+                updateToggleAction();
+                break;
+
+            case XCB_VISIBILITY_NOTIFY:
+                if (reinterpret_cast<xcb_visibility_notify_event_t *>(event)-> state == XCB_VISIBILITY_FULLY_OBSCURED) {
+
+                    obscureEvent();
+                }
+                break;
+
+            case XCB_PROPERTY_NOTIFY:
+                propertyChangeEvent(static_cast<Atom>(reinterpret_cast<xcb_property_notify_event_t *>(event)-> atom));
+
+                break;
+
         }
     }
     return false;
+}
+
+
+Window TrayItem::dockedWindow() {
+    return m_window;
 }
 
 void TrayItem::restoreWindow() {
@@ -131,18 +144,31 @@ void TrayItem::restoreWindow() {
          * window go through Withdrawn->Map->Iconify->Normal state.
          */
         XMapWindow(display, m_window);
+#ifndef DISABLE_ICONIFY_FLIP
         XIconifyWindow(display, m_window, DefaultScreen(display));
         XSync(display, False);
         long l_state[1] = {NormalState};
         XLibUtil::sendMessage(display, root, m_window, "WM_CHANGE_STATE", 32, SubstructureNotifyMask | SubstructureRedirectMask, l_state, sizeof (l_state));
-
+        /*
+         *  ^^ FIXME:
+         *  The window manager will place a WM_STATE property (of type WM_STATE)
+         *  on each top-level client window that is not in the Withdrawn state.
+         *  Top-level windows in the Withdrawn state may or may not have the WM_STATE property.
+         *  Once the top-level window has been withdrawn, the client may re-use it for another purpose.
+         *  Clients that do so should remove the WM_STATE property if it is still present.
+         *  -- http://tronche.com/gui/x/icccm/sec-4.html#s-4.1.3.1
+         *
+         *       KWin does as the spec says it should.
+         *       If it's not there, trying to change it yields unexpected results - DfB
+         */
+#endif
         m_sizeHint.flags = USPosition;
         XSetWMNormalHints(display, m_window, &m_sizeHint);
 
         updateToggleAction();
     }
     XMapRaised(display, m_window);
-    XFlush(display);     // DfB - as xdotool
+    XFlush(display);
 
     // Change to the desktop that the window was last on.
     long l_currDesk[2] = {m_desktop, CurrentTime};
@@ -320,17 +346,8 @@ void TrayItem::toggleWindow() {
 
 void TrayItem::trayActivated(QSystemTrayIcon::ActivationReason reason) {
     if (reason == QSystemTrayIcon::Trigger) {
-        if (m_iconified || m_window != XLibUtil::activeWindow(QX11Info::display())) {
-            restoreWindow();
-        }
-        else {
-            iconifyWindow();
-        }
+        toggleWindow();
     }
-}
-
-void TrayItem::doAbout() {
-    emit(about());
 }
 
 bool TrayItem::event(QEvent *e) {
@@ -347,16 +364,8 @@ bool TrayItem::event(QEvent *e) {
     return QSystemTrayIcon::event(e);
 }
 
-void TrayItem::doSelectAnother() {
-    emit(selectAnother());
-}
-
 void TrayItem::doUndock() {
-    emit(undock(this));
-}
-
-void TrayItem::doUndockAll() {
-    emit(undockAll());
+    emit undock(this);
 }
 
 void TrayItem::minimizeEvent() {
@@ -367,30 +376,34 @@ void TrayItem::minimizeEvent() {
 
 void TrayItem::destroyEvent() {
     m_window = 0;
-    emit(dead(this));
+    emit dead(this);
 }
 
-bool TrayItem::propertyChangeEvent(Atom property) {
+void TrayItem::propertyChangeEvent(Atom property) {
     if (isBadWindow()) {
-        return false;
+        return;
     }
 
     Display *display = QX11Info::display();
-    static Atom WM_NAME = XInternAtom(display, "WM_NAME", True);
-    static Atom WM_ICON = XInternAtom(display, "WM_ICON", True);
-    static Atom WM_STATE = XInternAtom(display, "WM_STATE", True);
+    static Atom WM_NAME         = XInternAtom(display, "WM_NAME", True);
+    static Atom WM_ICON         = XInternAtom(display, "WM_ICON", True);
+    static Atom WM_STATE        = XInternAtom(display, "WM_STATE", True);
     static Atom _NET_WM_DESKTOP = XInternAtom(display, "_NET_WM_DESKTOP", True);
 
-    if (property == WM_NAME) {
+    if      (property == WM_NAME)
+    {
         updateTitle();
-        return true;
-    } else if (property == WM_ICON) {
+    }
+    else if (property == WM_ICON)
+    {
         updateIcon();
-        return true;
-    } else if (property == _NET_WM_DESKTOP) {
+    }
+    else if (property == _NET_WM_DESKTOP)
+    {
         XLibUtil::getCardinalProperty(display, m_window, _NET_WM_DESKTOP, &m_desktop);
-        return true;
-    } else if (property == WM_STATE) {
+    }
+    else if (property == WM_STATE)
+    {
         Atom type = None;
         int format;
         unsigned long nitems, after;
@@ -399,10 +412,8 @@ bool TrayItem::propertyChangeEvent(Atom property) {
         if ((r == Success) && data && (*reinterpret_cast<long *> (data) == IconicState)) {
             minimizeEvent();
             XFree(data);
-            return true;
         }
     }
-    return false;
 }
 
 void TrayItem::obscureEvent() {
@@ -513,7 +524,7 @@ void TrayItem::updateToggleAction() {
 void TrayItem::createContextMenu() {
     m_contextMenu = new QMenu();
 
-    m_contextMenu->addAction(QIcon(":/images/about.png"), tr("About %1").arg(qApp->applicationName()), this, SLOT(doAbout()));
+    m_contextMenu->addAction(QIcon(":/images/about.png"), tr("About %1").arg(qApp->applicationName()), this, SIGNAL(about()));
     m_contextMenu->addSeparator();
 
     // Options menu
@@ -566,8 +577,8 @@ void TrayItem::createContextMenu() {
     m_optionsMenu->addAction(m_actionBalloonTitleChanges);
 
     m_contextMenu->addMenu(m_optionsMenu);
-    m_contextMenu->addAction(QIcon(":/images/another.png"), tr("Dock Another"), this, SLOT(doSelectAnother()));
-    m_contextMenu->addAction(tr("Undock All"), this, SLOT(doUndockAll()));
+    m_contextMenu->addAction(QIcon(":/images/another.png"), tr("Dock Another"), this, SIGNAL(selectAnother()));
+    m_contextMenu->addAction(tr("Undock All"), this, SIGNAL(undockAll()));
     m_contextMenu->addSeparator();
     m_actionToggle = new QAction(tr("Toggle"), m_contextMenu);
     connect(m_actionToggle, SIGNAL(triggered()), this, SLOT(toggleWindow()));

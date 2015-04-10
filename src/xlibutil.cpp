@@ -23,12 +23,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <X11/Xutil.h>
-#include <Xmu/WinUtil.h>
 #include <X11/Xatom.h>
 #include <X11/cursorfont.h>
 
 #include "xlibutil.h"
+
+#define BIT0  (1 << 0)
+#define BIT1  (1 << 1)
+#define BIT2  (1 << 2)
+#define BIT3  (1 << 3)
 
 
 /*
@@ -273,10 +276,11 @@ Window XLibUtil::activeWindow(Display * display) {
 }
 
 /*
- * Requests user to select a window by grabbing the mouse. A left click will
- * select the application. Clicking any other button will abort the selection
+ * Requests user to select a window by grabbing the mouse.
+ * A left click will select the application.
+ * Clicking any other mouse button or the Escape key will abort the selection.
  */
-Window XLibUtil::selectWindow(Display *display, QString &error) {
+Window XLibUtil::selectWindow(Display *display, GrabInfo &grabInfo, QString &error) {
     int screen  = DefaultScreen(display);
     Window root = RootWindow(display, screen);
 
@@ -285,50 +289,71 @@ Window XLibUtil::selectWindow(Display *display, QString &error) {
         error = tr("Failed to create XC_draped_box");
         return None;
     }
-
     if (XGrabPointer(display, root, false, ButtonPressMask | ButtonReleaseMask, GrabModeSync, GrabModeAsync, None, cursor, CurrentTime) != GrabSuccess) {
         error = tr("Failed to grab mouse");
         return None;
     }
-
+    //
+    //  X11 treats Scroll_Lock & Num_Lock as 'modifiers'; each exact combination has to be grabbed
+    //   from [ESC + No Modifier] (raw) through to [ESC + CAPS_lock + NUM_lock + SCROLL_lock]
+    //  Cannot use 'AnyModifier' here in case, say, CTRL+ESC is in use (results in failure to grab at all)
+    //
+    KeyCode keyEsc = XKeysymToKeycode(display, XK_Escape);
+    for (int b = 0; b < BIT3; b++)  // 000..111 (grab eight Escape key combinations)
+    {
+        int modifiers = ((b & BIT0) ? LockMask : 0) |   // CAPS_lock
+                        ((b & BIT1) ? Mod2Mask : 0) |   // NUM_lock
+                        ((b & BIT2) ? Mod5Mask : 0);    // SCROLL_lock
+        XGrabKey(display, keyEsc, modifiers, root, False, GrabModeAsync, GrabModeAsync);
+    }
+    XSelectInput(display, root, KeyPressMask);
     XAllowEvents(display, SyncPointer, CurrentTime);
-    XEvent event;
-    XWindowEvent(display, root, ButtonPressMask, &event);
-    Window selected_window = (event.xbutton.subwindow == None) ? RootWindow(display, screen) : event.xbutton.subwindow;
+
+    grabInfo.window = 0;
+    grabInfo.button = 0;
+    grabInfo.qtimer-> setSingleShot(true);
+    grabInfo.qtimer-> start(20000);   // 20 second timeout
+
+    XSync(display, false);
+
+    grabInfo.isGrabbing = true;    // Enable XCB_BUTTON_PRESS code in event filter
+    grabInfo.qloop-> exec();       // block until button pressed or timeout
+
     XUngrabPointer(display, CurrentTime);
+    XUngrabKey(display, keyEsc, AnyModifier, root);
+    XSelectInput(display, root, NoEventMask);
     XFreeCursor(display, cursor);
 
-    if (event.xbutton.button != Button1) {
+    if (grabInfo.button != Button1 || !grabInfo.window || !grabInfo.qtimer-> isActive())
+    {
         return None;
     }
-    return XmuClientWindow(display, selected_window);
+
+    return XmuClientWindow(display, grabInfo.window);
 }
 
 /*
  * Have events associated with mask for the window set in the X11 Event loop
  * to the application.
  */
-void XLibUtil::subscribe(Display *display, Window w, long mask, bool set) {
+void XLibUtil::subscribe(Display *display, Window w, long mask) {
     Window root = RootWindow(display, DefaultScreen(display));
     XWindowAttributes attr;
 
     XGetWindowAttributes(display, w == None ? root : w, &attr);
 
-    // Already subscribed not need to do it again.
-    if (set && ((attr.your_event_mask & mask) == mask)) {
-        return;
-    }
-    // Not subscribed to the mask no need to remove it.
-    if (!set && ((attr.your_event_mask | mask) == attr.your_event_mask)) {
-        return;
-    }
+    XSelectInput(display, w == None ? root : w, attr.your_event_mask | mask);
+    XSync(display, false);
+}
 
-    XSelectInput(display, w == None ? root : w, set ? attr.your_event_mask | mask : attr.your_event_mask & mask);
+void XLibUtil::unSubscribe(Display *display, Window w)
+{
+    XSelectInput(display, w, NoEventMask);
     XSync(display, false);
 }
 
 /*
- * Sets data to the vaule of the requested window property.
+ * Sets data to the value of the requested window property.
  */
 bool XLibUtil::getCardinalProperty(Display *display, Window w, Atom prop, long *data) {
     Atom type;

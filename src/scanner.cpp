@@ -24,10 +24,13 @@
 #include <QStringList>
 #include <QX11Info>
 
+#include <signal.h>
+
 #include "scanner.h"
 #include "xlibutil.h"
 
-#include <signal.h>
+#include <Xlib.h>
+
 
 Scanner::Scanner(TrayItemManager *manager) {
     m_manager = manager;
@@ -95,7 +98,7 @@ void Scanner::check() {
         }
 
         if (w != None) {
-            emit(windowFound(w, id.settings));
+            emit windowFound(w, id.settings);
             pi.remove();
         } else {
             if (id.count >= id.maxCount) {
@@ -106,6 +109,6 @@ void Scanner::check() {
     }
     if (m_processes.isEmpty()) {
         m_timer->stop();
-        emit(stopping());
+        emit stopping();
     }
 }

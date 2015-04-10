@@ -29,9 +29,8 @@
 #include <QString>
 #include <QSystemTrayIcon>
 
-#include <X11/Xutil.h>
+#include "xlibutil.h"
 
-#include "myXlib.h"
 
 struct TrayItemSettings {
     QString customIcon;
@@ -54,18 +53,17 @@ public:
     Window dockedWindow();
 
     // Pass on all events through this interface
-    bool x11EventFilter(XEvent * event);
+    bool xcbEventFilter(xcb_generic_event_t *event, xcb_window_t dockedWindow);
 
-public slots:
     void restoreWindow();
     void iconifyWindow();
-    // Close the window
-    void closeWindow();
 
     void doSkipTaskbar();
     void doSkipPager();
     void doSticky();
 
+public slots:
+    void closeWindow();
     void setCustomIcon(QString path);
     void selectCustomIcon(bool value);
     void setSkipTaskbar(bool value);
@@ -80,11 +78,7 @@ public slots:
 private slots:
     void toggleWindow();
     void trayActivated(QSystemTrayIcon::ActivationReason reason = QSystemTrayIcon::Trigger);
-
-    void doAbout();
-    void doSelectAnother();
     void doUndock();
-    void doUndockAll();
 
 signals:
     void selectAnother();
@@ -99,7 +93,7 @@ protected:
 private:
     void minimizeEvent();
     void destroyEvent();
-    bool propertyChangeEvent(Atom property);
+    void propertyChangeEvent(Atom property);
     void obscureEvent();
     void focusLostEvent();
 

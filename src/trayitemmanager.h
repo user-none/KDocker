@@ -21,20 +21,20 @@
 #ifndef _TRAYITEMMANAGER_H
 #define	_TRAYITEMMANAGER_H
 
+#include <QtCore/QAbstractNativeEventFilter>
 #include <QList>
 #include <QObject>
 #include <QStringList>
 
-#include "scanner.h"
-#include "trayitem.h"
-
 #include <sys/types.h>
 
-#include "myXlib.h"
+#include "trayitem.h"
+#include "scanner.h"
+
 
 class Scanner;
 
-class TrayItemManager : public QObject {
+class TrayItemManager : public QObject, public QAbstractNativeEventFilter {
     Q_OBJECT
 
     // The Scanner needs to know which windows are docked.
@@ -43,7 +43,7 @@ class TrayItemManager : public QObject {
 public:
     TrayItemManager();
     ~TrayItemManager();
-    bool x11EventFilter(XEvent *ev);
+    virtual bool nativeEventFilter(const QByteArray &eventType, void *message, long *result)  Q_DECL_OVERRIDE;
     void processCommand(const QStringList &args);
 
 public slots:
@@ -58,12 +58,16 @@ private slots:
     void selectAndIconify();
     void checkCount();
 
+signals:
+    void quitMouseGrab();
+
 private:
     QList<Window> dockedWindows();
     bool isWindowDocked(Window window);
 
     Scanner *m_scanner;
     QList<TrayItem*> m_trayItems;
+    GrabInfo m_grabInfo;
 };
 
 #endif	/* _TRAYITEMMANAGER_H */

@@ -36,7 +36,7 @@ static void sighandler(int sig) {
 }
 
 int main(int argc, char *argv[]) {
-    Application app("KDocker", argc, argv);
+    Application app(Constants::APP_NAME, argc, argv);
 
     // setup signal handlers that undock and quit
     signal(SIGHUP, sighandler);
