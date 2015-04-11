@@ -14,7 +14,7 @@
   </description>
   <screenshots>
     <screenshot type="default">
-        <image width="640" height="360">https://github.com/user-none/KDocker/blob/master/helpers/context.png</image>
+        <image width="640" height="360">https://raw.githubusercontent.com/user-none/KDocker/master/helpers/appdata/context.png</image>
         <caption>Context menu showing available actions and option settings</caption>
     </screenshot>
     <screenshot></screenshot>
