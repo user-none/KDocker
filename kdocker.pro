@@ -40,13 +40,16 @@ icons.files = resources/images/kdocker.png
 desktop.path = /usr/share/applications
 desktop.files = helpers/kdocker.desktop
 
+appdata.path = /usr/share/appdata
+appdata.files = helpers/appdata/kdocker.appdata.xml
+
 completion.path = /etc/bash_completion.d
 completion.files = helpers/kdocker
 
 target.path = /usr/bin
 
 #INSTALLS += target icons desktop completion translations
-INSTALLS += target icons desktop completion
+INSTALLS += target icons appdata desktop completion
 
 # Input
 HEADERS += src/application.h \

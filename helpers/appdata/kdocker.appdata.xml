@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop">
+  <id>kdocker.desktop</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-2.0</project_license>
+  <name>KDocker</name>
+  <summary>Run command and dock window</summary>
+  <summary xml:lang="it">Esegui comando e aggancia la finestra</summary>
+  <description>
+    <p>KDocker will help you dock any application in the system tray. This means you can dock openoffice, xmms, firefox, thunderbolt, eclipse, anything! Just point and click. Works for both KDE and GNOME (In fact it should work for most modern window managers that support NET WM Specification. I believe it works for XFCE, for instance)</p>
+    <p xml:lang="x-eg">Example para 1</p>
+    <p>All you need to do is start KDocker and select an application using the mouse and lo! the application gets docked into the system tray. The application can also be made to disappear from the task bar.</p>
+    <p xml:lang="x-eg">Example para 2</p>
+  </description>
+  <screenshots>
+    <screenshot type="default">
+        <image width="640" height="360">https://github.com/user-none/KDocker/blob/master/helpers/context.png</image>
+        <caption>Context menu showing available actions and option settings</caption>
+    </screenshot>
+    <screenshot></screenshot>
+  </screenshots>
+  <url type="homepage">http://kdocker.com</url>
+  <url type="bugtracker">https://github.com/user-none/KDocker/issues</url>
+  <url type="help">https://github.com/user-none/KDocker/blob/master/README.md</url>
+  <provides>
+    <binary>kdocker</binary>
+  </provides>
+  <releases>
+    <release version="5.0" timestamp="1427784480">
+      <description>Requires Qt Version 5</description>
+    </release>
+  </releases>
+</component>
