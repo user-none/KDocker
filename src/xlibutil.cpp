@@ -299,7 +299,7 @@ Window XLibUtil::selectWindow(Display *display, GrabInfo &grabInfo, QString &err
     //  Cannot use 'AnyModifier' here in case, say, CTRL+ESC is in use (results in failure to grab at all)
     //
     KeyCode keyEsc = XKeysymToKeycode(display, XK_Escape);
-    for (int b = 0; b < BIT3; b++)  // 000..111 (grab eight Escape key combinations) {
+    for (int b = 0; b < BIT3; b++) {  // 000..111 (grab eight Escape key combinations)
         int modifiers = ((b & BIT0) ? LockMask : 0) |   // CAPS_lock
                         ((b & BIT1) ? Mod2Mask : 0) |   // NUM_lock
                         ((b & BIT2) ? Mod5Mask : 0);    // SCROLL_lock
