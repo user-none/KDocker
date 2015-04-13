@@ -36,7 +36,6 @@ public:
 
 private:
     KDocker *m_kdocker;
-    TrayItemManager *m_filter;
 };
 
 #endif	/* _APPLICATION_H */

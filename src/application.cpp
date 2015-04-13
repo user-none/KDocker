@@ -22,19 +22,15 @@
 
 Application::Application(const QString &appId, int &argc, char **argv) : QtSingleApplication(appId, argc, argv) {
     m_kdocker = 0;
-    m_filter  = 0;
 }
 
 void Application::setKDockerInstance(KDocker *kdocker) {
     m_kdocker = kdocker;
-    m_filter  = m_kdocker-> getTrayItemManager();
-    installNativeEventFilter(m_filter);
 }
 
 void Application::close() {
     if (m_kdocker) {
         m_kdocker->undockAll();
     }
-    removeNativeEventFilter(m_filter);
     quit();
 }

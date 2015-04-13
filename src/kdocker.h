@@ -36,8 +36,6 @@ public:
     KDocker();
     ~KDocker();
 
-    TrayItemManager *getTrayItemManager();
-
     void undockAll();
 
     void preProcessCommand(int argc, char **argv);
