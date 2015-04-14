@@ -46,10 +46,6 @@ KDocker::~KDocker() {
     }
 }
 
-TrayItemManager *KDocker::getTrayItemManager() {
-    return m_trayItemManager;
-}
-
 void KDocker::undockAll() {
     if (m_trayItemManager) {
         m_trayItemManager->undockAll();

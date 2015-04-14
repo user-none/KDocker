@@ -56,6 +56,7 @@ TrayItemManager::TrayItemManager() {
     // The isValidWindowId function in util.cpp will generate errors if the
     // window is not valid while it is checking.
     XSetErrorHandler(ignoreXErrors);
+    qApp-> installNativeEventFilter(this);
 }
 
 TrayItemManager::~TrayItemManager() {
@@ -66,6 +67,7 @@ TrayItemManager::~TrayItemManager() {
     delete m_grabInfo.qtimer;
     delete m_grabInfo.qloop;
     delete m_scanner;
+    qApp-> removeNativeEventFilter(this);
 }
 
 /* The X11 Event Filter. Pass on events to the TrayItems that we created. */
