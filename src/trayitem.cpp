@@ -102,7 +102,6 @@ bool TrayItem::xcbEventFilter(xcb_generic_event_t *event, xcb_window_t dockedWin
 
             case XCB_VISIBILITY_NOTIFY:
                 if (reinterpret_cast<xcb_visibility_notify_event_t *>(event)-> state == XCB_VISIBILITY_FULLY_OBSCURED) {
-
                     obscureEvent();
                 }
                 break;
@@ -142,8 +141,8 @@ void TrayItem::restoreWindow() {
 #ifndef DISABLE_ICONIFY_FLIP
         XIconifyWindow(display, m_window, DefaultScreen(display));
         XSync(display, False);
-        long l_state[1] = {NormalState};
-        XLibUtil::sendMessage(display, root, m_window, "WM_CHANGE_STATE", 32, SubstructureNotifyMask | SubstructureRedirectMask, l_state, sizeof (l_state));
+        //long l_state[1] = {NormalState};
+        //XLibUtil::sendMessage(display, root, m_window, "WM_CHANGE_STATE", 32, SubstructureNotifyMask | SubstructureRedirectMask, l_state, sizeof (l_state));
         /*
          *  ^^ FIXME:
          *  The window manager will place a WM_STATE property (of type WM_STATE)
@@ -153,8 +152,8 @@ void TrayItem::restoreWindow() {
          *  Clients that do so should remove the WM_STATE property if it is still present.
          *  -- http://tronche.com/gui/x/icccm/sec-4.html#s-4.1.3.1
          *
-         *       KWin does as the spec says it should.
-         *       If it's not there, trying to change it yields unexpected results - DfB
+         *  KWin does as the spec says it should.
+         *  If it's not there, trying to change it yields unexpected results.
          */
 #endif
         m_sizeHint.flags = USPosition;
@@ -348,13 +347,15 @@ void TrayItem::trayActivated(QSystemTrayIcon::ActivationReason reason) {
 bool TrayItem::event(QEvent *e) {
     if (e->type() == QEvent::Wheel) {
         QWheelEvent *we = static_cast<QWheelEvent*>(e);
-        if (we->delta() < 0) {
-            restoreWindow();
+        QPoint delta = we->angleDelta();
+        if (!delta.isNull() && delta.y() != 0) {
+            if (delta.y() > 0) {
+                restoreWindow();
+            } else {
+                iconifyWindow();
+            }
+            return true;
         }
-        else {
-            iconifyWindow();
-        }
-        return true;
     }
     return QSystemTrayIcon::event(e);
 }
