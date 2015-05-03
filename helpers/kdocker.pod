@@ -77,7 +77,7 @@ B<kdocker> [I<options>]I<>
 
  By default, when the title of the application changes,
  a popup is displayed from the system tray for 4 seconds
- Works well with xmms
+ Works well with music players
 
 =item B<-q>
 

@@ -132,30 +132,15 @@ void TrayItem::restoreWindow() {
     if (m_iconified) {
         m_iconified = false;
         /*
-         * A simple XMapWindow would not do. Some applications like xmms wont
-         * redisplay its other windows (like the playlist, equalizer) since the
-         * Withdrawn->Normal state change code does not map them. So we make the
+         * A simple XMapWindow would not do. Some applications that use multiple
+         * windows like xmms (and it's successors) won't redisplay its other
+         * windows (like the playlist, equalizer) since the Withdrawn->Normal
+         * state change code does not map them. So we make the
          * window go through Withdrawn->Map->Iconify->Normal state.
          */
         XMapWindow(display, m_window);
-#ifndef DISABLE_ICONIFY_FLIP
         XIconifyWindow(display, m_window, DefaultScreen(display));
         XSync(display, False);
-        //long l_state[1] = {NormalState};
-        //XLibUtil::sendMessage(display, root, m_window, "WM_CHANGE_STATE", 32, SubstructureNotifyMask | SubstructureRedirectMask, l_state, sizeof (l_state));
-        /*
-         *  ^^ FIXME:
-         *  The window manager will place a WM_STATE property (of type WM_STATE)
-         *  on each top-level client window that is not in the Withdrawn state.
-         *  Top-level windows in the Withdrawn state may or may not have the WM_STATE property.
-         *  Once the top-level window has been withdrawn, the client may re-use it for another purpose.
-         *  Clients that do so should remove the WM_STATE property if it is still present.
-         *  -- http://tronche.com/gui/x/icccm/sec-4.html#s-4.1.3.1
-         *
-         *  KWin does as the spec says it should.
-         *  If it's not there, trying to change it yields unexpected results.
-         */
-#endif
         m_sizeHint.flags = USPosition;
         XSetWMNormalHints(display, m_window, &m_sizeHint);
 
