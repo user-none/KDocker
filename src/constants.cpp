@@ -23,7 +23,7 @@
 const QString Constants::APP_NAME    = "KDocker";
 const QString Constants::ORG_NAME    = "com.kdocker";
 const QString Constants::DOM_NAME    = "kdocker.com";
-const QString Constants::WEBSTIE     = "http://kdocker.com";
+const QString Constants::WEBSITE     = "http://kdocker.com";
 const QString Constants::APP_VERSION = "5.0";
 
 const char *Constants::OPTIONSTRING = "+abd:e:fhi:jklmn:op:qrstvuw:x:";

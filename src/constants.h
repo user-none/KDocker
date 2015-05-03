@@ -28,9 +28,11 @@ class Constants : QObject {
     Q_OBJECT
 
 public:
+    static const QString APP_NAME;
     static const QString ORG_NAME;
     static const QString DOM_NAME;
-    static const QString APP_NAME;
+    static const QString WEBSITE;
+
     static const QString APP_VERSION;
 
     static const char *OPTIONSTRING;
