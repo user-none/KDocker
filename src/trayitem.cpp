@@ -131,16 +131,7 @@ void TrayItem::restoreWindow() {
 
     if (m_iconified) {
         m_iconified = false;
-        /*
-         * A simple XMapWindow would not do. Some applications that use multiple
-         * windows like xmms (and it's successors) won't redisplay its other
-         * windows (like the playlist, equalizer) since the Withdrawn->Normal
-         * state change code does not map them. So we make the
-         * window go through Withdrawn->Map->Iconify->Normal state.
-         */
         XMapWindow(display, m_window);
-        XIconifyWindow(display, m_window, DefaultScreen(display));
-        XSync(display, False);
         m_sizeHint.flags = USPosition;
         XSetWMNormalHints(display, m_window, &m_sizeHint);
 
