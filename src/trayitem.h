@@ -28,26 +28,54 @@
 #include <QObject>
 #include <QString>
 #include <QSystemTrayIcon>
+#include <QSettings>
 
 #include "xlibutil.h"
 
+#define DEFAULT_CustomIcon        QString()
+#define DEFAULT_BalloonTimeout    4000       // 4 seconds
+#define DEFAULT_SkipTaskbar       false
+#define DEFAULT_SkipPager         false
+#define DEFAULT_Sticky            false
+#define DEFAULT_IconifyMinimized  true
+#define DEFAULT_IconifyObscured   false
+#define DEFAULT_IconifyFocusLost  false
 
-struct TrayItemSettings {
-    QString customIcon;
-    int balloonTimeout;
-    bool iconify;
-    bool skipTaskbar;
-    bool skipPager;
-    bool sticky;
-    bool iconifyObscure;
-    bool iconifyFocusLost;
+#define DEFAULT_MultiWindowRestore  true   // xmms, etc.  Was hard-coded as 'true' - now configurable by app or globally.
+
+#define NOARG (int8_t)-1    // 'bool' in unset state
+
+
+enum Option
+{
+    SkipTaskbar,
+    SkipPager,
+    Sticky,
+    IconifyMinimized,
+    IconifyObscured,
+    IconifyFocusLost,
+    Option_MAX
+};
+
+struct TrayItemArgs {   // from cmd line only
+    QString sCustomIcon;
+    int iBalloonTimeout;
+    int8_t opt[Option_MAX];
+};
+
+typedef TrayItemArgs TrayItemConfig;
+
+struct TrayItemSettings {  // from 1) cmd line, 2) app config, 3) global config, 4) default
+    QString sCustomIcon;
+    int iBalloonTimeout;
+    bool opt[Option_MAX];
 };
 
 class TrayItem : public QSystemTrayIcon {
     Q_OBJECT
 
 public:
-    TrayItem(Window window);
+    TrayItem(Window window, const TrayItemArgs args);
     ~TrayItem();
 
     Window dockedWindow();
@@ -55,6 +83,7 @@ public:
     // Pass on all events through this interface
     bool xcbEventFilter(xcb_generic_event_t *event, xcb_window_t dockedWindow);
 
+    void showWindow();
     void restoreWindow();
     void iconifyWindow();
 
@@ -70,7 +99,7 @@ public slots:
     void setSkipPager(bool value);
     void setSticky(bool value);
     void setIconifyMinimized(bool value);
-    void setIconifyObscure(bool value);
+    void setIconifyObscured(bool value);
     void setIconifyFocusLost(bool value);
     void setBalloonTimeout(int value);
     void setBalloonTimeout(bool value);
@@ -79,6 +108,8 @@ private slots:
     void toggleWindow();
     void trayActivated(QSystemTrayIcon::ActivationReason reason = QSystemTrayIcon::Trigger);
     void doUndock();
+    void saveSettingsGlobal();
+    void saveSettingsApp();
 
 signals:
     void selectAnother();
@@ -91,6 +122,14 @@ protected:
     bool event(QEvent *e);
 
 private:
+    //   readSetting overloaded function
+    bool    readSetting(int8_t  argSetting, QString key, bool    kdockerDefault);
+    int     readSetting(int     argSetting, QString key, int     kdockerDefault);
+    QString readSetting(QString argSetting, QString key, QString kdockerDefault);
+    int  nonZeroBalloonTimeout();
+    TrayItemConfig readConfigGlobals();
+    void saveSettings();
+
     void minimizeEvent();
     void destroyEvent();
     void propertyChangeEvent(Atom property);
@@ -109,17 +148,14 @@ private:
 
     bool isBadWindow();
 
-    bool m_iconified;
-    bool m_customIcon;
-    bool m_skipTaskbar;
-    bool m_skipPager;
-    bool m_sticky;
-    bool m_iconifyMinimized;
-    bool m_iconifyObscure;
-    bool m_iconifyFocusLost;
-    int m_balloonTimeout;
+    bool m_MultiWindowRestore;   // from config setting: special handling for multi-windowed apps (e.g.) xmms
 
+    bool m_iconified;
     bool m_is_restoring;
+    bool m_customIcon;
+
+    QSettings m_config;
+    TrayItemSettings m_settings;
 
     // SizeHint of m_window
     XSizeHints m_sizeHint;
@@ -135,11 +171,13 @@ private:
     QAction *m_actionSkipPager;
     QAction *m_actionSticky;
     QAction *m_actionIconifyMinimized;
-    QAction *m_actionIconifyObscure;
+    QAction *m_actionIconifyObscured;
     QAction *m_actionIconifyFocusLost;
     QAction *m_actionBalloonTitleChanges;
     QAction *m_actionToggle;
-
+    QMenu *m_defaultsMenu;
+    QAction *m_actionSaveSettingsApp;
+    QAction *m_actionSaveSettingsGlobal;
 };
 
 #endif	/* _TRAYITEM_H */
