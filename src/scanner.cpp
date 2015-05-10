@@ -44,7 +44,7 @@ Scanner::~Scanner() {
     delete m_timer;
 }
 
-void Scanner::enqueue(const QString &command, const QStringList &arguments, TrayItemSettings settings, int maxTime, bool checkNormality, const QRegExp &windowName) {
+void Scanner::enqueue(const QString &command, const QStringList &arguments, TrayItemArgs settings, int maxTime, bool checkNormality, const QRegExp &windowName) {
     qint64 pid = 0;
     bool started = true;
 
