@@ -41,6 +41,7 @@ KDocker::KDocker() {
 
 KDocker::~KDocker() {
     if (m_trayItemManager) {
+        m_trayItemManager->undockAll();
         delete m_trayItemManager;
         m_trayItemManager = 0;
     }
