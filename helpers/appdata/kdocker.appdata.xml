@@ -12,6 +12,9 @@
     <p>All you need to do is start KDocker and select an application using the mouse and lo! the application gets docked into the system tray. The application can also be made to disappear from the task bar.</p>
     <p xml:lang="x-eg">Example para 2</p>
   </description>
+  <icon type="cached">kdocker.png</icon>
+  <icon type="remote" width="128" height="128">https://raw.githubusercontent.com/user-none/KDocker/master/resources/images/kdocker.png</icon>
+  <icon type="local" width="128" height="128">/usr/share/icons/hicolor/128x128/apps/kdocker.png</icon>
   <screenshots>
     <screenshot type="default">
         <image width="640" height="360">https://raw.githubusercontent.com/user-none/KDocker/master/helpers/appdata/context.png</image>

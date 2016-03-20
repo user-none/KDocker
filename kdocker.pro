@@ -34,7 +34,7 @@ DEFINES += TRANSLATIONS_PATH=\\\"$${TRANSLATIONS_PATH}/i18n\\\"
 #translations.path = $$TRANSLATIONS_PATH
 #translations.files = build/i18n
 
-icons.path = /usr/share/pixmaps
+icons.path = /usr/share/icons/hicolor/128x128/apps
 icons.files = resources/images/kdocker.png
 
 desktop.path = /usr/share/applications
