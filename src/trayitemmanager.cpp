@@ -201,6 +201,7 @@ void TrayItemManager::processCommand(const QStringList &args) {
                     checkCount();
                     return;
                 }
+                break;
             case 'f':
                 window = XLibUtil::activeWindow(QX11Info::display());
                 if (!window) {
