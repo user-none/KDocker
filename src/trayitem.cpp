@@ -60,6 +60,7 @@ TrayItem::TrayItem(Window window, const TrayItemArgs args) {
     m_settings.opt[IconifyMinimized] = readSetting(args.opt[IconifyMinimized], "IconifyMinimized", DEFAULT_IconifyMinimized);
     m_settings.opt[IconifyObscured]  = readSetting(args.opt[IconifyObscured],  "IconifyObscured",  DEFAULT_IconifyObscured);
     m_settings.opt[IconifyFocusLost] = readSetting(args.opt[IconifyFocusLost], "IconifyFocusLost", DEFAULT_IconifyFocusLost);
+    m_settings.opt[LockToDesktop]    = readSetting(args.opt[LockToDesktop],    "LockToDesktop",    DEFAULT_LockToDesktop);
 
     updateTitle();
     updateIcon();
@@ -77,6 +78,7 @@ TrayItem::TrayItem(Window window, const TrayItemArgs args) {
     setIconifyMinimized(m_settings.opt[IconifyMinimized]);
     setIconifyObscured(m_settings.opt[IconifyObscured]);
     setIconifyFocusLost(m_settings.opt[IconifyFocusLost]);
+    setLockToDesktop(m_settings.opt[LockToDesktop]);
 
     connect(this, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
             this, SLOT(trayActivated(QSystemTrayIcon::ActivationReason)));
@@ -144,6 +146,7 @@ TrayItemConfig TrayItem::readConfigGlobals() {
       config.opt[IconifyMinimized] = m_config.value("IconifyMinimized", DEFAULT_IconifyMinimized).toBool();
       config.opt[IconifyObscured]  = m_config.value("IconifyObscured",  DEFAULT_IconifyObscured).toBool();
       config.opt[IconifyFocusLost] = m_config.value("IconifyFocusLost", DEFAULT_IconifyFocusLost).toBool();
+      config.opt[LockToDesktop]    = m_config.value("LockToDesktop",    DEFAULT_LockToDesktop).toBool();
     m_config.endGroup();
 
     return config;
@@ -198,6 +201,10 @@ void TrayItem::saveSettingsApp()
       if (keyval.isValid() && keyval.toBool() == globals.opt[IconifyFocusLost]) {
           m_config.remove("IconifyFocusLost");
       }
+      keyval = m_config.value("LockToDesktop");
+      if (keyval.isValid() && keyval.toBool() == globals.opt[LockToDesktop]) {
+          m_config.remove("LockToDesktop");
+      }
     m_config.endGroup();
 }
 
@@ -210,6 +217,7 @@ void TrayItem::saveSettings() {    /*  "/home/<user>/.config/com.kdocker/KDocker
     m_config.setValue("IconifyMinimized", m_settings.opt[IconifyMinimized]);
     m_config.setValue("IconifyObscured",  m_settings.opt[IconifyObscured]);
     m_config.setValue("IconifyFocusLost", m_settings.opt[IconifyFocusLost]);
+    m_config.setValue("LockToDesktop",    m_settings.opt[LockToDesktop]);
 }
 
 bool TrayItem::xcbEventFilter(xcb_generic_event_t *event, xcb_window_t dockedWindow) {
@@ -290,9 +298,12 @@ void TrayItem::restoreWindow() {
     // Change to the desktop that the window was last on.
     long l_currDesk[2] = {m_desktop, CurrentTime};
     XLibUtil::sendMessage(display, root, root, "_NET_CURRENT_DESKTOP", 32, SubstructureNotifyMask | SubstructureRedirectMask, l_currDesk, sizeof (l_currDesk));
-    // Set the desktop the window wants to be on.
-    long l_wmDesk[2] = {m_desktop, 1}; // 1 == request sent from application. 2 == from pager
-    XLibUtil::sendMessage(display, root, m_window, "_NET_WM_DESKTOP", 32, SubstructureNotifyMask | SubstructureRedirectMask, l_wmDesk, sizeof (l_wmDesk));
+
+    if (m_settings.opt[LockToDesktop]) {
+        // Set the desktop the window wants to be on.
+        long l_wmDesk[2] = {m_desktop, 1}; // 1 == request sent from application. 2 == from pager
+        XLibUtil::sendMessage(display, root, m_window, "_NET_WM_DESKTOP", 32, SubstructureNotifyMask | SubstructureRedirectMask, l_wmDesk, sizeof (l_wmDesk));
+    }
 
     // Make it the active window
     // 1 == request sent from application. 2 == from pager.
@@ -439,6 +450,11 @@ void TrayItem::setIconifyFocusLost(bool value) {
     focusLostEvent();
 }
 
+void TrayItem::setLockToDesktop(bool value) {
+    m_settings.opt[LockToDesktop] = value;
+    m_actionLockToDesktop->setChecked(value);
+}
+
 void TrayItem::setBalloonTimeout(int value) {
     if (value < 0) {
         value = 0;
@@ -457,6 +473,10 @@ void TrayItem::setBalloonTimeout(bool value) {
 
 void TrayItem::toggleWindow() {
     if (m_iconified || m_window != XLibUtil::activeWindow(QX11Info::display())) {
+        if (!m_iconified) {
+            // Iconify on original desktop in case restoring to another
+            iconifyWindow();
+        }
         restoreWindow();
     } else {
         iconifyWindow();
@@ -684,6 +704,12 @@ void TrayItem::createContextMenu() {
     m_actionIconifyFocusLost->setChecked(m_settings.opt[IconifyFocusLost]);
     connect(m_actionIconifyFocusLost, SIGNAL(toggled(bool)), this, SLOT(setIconifyFocusLost(bool)));
     m_optionsMenu->addAction(m_actionIconifyFocusLost);
+
+    m_actionLockToDesktop = new QAction(tr("Lock to desktop"), m_optionsMenu);
+    m_actionLockToDesktop->setCheckable(true);
+    m_actionLockToDesktop->setChecked(m_settings.opt[LockToDesktop]);
+    connect(m_actionLockToDesktop, SIGNAL(toggled(bool)), this, SLOT(setLockToDesktop(bool)));
+    m_optionsMenu->addAction(m_actionLockToDesktop);
 
     m_actionBalloonTitleChanges = new QAction(tr("Balloon title changes"), m_optionsMenu);
     m_actionBalloonTitleChanges->setCheckable(true);
