@@ -40,6 +40,7 @@
 #define DEFAULT_IconifyMinimized  true
 #define DEFAULT_IconifyObscured   false
 #define DEFAULT_IconifyFocusLost  false
+#define DEFAULT_LockToDesktop     true       // Restore to original desktop (default) else restore to active desktop
 
 #define NOARG (int8_t)-1    // 'bool' in unset state
 
@@ -52,6 +53,7 @@ enum Option
     IconifyMinimized,
     IconifyObscured,
     IconifyFocusLost,
+    LockToDesktop,
     Option_MAX
 };
 
@@ -99,6 +101,7 @@ public slots:
     void setIconifyMinimized(bool value);
     void setIconifyObscured(bool value);
     void setIconifyFocusLost(bool value);
+    void setLockToDesktop(bool value);
     void setBalloonTimeout(int value);
     void setBalloonTimeout(bool value);
 
@@ -169,6 +172,7 @@ private:
     QAction *m_actionIconifyMinimized;
     QAction *m_actionIconifyObscured;
     QAction *m_actionIconifyFocusLost;
+    QAction *m_actionLockToDesktop;
     QAction *m_actionBalloonTitleChanges;
     QAction *m_actionToggle;
     QMenu *m_defaultsMenu;
