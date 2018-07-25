@@ -1,11 +1,9 @@
-have kdocker &&
 _kdocker()
 {
         local cur
 
         COMPREPLY=()
         cur=${COMP_WORDS[COMP_CWORD]}
-        COMPREPLY=($( compgen -A command $cur ) )
+        COMPREPLY=($(compgen -A command $cur))
 }
-[ "${have:-}" ] && complete -F _kdocker kdocker
-
+complete -F _kdocker kdocker
