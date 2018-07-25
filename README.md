@@ -17,8 +17,7 @@ KDocker supports the System Tray Protocol from freedesktop.org
 Website
 -------
 
-http://kdocker.com is the official website. It currently redirects to the
-development page on GitHub, https://github.com/user-none/KDocker
+https://github.com/user-none/KDocker
 
 Reporting Bugs 
 --------------
