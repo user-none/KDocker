@@ -22,14 +22,14 @@
     </screenshot>
     <screenshot></screenshot>
   </screenshots>
-  <url type="homepage">http://kdocker.com</url>
+  <url type="homepage">https://github.com/user-none/KDocker</url>
   <url type="bugtracker">https://github.com/user-none/KDocker/issues</url>
   <url type="help">https://github.com/user-none/KDocker/blob/master/README.md</url>
   <provides>
     <binary>kdocker</binary>
   </provides>
   <releases>
-    <release version="5.1" timestamp="1518965746">
+    <release version="5.2" timestamp="1532540996">
       <description>Requires Qt Version 5</description>
     </release>
   </releases>

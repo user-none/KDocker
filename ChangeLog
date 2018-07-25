@@ -1,3 +1,7 @@
+for version 5.2
+    - Add 'Lock to desktop' option
+    - Fix bash completion
+
 for version 5.1
     - Support load/save per application settings
     - Various fixes
