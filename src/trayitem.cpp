@@ -233,8 +233,13 @@ bool TrayItem::xcbEventFilter(xcb_generic_event_t *event, xcb_window_t dockedWin
                 break;
 
             case XCB_UNMAP_NOTIFY:
-                m_iconified = true;
-                updateToggleAction();
+                // In KDE 5.14 they started issuing an unmap event when the user
+                // changes virtual desktops so we need to check that the window
+                // is on the current desktop before saying that it has been iconized
+                if (isOnCurrentDesktop()) {
+                    m_iconified = true;
+                    updateToggleAction();
+                }
                 break;
 
             case XCB_MAP_NOTIFY:
@@ -544,9 +549,14 @@ void TrayItem::propertyChangeEvent(Atom property) {
         unsigned char *data = 0;
         int r = XGetWindowProperty(display, m_window, WM_STATE, 0, 1, False, AnyPropertyType, &type, &format, &nitems, &after, &data);
         if ((r == Success) && data && (*reinterpret_cast<long *> (data) == IconicState)) {
-            minimizeEvent();
-            XFree(data);
+            // KDE 5.14 started issuing this event when the user changes virtual desktops so
+            // a minimizeEvent() should not be executed unless the window is on the currently
+            // visible desktop
+            if (isOnCurrentDesktop()) {
+                minimizeEvent();
+            }
         }
+        XFree(data);
     }
 }
 
@@ -791,4 +801,29 @@ bool TrayItem::isBadWindow() {
         return true;
     }
     return false;
+}
+
+// Checks to see if the virtual desktop the window is on is currently 
+// displayed. Returns true if it is, otherwise false
+bool TrayItem::isOnCurrentDesktop() {
+    Display *display = QX11Info::display();
+    Atom type = None;
+    int format;
+    unsigned long nitems, after;
+    unsigned char *data = 0;
+
+    static Atom _NET_CURRENT_DESKTOP = XInternAtom(display, "_NET_CURRENT_DESKTOP", True);
+
+    long currentDesktop;
+    int r = XGetWindowProperty(display, DefaultRootWindow(display), _NET_CURRENT_DESKTOP, 0, 4, False,
+                           AnyPropertyType, &type, &format,     
+                           &nitems, &after, &data);
+    if (r == Success && data) 
+        currentDesktop = *reinterpret_cast<long *> (data);
+    else
+        currentDesktop = m_desktop;
+
+    XFree(data);
+
+    return (currentDesktop == m_desktop);
 }

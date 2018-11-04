@@ -148,6 +148,7 @@ private:
     QIcon createIcon(Window window);
 
     bool isBadWindow();
+    bool isOnCurrentDesktop();
 
     bool m_iconified;
     bool m_is_restoring;
