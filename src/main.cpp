@@ -48,12 +48,7 @@ int main(int argc, char *argv[]) {
 
     // Setup the translator
     QTranslator translator;
-    QString locale = QString("kdocker_%1").arg(QLocale::system().name());
-    if (!translator.load(locale, TRANSLATIONS_PATH)) {
-        if (!translator.load(locale, "./build/i18n/")) {
-            translator.load(locale, "./i18n/");
-        }
-    }
+    translator.load(QLocale::system().name(), ":/i18n");
     app.installTranslator(&translator);
 
     app.setOrganizationName(Constants::ORG_NAME);
