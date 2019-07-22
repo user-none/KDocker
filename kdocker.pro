@@ -16,7 +16,7 @@ LIBS = -lX11 -lXpm -lXmu
 
 INSTALL_PATH = /usr/share/kdocker
 
-#TRANSLATIONS += i18n/
+TRANSLATIONS += resources/i18n/pl.ts
 
 isEmpty(QMAKE_LRELEASE) {
     QMAKE_LRELEASE = $$[QT_INSTALL_BINS]/lrelease
