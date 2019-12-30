@@ -21,6 +21,10 @@
 #ifndef _TRAYITEM_H
 #define	_TRAYITEM_H
 
+// Qt 5.14 introduced QActionGroup::ExclusionPolicy::None, but <X.h> defines a 'None' macro.
+#pragma push_macro("None")
+#undef None
+
 #include <QAction>
 #include <QEvent>
 #include <QIcon>
@@ -31,6 +35,10 @@
 #include <QSettings>
 
 #include "xlibutil.h"
+
+#ifndef None
+#pragma pop_macro("None")
+#endif
 
 #define DEFAULT_CustomIcon        QString()
 #define DEFAULT_BalloonTimeout    4000       // 4 seconds
