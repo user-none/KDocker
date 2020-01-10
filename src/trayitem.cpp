@@ -668,7 +668,10 @@ void TrayItem::updateToggleAction() {
 void TrayItem::createContextMenu() {
     m_contextMenu = new QMenu();
 
-    m_contextMenu->addAction(QIcon(":/images/about.png"), tr("About %1").arg(qApp->applicationName()), this, SIGNAL(about()));
+    m_actionToggle = new QAction(tr("Toggle"), m_contextMenu);
+    connect(m_actionToggle, SIGNAL(triggered()), this, SLOT(toggleWindow()));
+    m_contextMenu->addAction(m_actionToggle);
+    m_contextMenu->addAction(tr("Undock"), this, SLOT(doUndock()));
     m_contextMenu->addSeparator();
 
     // Options menu
@@ -745,13 +748,15 @@ void TrayItem::createContextMenu() {
     m_optionsMenu->addMenu(m_defaultsMenu);
     // ---
 
+    m_contextMenu->addSeparator();
+
     m_contextMenu->addAction(QIcon(":/images/another.png"), tr("Dock Another"), this, SIGNAL(selectAnother()));
     m_contextMenu->addAction(tr("Undock All"), this, SIGNAL(undockAll()));
     m_contextMenu->addSeparator();
-    m_actionToggle = new QAction(tr("Toggle"), m_contextMenu);
-    connect(m_actionToggle, SIGNAL(triggered()), this, SLOT(toggleWindow()));
-    m_contextMenu->addAction(m_actionToggle);
-    m_contextMenu->addAction(tr("Undock"), this, SLOT(doUndock()));
+
+    m_contextMenu->addAction(QIcon(":/images/about.png"), tr("About %1").arg(qApp->applicationName()), this, SIGNAL(about()));
+    m_contextMenu->addSeparator();
+
     m_contextMenu->addAction(QIcon(":/images/close.png"), tr("Close"), this, SLOT(closeWindow()));
 
     setContextMenu(m_contextMenu);
