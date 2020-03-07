@@ -41,6 +41,7 @@
 #endif
 
 #define DEFAULT_CustomIcon        QString()
+#define DEFAULT_AttentionIcon     QString()
 #define DEFAULT_BalloonTimeout    4000       // 4 seconds
 #define DEFAULT_SkipTaskbar       false
 #define DEFAULT_SkipPager         false
@@ -67,6 +68,7 @@ enum Option
 
 struct TrayItemArgs {   // from cmd line only
     QString sCustomIcon;
+    QString sAttentionIcon;
     int iBalloonTimeout;
     int8_t opt[Option_MAX];
 };
@@ -75,6 +77,7 @@ typedef TrayItemArgs TrayItemConfig;
 
 struct TrayItemSettings {  // from 1) cmd line, 2) app config, 3) global config, 4) default
     QString sCustomIcon;
+    QString sAttentionIcon;
     int iBalloonTimeout;
     bool opt[Option_MAX];
 };
@@ -102,7 +105,9 @@ public:
 public slots:
     void closeWindow();
     void setCustomIcon(QString path);
+    void setAttentionIcon(QString path);
     void selectCustomIcon(bool value);
+    void selectAttentionIcon(bool value);
     void setSkipTaskbar(bool value);
     void setSkipPager(bool value);
     void setSticky(bool value);
@@ -154,13 +159,18 @@ private:
 
     void createContextMenu();
     QIcon createIcon(Window window);
+    QString selectIcon(QString title);
 
     bool isBadWindow();
     bool isOnCurrentDesktop();
 
+    bool m_wantsAttention;
     bool m_iconified;
     bool m_is_restoring;
     bool m_customIcon;
+
+    QIcon m_defaultIcon;
+    QIcon m_attentionIcon;
 
     QSettings m_config;
     TrayItemSettings m_settings;
@@ -175,6 +185,7 @@ private:
     QMenu *m_contextMenu;
     QMenu *m_optionsMenu;
     QAction *m_actionSetIcon;
+    QAction *m_actionSetAttentionIcon;
     QAction *m_actionSkipTaskbar;
     QAction *m_actionSkipPager;
     QAction *m_actionSticky;

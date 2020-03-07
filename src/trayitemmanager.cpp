@@ -213,6 +213,9 @@ void TrayItemManager::processCommand(const QStringList &args) {
             case 'i':
                 settings.sCustomIcon = QString::fromLocal8Bit(optarg);
                 break;
+            case 'I':
+                settings.sAttentionIcon = QString::fromLocal8Bit(optarg);
+                break;
             case 'j':
                 windowName.setCaseSensitivity(Qt::CaseSensitive);
                 break;
