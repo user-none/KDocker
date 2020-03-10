@@ -194,6 +194,7 @@ void KDocker::printHelp() {
     commands.append(qMakePair(QString("-f"),      tr("Dock window that has focus (active window)")));
     commands.append(qMakePair(QString("-h"),      tr("Display this help")));
     commands.append(qMakePair(QString("-i file"), tr("Set the tray icon to file")));
+    commands.append(qMakePair(QString("-I file"), tr("Set the attention tray icon to file. This icon is set if the title of the application window changes while it is iconified.")));
     commands.append(qMakePair(QString("-j"),      tr("Case senstive name (title) matching")));
     commands.append(qMakePair(QString("-k"),      tr("Regex minimal matching")));
     commands.append(qMakePair(QString("-l"),      tr("Iconify when focus lost")));

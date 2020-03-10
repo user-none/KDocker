@@ -26,6 +26,6 @@ const QString Constants::DOM_NAME    = "kdocker.com";
 const QString Constants::WEBSITE     = "https://github.com/user-none/KDocker";
 const QString Constants::APP_VERSION = "5.2";
 
-const char *Constants::OPTIONSTRING = "+abd:e:fhi:jklmn:op:qrstvuw:x:";
+const char *Constants::OPTIONSTRING = "+abd:e:fhi:I:jklmn:op:qrstvuw:x:";
 
 const QString Constants::ABOUT_MESSAGE = QString("%1 %2\n\n%3").arg(Constants::APP_NAME).arg(Constants::APP_VERSION).arg(Constants::WEBSITE);

@@ -35,6 +35,7 @@
 
 
 TrayItem::TrayItem(Window window, const TrayItemArgs args) {
+    m_wantsAttention = false;
     m_iconified = false;
     m_is_restoring = false;
     m_customIcon = false;
@@ -53,6 +54,7 @@ TrayItem::TrayItem(Window window, const TrayItemArgs args) {
     readDockedAppName();
 
     m_settings.sCustomIcon           = readSetting(args.sCustomIcon,           "CustomIcon",       DEFAULT_CustomIcon);
+    m_settings.sAttentionIcon        = readSetting(args.sAttentionIcon,        "AttentionIcon",    DEFAULT_AttentionIcon);
     m_settings.iBalloonTimeout       = readSetting(args.iBalloonTimeout,       "BalloonTimeout",   DEFAULT_BalloonTimeout);
     m_settings.opt[Sticky]           = readSetting(args.opt[Sticky],           "Sticky",           DEFAULT_Sticky);
     m_settings.opt[SkipPager]        = readSetting(args.opt[SkipPager],        "SkipPager",        DEFAULT_SkipPager);
@@ -70,6 +72,9 @@ TrayItem::TrayItem(Window window, const TrayItemArgs args) {
 
     if (!m_settings.sCustomIcon.isEmpty()) {
         setCustomIcon(m_settings.sCustomIcon);
+    }
+    if (!m_settings.sAttentionIcon.isEmpty()) {
+        setAttentionIcon(m_settings.sAttentionIcon);
     }
     setBalloonTimeout(m_settings.iBalloonTimeout);
     setSticky(m_settings.opt[Sticky]);
@@ -139,6 +144,7 @@ TrayItemConfig TrayItem::readConfigGlobals() {
 
     m_config.beginGroup("_GLOBAL_DEFAULTS");
       config.sCustomIcon           = m_config.value("CustomIcon",       DEFAULT_CustomIcon).toString();
+      config.sAttentionIcon        = m_config.value("AttentionIcon",    DEFAULT_AttentionIcon).toString();
       config.iBalloonTimeout       = m_config.value("BalloonTimeout",   DEFAULT_BalloonTimeout).toInt();
       config.opt[Sticky]           = m_config.value("Sticky",           DEFAULT_Sticky).toBool();
       config.opt[SkipPager]        = m_config.value("SkipPager",        DEFAULT_SkipPager).toBool();
@@ -168,6 +174,9 @@ void TrayItem::saveSettingsApp()
 
       if (!m_settings.sCustomIcon.isEmpty()) {
           m_config.setValue("CustomIcon", m_settings.sCustomIcon);
+      }
+      if (!m_settings.sAttentionIcon.isEmpty()) {
+          m_config.setValue("AttentionIcon", m_settings.sAttentionIcon);
       }
       saveSettings();
 
@@ -296,6 +305,11 @@ void TrayItem::restoreWindow() {
         XSetWMNormalHints(display, m_window, &m_sizeHint);
 
         updateToggleAction();
+
+        if (m_wantsAttention) {
+            m_wantsAttention = false;
+            setIcon(m_defaultIcon);
+        }
     }
     XMapRaised(display, m_window);
     XFlush(display);
@@ -388,6 +402,7 @@ void TrayItem::doSticky() {
 
 void TrayItem::setCustomIcon(QString path) {
     m_customIcon = true;
+
     QPixmap customIcon;
     if (customIcon.load(path)) {
         m_settings.sCustomIcon = path;
@@ -395,15 +410,31 @@ void TrayItem::setCustomIcon(QString path) {
         customIcon.load(":/images/question.png");
     }
 
-    setIcon(QIcon(customIcon));
+    m_defaultIcon = QIcon(customIcon);
+
+    if (!m_wantsAttention) {
+        setIcon(m_defaultIcon);
+    }
 }
 
-void TrayItem::selectCustomIcon(bool value) {
-    Q_UNUSED(value);
+void TrayItem::setAttentionIcon(QString path) {
+    QPixmap icon;
+    if (icon.load(path)) {
+        m_settings.sAttentionIcon = path;
+    } else {
+        icon.load(":/images/question.png");
+    }
 
+    m_attentionIcon = QIcon(icon);
+
+    if (m_wantsAttention) {
+        setIcon(m_attentionIcon);
+    }
+}
+
+QString TrayItem::selectIcon(QString title) {
     QStringList types;
     QString supportedTypes;
-    QString path;
 
     Q_FOREACH(QByteArray type, QImageReader::supportedImageFormats()) {
         types << QString(type);
@@ -414,10 +445,24 @@ void TrayItem::selectCustomIcon(bool value) {
         supportedTypes = QString("Images (*.%1);;All Files (*.*)").arg(types.join(" *."));
     }
 
-    path = QFileDialog::getOpenFileName(0, tr("Select Icon"), QDir::homePath(), supportedTypes);
+    return QFileDialog::getOpenFileName(0, title, QDir::homePath(), supportedTypes);
+}
 
+void TrayItem::selectCustomIcon(bool value) {
+    Q_UNUSED(value);
+
+    QString path = selectIcon(tr("Select Icon"));
     if (!path.isEmpty()) {
         setCustomIcon(path);
+    }
+}
+
+void TrayItem::selectAttentionIcon(bool value) {
+    Q_UNUSED(value);
+
+    QString path = selectIcon(tr("Select Attention Icon"));
+    if (!path.isEmpty()) {
+        setAttentionIcon(path);
     }
 }
 
@@ -639,6 +684,11 @@ void TrayItem::updateTitle() {
     if (m_settings.iBalloonTimeout > 0) {
         showMessage(m_dockedAppName, title, QSystemTrayIcon::Information, m_settings.iBalloonTimeout);
     }
+
+    if (m_iconified && !m_attentionIcon.isNull() && !m_wantsAttention) {
+        m_wantsAttention = true;
+        setIcon(m_attentionIcon);
+    }
 }
 
 void TrayItem::updateIcon() {
@@ -646,7 +696,10 @@ void TrayItem::updateIcon() {
         return;
     }
 
-    setIcon(createIcon(m_window));
+    m_defaultIcon = createIcon(m_window);
+    if (!m_wantsAttention) {
+        setIcon(m_defaultIcon);
+    }
 }
 
 void TrayItem::updateToggleAction() {
@@ -678,6 +731,10 @@ void TrayItem::createContextMenu() {
     m_actionSetIcon = new QAction(tr("Set icon..."), m_optionsMenu);
     connect(m_actionSetIcon, SIGNAL(triggered(bool)), this, SLOT(selectCustomIcon(bool)));
     m_optionsMenu->addAction(m_actionSetIcon);
+
+    m_actionSetAttentionIcon = new QAction(tr("Set attention icon..."), m_optionsMenu);
+    connect(m_actionSetAttentionIcon, SIGNAL(triggered(bool)), this, SLOT(selectAttentionIcon(bool)));
+    m_optionsMenu->addAction(m_actionSetAttentionIcon);
 
     m_actionSkipTaskbar = new QAction(tr("Skip taskbar"), m_optionsMenu);
     m_actionSkipTaskbar->setCheckable(true);

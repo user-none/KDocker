@@ -49,6 +49,11 @@ B<kdocker> [I<options>]I<>
 
  Custom icon path
 
+=item B<-I> I<file>
+
+ Custom attention icon path. This icon is set if the title
+ of the application window changes while it is iconified.
+
 =item B<-j>
 
  Case sensitive name (title) matching
