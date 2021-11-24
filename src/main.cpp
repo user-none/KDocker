@@ -29,9 +29,17 @@
 #include "constants.h"
 #include "kdocker.h"
 
+static const int HANDLED_SIGNALS[] = { SIGHUP, SIGSEGV, SIGTERM, SIGINT, SIGUSR1 };
 
 static void sighandler(int sig) {
     Q_UNUSED(sig);
+
+    // Reset signal handlers to their default handlers,
+    // so if a further signal is generated during shutdown,
+    // the process will crash or terminate instead of trying to shut down again
+    for (size_t i = 0; i < sizeof(HANDLED_SIGNALS) / sizeof(*HANDLED_SIGNALS); i++) {
+        signal(HANDLED_SIGNALS[i], SIG_DFL);
+    }
 
     dynamic_cast<Application*> (qApp)->close();
 }
@@ -40,11 +48,9 @@ int main(int argc, char *argv[]) {
     Application app(Constants::APP_NAME, argc, argv);
 
     // setup signal handlers that undock and quit
-    signal(SIGHUP, sighandler);
-    signal(SIGSEGV, sighandler);
-    signal(SIGTERM, sighandler);
-    signal(SIGINT, sighandler);
-    signal(SIGUSR1, sighandler);
+    for (size_t i = 0; i < sizeof(HANDLED_SIGNALS) / sizeof(*HANDLED_SIGNALS); i++) {
+        signal(HANDLED_SIGNALS[i], sighandler);
+    }
 
     // Setup the translator
     QTranslator translator;
