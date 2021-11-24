@@ -21,6 +21,7 @@
 #define	_APPLICATION_H
 
 #include <QtSingleApplication>
+#include <QSocketNotifier>
 
 #include "kdocker.h"
 
@@ -32,10 +33,16 @@ public:
     Application(const QString &appId, int &argc, char **argv);
 
     void setKDockerInstance(KDocker *kdocker);
-    void close();
+    void notifyCloseSignal();
+
+public slots:
+    void handleCloseSignal();
 
 private:
     KDocker *m_kdocker;
+
+    static int m_closeSignalFd[2];
+    QSocketNotifier *m_closeSignalSocketNotifier;
 };
 
 #endif	/* _APPLICATION_H */
