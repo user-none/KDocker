@@ -18,19 +18,40 @@
  */
 
 #include "application.h"
+#include <sys/socket.h>
+#include <unistd.h>
 
+int Application::m_closeSignalFd[2];
 
 Application::Application(const QString &appId, int &argc, char **argv) : QtSingleApplication(appId, argc, argv) {
     m_kdocker = 0;
+
+    // Translate UNIX signals to Qt signals (See https://doc.qt.io/qt-5/unix-signals.html)
+    if (::socketpair(AF_UNIX, SOCK_STREAM, 0, m_closeSignalFd))
+       qFatal("Couldn't create signal handling socketpair");
+
+    m_closeSignalSocketNotifier = new QSocketNotifier(m_closeSignalFd[1], QSocketNotifier::Read, this);
+    connect(m_closeSignalSocketNotifier, SIGNAL(activated(QSocketDescriptor)), this, SLOT(handleCloseSignal()));
 }
 
 void Application::setKDockerInstance(KDocker *kdocker) {
     m_kdocker = kdocker;
 }
 
-void Application::close() {
+void Application::notifyCloseSignal() {
+    char tmp = 1;
+    ::write(m_closeSignalFd[0], &tmp, sizeof(tmp));
+}
+
+void Application::handleCloseSignal() {
+    m_closeSignalSocketNotifier->setEnabled(false);
+    char tmp;
+    ::read(m_closeSignalFd[1], &tmp, sizeof(tmp));
+
     if (m_kdocker) {
         m_kdocker->undockAll();
     }
     quit();
+
+    m_closeSignalSocketNotifier->setEnabled(true);
 }

@@ -33,7 +33,7 @@
 static void sighandler(int sig) {
     Q_UNUSED(sig);
 
-    dynamic_cast<Application*> (qApp)->close();
+    dynamic_cast<Application*> (qApp)->notifyCloseSignal();
 }
 
 int main(int argc, char *argv[]) {
