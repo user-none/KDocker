@@ -1,3 +1,6 @@
+for version 5.4
+    - Avoid deadlock during shut down on UNIX signals
+
 for version 5.3
     - Add configurable attention icon that is shown if iconified app needs attention
     - Fix building with Qt 5.14+
