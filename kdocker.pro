@@ -43,7 +43,7 @@ desktop.files = helpers/kdocker.desktop
 appdata.path = /usr/share/appdata
 appdata.files = helpers/appdata/kdocker.appdata.xml
 
-completion.path = /etc/bash_completion.d
+completion.path = /usr/share/bash-completion/completions
 completion.files = helpers/kdocker
 
 target.path = /usr/bin
