@@ -40,7 +40,7 @@ icons.files = resources/images/kdocker.png
 desktop.path = /usr/share/applications
 desktop.files = helpers/kdocker.desktop
 
-appdata.path = /usr/share/appdata
+appdata.path = /usr/share/metainfo
 appdata.files = helpers/appdata/kdocker.appdata.xml
 
 completion.path = /etc/bash_completion.d
