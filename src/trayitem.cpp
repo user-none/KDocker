@@ -26,6 +26,8 @@
 #include <QTime>
 #include <QX11Info>
 #include <QWheelEvent>
+#include <QImage>
+#include <QIcon>
 
 #include <Xatom.h>
 #include <X11/xpm.h>
@@ -814,39 +816,118 @@ void TrayItem::createContextMenu() {
     setContextMenu(m_contextMenu);
 }
 
-QIcon TrayItem::createIcon(Window window) {
-    char **window_icon = 0;
+QRgb convertToQColor(unsigned long pixel) {
+    return qRgba((pixel & 0x00FF0000) >> 16, // Red
+                 (pixel & 0x0000FF00) >> 8,  // Green
+                 (pixel & 0x000000FF),       // Blue
+                 (pixel & 0xFF000000) >> 24); // Alpha
+}
 
+QImage imageFromX11IconData(unsigned long* iconData, unsigned long dataLength) {
+    if (!iconData || dataLength < 2) {
+        return QImage();
+    }
+
+    unsigned long width = iconData[0];
+    unsigned long height = iconData[1];
+
+    if (width == 0 || height == 0 || dataLength < width * height + 2) {
+        return QImage();
+    }
+
+    QVector<QRgb> pixels(width * height);
+    unsigned long* src = iconData + 2;
+    for (unsigned long i = 0; i < width * height; ++i) {
+        pixels[i] = convertToQColor(src[i]);
+    }
+
+    QImage iconImage((uchar*)pixels.data(), width, height, QImage::Format_ARGB32);
+    return iconImage.copy();
+}
+
+QImage imageFromX11Pixmap(Display* display, Pixmap pixmap, int width, int height) {
+    XImage* ximage = XGetImage(display, pixmap, 0, 0, width, height, AllPlanes, ZPixmap);
+    if (!ximage) {
+        return QImage();
+    }
+
+    QImage image((uchar*)ximage->data, width, height, QImage::Format_ARGB32);
+    QImage result = image.copy(); // Make a copy of the image data
+    XDestroyImage(ximage);
+
+    return result;
+}
+
+QIcon TrayItem::createIcon(Window window) {
     if (!window) {
         return QIcon();
     }
 
+    Display* display = QX11Info::display();
     QPixmap appIcon;
-    Display *display = QX11Info::display();
-    XWMHints *wm_hints = XGetWMHints(display, window);
 
-    if (wm_hints != 0) {
-        if (!(wm_hints->flags & IconMaskHint))
+    // First try to get the icon from WM_HINTS
+    XWMHints* wm_hints = XGetWMHints(display, window);
+    if (wm_hints != nullptr) {
+        if (!(wm_hints->flags & IconMaskHint)) {
             wm_hints->icon_mask = None;
-        /*
-         * We act paranoid here. Progams like KSnake has a bug where
-         * IconPixmapHint is set but no pixmap (Actually this happens with
-         * quite a few KDE 3.x programs) X-(
-         */
-        if ((wm_hints->flags & IconPixmapHint) && (wm_hints->icon_pixmap)) {
-            XpmCreateDataFromPixmap(display, &window_icon, wm_hints->icon_pixmap, wm_hints->icon_mask, 0);
         }
+
+        if ((wm_hints->flags & IconPixmapHint) && (wm_hints->icon_pixmap)) {
+            Window root;
+            int x, y;
+            unsigned int width, height, border_width, depth;
+            XGetGeometry(display, wm_hints->icon_pixmap, &root, &x, &y, &width, &height, &border_width, &depth);
+
+            QImage image = imageFromX11Pixmap(display, wm_hints->icon_pixmap, width, height);
+            appIcon = QPixmap::fromImage(image);
+        }
+
         XFree(wm_hints);
     }
 
-    if (!window_icon) {
+    // Fallback to _NET_WM_ICON if WM_HINTS icon is not available
+    if (appIcon.isNull()) {
+        Atom netWmIcon = XInternAtom(display, "_NET_WM_ICON", False);
+        Atom actualType;
+        int actualFormat;
+        unsigned long nItems, bytesAfter;
+        unsigned char* data = nullptr;
+
+        if (XGetWindowProperty(display, window, netWmIcon, 0, LONG_MAX, False, XA_CARDINAL,
+                               &actualType, &actualFormat, &nItems, &bytesAfter, &data) == Success && data) {
+            unsigned long* iconData = reinterpret_cast<unsigned long*>(data);
+            unsigned long dataLength = nItems;
+
+            // Extract the largest icon available
+            QImage largestImage;
+            unsigned long maxIconSize = 0;
+
+            for (unsigned long i = 0; i < dataLength; ) {
+                unsigned long width = iconData[i];
+                unsigned long height = iconData[i + 1];
+                unsigned long iconSize = width * height;
+
+                if (iconSize > maxIconSize) {
+                    largestImage = imageFromX11IconData(&iconData[i], dataLength - i);
+                    maxIconSize = iconSize;
+                }
+
+                i += (2 + iconSize);
+            }
+
+            if (!largestImage.isNull()) {
+                appIcon = QPixmap::fromImage(largestImage);
+            }
+
+            XFree(data);
+        }
+    }
+
+    if (appIcon.isNull()) {
         appIcon.load(":/images/question.png");
-    } else {
-        appIcon = QPixmap(const_cast<const char **> (window_icon));
     }
-    if (window_icon) {
-        XpmFree(window_icon);
-    }
+
     return QIcon(appIcon);
 }
 
