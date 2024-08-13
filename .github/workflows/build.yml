@@ -10,7 +10,7 @@ jobs:
       uses: actions/checkout@v4
     - name: Install deps
       run: |
-        apt-get install qtbase5-dev qt5-qmake  libqt5x11extras5-dev  libxcb1-dev  libx11-xcb-dev  libxmu-dev  libxpm-dev build-essential
+        sudo apt-get install -y qtbase5-dev qt5-qmake  libqt5x11extras5-dev  libxcb1-dev  libx11-xcb-dev  libxmu-dev  libxpm-dev build-essential
     - name: Build
       run: |
         qmake
