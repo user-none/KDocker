@@ -6,3 +6,6 @@ Makefile
 
 # Keep empty directories:
 !*/.git*
+
+.DS_Store
+*.swp
