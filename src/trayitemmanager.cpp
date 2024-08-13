@@ -250,11 +250,8 @@ void TrayItemManager::processCommand(const QStringList &args) {
                 settings.opt[SkipTaskbar] = true;
                 break;
             case 'w':
-                if (((sizeof(optarg) / sizeof(*optarg)) > 2) && ((optarg[1] == 'x') || (optarg[1] == 'X'))) {
-                    sscanf(optarg, "%x", reinterpret_cast<unsigned *>(&window));
-                } else {
-                    window = static_cast<Window>(atoi(optarg));
-                }
+                bool ok;
+                window = static_cast<Window>(QString(optarg).toInt(&ok, 0));
                 if (!XLibUtil::isValidWindowId(QX11Info::display(), window)) {
                     QMessageBox::critical(0, qApp->applicationName(), tr("Invalid window id."));
                     checkCount();
