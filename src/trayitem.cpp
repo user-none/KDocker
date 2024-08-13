@@ -23,7 +23,7 @@
 #include <QImageReader>
 #include <QMessageBox>
 #include <QPixmap>
-#include <QTime>
+#include <QElapsedTimer>
 #include <QX11Info>
 #include <QWheelEvent>
 #include <QImage>
@@ -343,7 +343,7 @@ void TrayItem::restoreWindow() {
      * event with the Iconic state set because of the above
      * XIconifyWindow call.
      */
-    QTime t;
+    QElapsedTimer t;
     t.start();
     while (t.elapsed() < 500) {
         qApp->processEvents();
@@ -616,7 +616,7 @@ void TrayItem::obscureEvent() {
 void TrayItem::focusLostEvent() {
     // Wait half a second before checking to ensure the window is properly
     // focused when being restored.
-    QTime t;
+    QElapsedTimer t;
     t.start();
     while (t.elapsed() < 500) {
         qApp->processEvents();

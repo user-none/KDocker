@@ -322,8 +322,8 @@ void TrayItemManager::dockWindow(Window window, const TrayItemArgs settings) {
 
 Window TrayItemManager::userSelectWindow(bool checkNormality) {
     QTextStream out(stdout);
-    out << tr("Select the application/window to dock with the left mouse button.") << endl;
-    out << tr("Click any other mouse button to abort.") << endl;
+    out << tr("Select the application/window to dock with the left mouse button.") << Qt::endl;
+    out << tr("Click any other mouse button to abort.") << Qt::endl;
 
     QString error;
     Window window = XLibUtil::selectWindow(QX11Info::display(), m_grabInfo, error);

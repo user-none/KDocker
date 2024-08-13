@@ -171,21 +171,21 @@ QString KDocker::formatHelpArgs(QList<QPair<QString, QString> > commands) {
 void KDocker::printAbout() {
     QTextStream out(stdout);
 
-    out << Constants::ABOUT_MESSAGE << endl;
+    out << Constants::ABOUT_MESSAGE << Qt::endl;
 }
 
 void KDocker::printHelp() {
     QTextStream out(stdout);
     QList<QPair<QString, QString> > commands;
 
-    out << tr("Usage: %1 [options] [command] -- [command options]").arg(qApp->applicationName().toLower()) << endl;
-    out << tr("Docks any application into the system tray") << endl;
-    out << endl;
-    out << tr("Command") << endl;
-    out << tr("Run command and dock window") << endl;
-    out << tr("Use -- after command to specify options for command") << endl;
-    out << endl;
-    out << tr("Options") << endl;
+    out << tr("Usage: %1 [options] [command] -- [command options]").arg(qApp->applicationName().toLower()) << Qt::endl;
+    out << tr("Docks any application into the system tray") << Qt::endl;
+    out << Qt::endl;
+    out << tr("Command") << Qt::endl;
+    out << tr("Run command and dock window") << Qt::endl;
+    out << tr("Use -- after command to specify options for command") << Qt::endl;
+    out << Qt::endl;
+    out << tr("Options") << Qt::endl;
 
     commands.append(qMakePair(QString("-a"),      tr("Show author information")));
     commands.append(qMakePair(QString("-b"),      tr("Don't warn about non-normal windows (blind mode)")));
@@ -211,19 +211,19 @@ void KDocker::printHelp() {
     commands.append(qMakePair(QString("-x pid"),  tr("Process id of the application to dock. Assumes decimal number of the form ###...")));
     out << formatHelpArgs(commands);
 
-    out << endl;
-    out << tr("Bugs and wishes to https://github.com/user-none/KDocker") << endl;
-    out << tr("Project information at https://github.com/user-none/KDocker") << endl;
+    out << Qt::endl;
+    out << tr("Bugs and wishes to https://github.com/user-none/KDocker") << Qt::endl;
+    out << tr("Project information at https://github.com/user-none/KDocker") << Qt::endl;
 }
 
 void KDocker::printUsage() {
     QTextStream out(stdout);
-    out << tr("Usage: %1 [options] command").arg(qApp->applicationName().toLower()) << endl;
-    out << tr("Try `%1 -h' for more information").arg(qApp->applicationName().toLower()) << endl;
+    out << tr("Usage: %1 [options] command").arg(qApp->applicationName().toLower()) << Qt::endl;
+    out << tr("Try `%1 -h' for more information").arg(qApp->applicationName().toLower()) << Qt::endl;
 }
 
 void KDocker::printVersion() {
     QTextStream out(stdout);
-    out << tr("%1 version: %2").arg(qApp->applicationName()).arg(qApp->applicationVersion()) << endl;
-    out << tr("Using Qt version: %1").arg(qVersion()) << endl;
+    out << tr("%1 version: %2").arg(qApp->applicationName()).arg(qApp->applicationVersion()) << Qt::endl;
+    out << tr("Using Qt version: %1").arg(qVersion()) << Qt::endl;
 }
