@@ -22,7 +22,6 @@
 #include <QMutableListIterator>
 #include <QProcess>
 #include <QStringList>
-#include <QX11Info>
 
 #include <signal.h>
 
@@ -44,7 +43,7 @@ Scanner::~Scanner() {
     delete m_timer;
 }
 
-void Scanner::enqueue(const QString &command, const QStringList &arguments, TrayItemArgs settings, int maxTime, bool checkNormality, const QRegExp &windowName) {
+void Scanner::enqueue(const QString &command, const QStringList &arguments, TrayItemArgs settings, int maxTime, bool checkNormality, const QRegularExpression &windowName) {
     qint64 pid = 0;
     bool started = true;
 
@@ -80,21 +79,20 @@ void Scanner::check() {
         pi.setValue(id);
 
         Window w = None;
-        if (id.windowName.isEmpty()) {
+        if (id.windowName.pattern().isEmpty()) {
             if (kill(id.pid, 0) == -1) {
                 // PID does not exist; fall back to name matching.
-                id.windowName.setPattern(id.command.split("/").last());
-                id.windowName.setPatternSyntax(QRegExp::FixedString);
+                id.windowName.setPattern(QRegularExpression::escape(id.command.split("/").last()));
                 pi.setValue(id);
             } else {
                 // Check based on PID.
-                w = XLibUtil::pidToWid(QX11Info::display(), QX11Info::appRootWindow(), id.checkNormality, id.pid);
+                w = XLibUtil::pidToWid(XLibUtil::display(), XLibUtil::appRootWindow(), id.checkNormality, id.pid);
             }
         }
         // Use an if instead of else because the windowName could be set previously if the PID does not exist.
-        if (!id.windowName.isEmpty()) {
+        if (!id.windowName.pattern().isEmpty()) {
             // Check based on window name if the user specified a window name to match with.
-            w = XLibUtil::findWindow(QX11Info::display(), QX11Info::appRootWindow(), id.checkNormality, id.windowName, m_manager->dockedWindows());
+            w = XLibUtil::findWindow(XLibUtil::display(), XLibUtil::appRootWindow(), id.checkNormality, id.windowName, m_manager->dockedWindows());
         }
 
         if (w != None) {

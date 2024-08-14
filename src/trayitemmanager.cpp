@@ -22,7 +22,6 @@
 #include <QByteArray>
 #include <QMessageBox>
 #include <QTextStream>
-#include <QX11Info>
 
 #include "constants.h"
 #include "trayitemmanager.h"
@@ -33,6 +32,7 @@
 #include <sys/types.h>
 
 #include <Xlib.h>
+#include "xlibutil.h"
 
 
 #define  ESC_key  9
@@ -75,7 +75,7 @@ TrayItemManager::~TrayItemManager() {
 }
 
 /* The X11 Event Filter. Pass on events to the TrayItems that we created. */
-bool TrayItemManager::nativeEventFilter(const QByteArray &eventType, void *message, long *result) {
+bool TrayItemManager::nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result) {
     Q_UNUSED(eventType); // Platform string; not used
     Q_UNUSED(result);    // Win* OS only
 
@@ -106,7 +106,7 @@ bool TrayItemManager::nativeEventFilter(const QByteArray &eventType, void *messa
             dockedWindow = static_cast<xcb_visibility_notify_event_t *>(message)-> window;
             break;
 
-		case XCB_BUTTON_PRESS:
+        case XCB_BUTTON_PRESS:
             if (m_grabInfo.isGrabbing) {
                 m_grabInfo.isGrabbing = false;   // Cancel immediately
 
@@ -118,7 +118,7 @@ bool TrayItemManager::nativeEventFilter(const QByteArray &eventType, void *messa
             }
             break;
 
-		case XCB_KEY_RELEASE:
+        case XCB_KEY_RELEASE:
             if (m_grabInfo.isGrabbing) {
                 if (static_cast<xcb_key_release_event_t *>(message)-> detail == ESC_key)
                 {
@@ -128,8 +128,7 @@ bool TrayItemManager::nativeEventFilter(const QByteArray &eventType, void *messa
                     return true;                 // Event has been handled - don't propagate
                 }
             }
-			break;
-	}
+    }
 
     if (dockedWindow) {
         // Pass on the event to the tray item with the associated window.
@@ -148,13 +147,21 @@ bool TrayItemManager::nativeEventFilter(const QByteArray &eventType, void *messa
 }
 
 void TrayItemManager::processCommand(const QStringList &args) {
+    enum PatternType
+    {
+        Normal,
+        Regex,
+        Wildcard
+    };
+
     int option;
     pid_t pid = 0;
     Window window = 0;
     bool checkNormality = true;
     int maxTime = 5;
-    QRegExp windowName;
-    windowName.setPatternSyntax(QRegExp::FixedString);
+    QString windowNamePattern;
+    PatternType patType = PatternType::Normal;
+    QRegularExpression::PatternOptions patternOptions = QRegularExpression::CaseInsensitiveOption;
     TrayItemArgs settings = m_initArgs;
     // Turn the QStringList of arguments into something getopt can use.
     QList<QByteArray> bargs;
@@ -187,23 +194,19 @@ void TrayItemManager::processCommand(const QStringList &args) {
                 break;
             case 'e':
                 if (QString::fromLocal8Bit(optarg).compare("n") == 0) {
-                    windowName.setPatternSyntax(QRegExp::FixedString);
+                    patType = PatternType::Normal;
                 } else if (QString::fromLocal8Bit(optarg).compare("r") == 0) {
-                    windowName.setPatternSyntax(QRegExp::RegExp2);
-                } else if (QString::fromLocal8Bit(optarg).compare("u") == 0) {
-                    windowName.setPatternSyntax(QRegExp::WildcardUnix);
+                    patType = PatternType::Regex;
                 } else if (QString::fromLocal8Bit(optarg).compare("w") == 0) {
-                    windowName.setPatternSyntax(QRegExp::Wildcard);
-                } else if (QString::fromLocal8Bit(optarg).compare("x") == 0) {
-                    windowName.setPatternSyntax(QRegExp::W3CXmlSchema11);
+                    patType = PatternType::Wildcard;
                 } else {
-                    QMessageBox::critical(0, qApp->applicationName(), tr("Invalid name matting option: %1.\n\nChoices are: %2.").arg(optarg).arg("n, r, u, w, x"));
+                    QMessageBox::critical(0, qApp->applicationName(), tr("Invalid name matting option: %1.\n\nChoices are: %2.").arg(optarg).arg("n, r, w"));
                     checkCount();
                     return;
                 }
                 break;
             case 'f':
-                window = XLibUtil::activeWindow(QX11Info::display());
+                window = XLibUtil::activeWindow(XLibUtil::display());
                 if (!window) {
                     QMessageBox::critical(0, qApp->applicationName(), tr("Cannot dock the active window because no window has focus."));
                     checkCount();
@@ -217,10 +220,7 @@ void TrayItemManager::processCommand(const QStringList &args) {
                 settings.sAttentionIcon = QString::fromLocal8Bit(optarg);
                 break;
             case 'j':
-                windowName.setCaseSensitivity(Qt::CaseSensitive);
-                break;
-            case 'k':
-                windowName.setMinimal(true);
+                patternOptions = QRegularExpression::NoPatternOption;
                 break;
             case 'l':
                 settings.opt[IconifyFocusLost] = true;
@@ -229,7 +229,7 @@ void TrayItemManager::processCommand(const QStringList &args) {
                 settings.opt[IconifyMinimized] = false;
                 break;
             case 'n':
-                windowName.setPattern(QString::fromLocal8Bit(optarg));
+                windowNamePattern = QString::fromLocal8Bit(optarg);
                 break;
             case 'o':
                 settings.opt[IconifyObscured] = true;
@@ -252,7 +252,7 @@ void TrayItemManager::processCommand(const QStringList &args) {
             case 'w':
                 bool ok;
                 window = static_cast<Window>(QString(optarg).toInt(&ok, 0));
-                if (!XLibUtil::isValidWindowId(QX11Info::display(), window)) {
+                if (!XLibUtil::isValidWindowId(XLibUtil::display(), window)) {
                     QMessageBox::critical(0, qApp->applicationName(), tr("Invalid window id."));
                     checkCount();
                     return;
@@ -264,7 +264,7 @@ void TrayItemManager::processCommand(const QStringList &args) {
         } // switch (option)
     } // while (getopt)
 
-    if (optind < argc || !windowName.isEmpty()) {
+    if (optind < argc || !windowNamePattern.isEmpty()) {
         // We are either launching an application and or matching by name.
         QString command;
         QStringList arguments;
@@ -278,12 +278,25 @@ void TrayItemManager::processCommand(const QStringList &args) {
         }
 
         // Add the parameters the scanner should use to match. If a command was specified it will be started by the scanner.
+        QRegularExpression windowName;
+        switch (patType) {
+            case PatternType::Normal:
+                windowName.setPattern(QRegularExpression::escape(windowNamePattern));
+                break;
+            case PatternType::Regex:
+                windowName.setPattern(windowNamePattern);
+                break;
+            case PatternType::Wildcard:
+                windowName.setPattern(QRegularExpression::wildcardToRegularExpression(windowNamePattern));
+                break;
+        }
+        windowName.setPatternOptions(patternOptions);
         m_scanner->enqueue(command, arguments, settings, maxTime, checkNormality, windowName);
         checkCount();
     } else {
         if (!window) {
             if (pid != 0) {
-                window = XLibUtil::pidToWid(QX11Info::display(), QX11Info::appRootWindow(), checkNormality, pid, dockedWindows());
+                window = XLibUtil::pidToWid(XLibUtil::display(), XLibUtil::appRootWindow(), checkNormality, pid, dockedWindows());
             } else {
                 window = userSelectWindow(checkNormality);
             }
@@ -323,7 +336,7 @@ Window TrayItemManager::userSelectWindow(bool checkNormality) {
     out << tr("Click any other mouse button to abort.") << Qt::endl;
 
     QString error;
-    Window window = XLibUtil::selectWindow(QX11Info::display(), m_grabInfo, error);
+    Window window = XLibUtil::selectWindow(XLibUtil::display(), m_grabInfo, error);
     if (!window) {
         if (error != QString()) {
             QMessageBox::critical(0, qApp->applicationName(), error);
@@ -333,7 +346,7 @@ Window TrayItemManager::userSelectWindow(bool checkNormality) {
     }
 
     if (checkNormality) {
-        if (!XLibUtil::isNormalWindow(QX11Info::display(), window)) {
+        if (!XLibUtil::isNormalWindow(XLibUtil::display(), window)) {
             if (QMessageBox::warning(0, qApp->applicationName(), tr("The window you are attempting to dock does not seem to be a normal window."), QMessageBox::Abort | QMessageBox::Ignore) == QMessageBox::Abort) {
                 checkCount();
                 return 0;

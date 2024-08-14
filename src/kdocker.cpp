@@ -190,13 +190,12 @@ void KDocker::printHelp() {
     commands.append(qMakePair(QString("-a"),      tr("Show author information")));
     commands.append(qMakePair(QString("-b"),      tr("Don't warn about non-normal windows (blind mode)")));
     commands.append(qMakePair(QString("-d secs"), tr("Maximum time in seconds to allow for command to start and open a window (defaults to 5 sec)")));
-    commands.append(qMakePair(QString("-e type"), tr("Name matting syntax. Choices are 'n', 'r', 'u', 'w', 'x'. n = normal, substring matching (default). r = regex. u = unix wildcard. w = wildcard. x = W3C XML Schema 1.1.")));
+    commands.append(qMakePair(QString("-e type"), tr("Name matting syntax. Choices are 'n', 'r', 'w'. n = normal, substring matching (default). r = regex. w = wildcard.")));
     commands.append(qMakePair(QString("-f"),      tr("Dock window that has focus (active window)")));
     commands.append(qMakePair(QString("-h"),      tr("Display this help")));
     commands.append(qMakePair(QString("-i file"), tr("Set the tray icon to file")));
     commands.append(qMakePair(QString("-I file"), tr("Set the attention tray icon to file. This icon is set if the title of the application window changes while it is iconified.")));
     commands.append(qMakePair(QString("-j"),      tr("Case senstive name (title) matching")));
-    commands.append(qMakePair(QString("-k"),      tr("Regex minimal matching")));
     commands.append(qMakePair(QString("-l"),      tr("Iconify when focus lost")));
     commands.append(qMakePair(QString("-m"),      tr("Keep application window showing (don't hide on dock)")));
     commands.append(qMakePair(QString("-n name"), tr("Match window based on window title")));

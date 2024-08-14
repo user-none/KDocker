@@ -22,7 +22,7 @@
 
 #include <QList>
 #include <QObject>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QString>
 #include <QTimer>
 
@@ -40,7 +40,7 @@ struct ProcessId {
     int count;
     int maxCount;
     bool checkNormality;
-    QRegExp windowName;
+    QRegularExpression windowName;
 };
 
 // Launches commands and looks for the window ids they create.
@@ -51,7 +51,7 @@ class Scanner : public QObject {
 public:
     Scanner(TrayItemManager *manager);
     ~Scanner();
-    void enqueue(const QString &command, const QStringList &arguments, TrayItemArgs settings, int maxTime = 30, bool checkNormality = true, const QRegExp &windowName = QRegExp());
+    void enqueue(const QString &command, const QStringList &arguments, TrayItemArgs settings, int maxTime = 30, bool checkNormality = true, const QRegularExpression &windowName = QRegularExpression());
     bool isRunning();
 
 private slots:

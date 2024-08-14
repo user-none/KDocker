@@ -24,7 +24,6 @@
 #include <QMessageBox>
 #include <QPixmap>
 #include <QElapsedTimer>
-#include <QX11Info>
 #include <QWheelEvent>
 #include <QImage>
 #include <QIcon>
@@ -45,7 +44,7 @@ TrayItem::TrayItem(Window window, const TrayItemArgs args) {
     m_dockedAppName = "";
     m_window = window;
 
-    Display *display = QX11Info::display();
+    Display *display = XLibUtil::display();
 
     // Allows events from m_window to be forwarded to the x11EventFilter.
     XLibUtil::subscribe(display, m_window, StructureNotifyMask | PropertyChangeMask | VisibilityChangeMask | FocusChangeMask);
@@ -93,7 +92,7 @@ TrayItem::TrayItem(Window window, const TrayItemArgs args) {
 
 TrayItem::~TrayItem() {
     // No further interest in events from undocked window.
-    XLibUtil::unSubscribe(QX11Info::display(), m_window);
+    XLibUtil::unSubscribe(XLibUtil::display(), m_window);
     // Only the main menu needs to be deleted. The rest of the menus and actions
     // are children of this menu and Qt will delete all children.
     delete m_contextMenu;
@@ -297,8 +296,8 @@ void TrayItem::restoreWindow() {
 
     m_is_restoring = true;
 
-    Display *display = QX11Info::display();
-    Window root = QX11Info::appRootWindow();
+    Display *display = XLibUtil::display();
+    Window root = XLibUtil::appRootWindow();
 
     if (m_iconified) {
         m_iconified = false;
@@ -360,7 +359,7 @@ void TrayItem::iconifyWindow() {
     m_iconified = true;
 
     /* Get screen number */
-    Display *display = QX11Info::display();
+    Display *display = XLibUtil::display();
     int screen = DefaultScreen(display);
     long dummy;
 
@@ -384,10 +383,10 @@ void TrayItem::closeWindow() {
         return;
     }
 
-    Display *display = QX11Info::display();
+    Display *display = XLibUtil::display();
     long l[5] = {0, 0, 0, 0, 0};
     restoreWindow();
-    XLibUtil::sendMessage(display, QX11Info::appRootWindow(), m_window, "_NET_CLOSE_WINDOW", 32, SubstructureNotifyMask | SubstructureRedirectMask, l, sizeof (l));
+    XLibUtil::sendMessage(display, XLibUtil::appRootWindow(), m_window, "_NET_CLOSE_WINDOW", 32, SubstructureNotifyMask | SubstructureRedirectMask, l, sizeof (l));
 }
 
 void TrayItem::doSkipTaskbar() {
@@ -524,7 +523,7 @@ void TrayItem::setBalloonTimeout(bool value) {
 }
 
 void TrayItem::toggleWindow() {
-    if (m_iconified || m_window != XLibUtil::activeWindow(QX11Info::display())) {
+    if (m_iconified || m_window != XLibUtil::activeWindow(XLibUtil::display())) {
         if (!m_iconified) {
             // Iconify on original desktop in case restoring to another
             iconifyWindow();
@@ -577,7 +576,7 @@ void TrayItem::propertyChangeEvent(Atom property) {
         return;
     }
 
-    Display *display = QX11Info::display();
+    Display *display = XLibUtil::display();
     static Atom WM_NAME         = XInternAtom(display, "WM_NAME", True);
     static Atom WM_ICON         = XInternAtom(display, "WM_ICON", True);
     static Atom WM_STATE        = XInternAtom(display, "WM_STATE", True);
@@ -622,7 +621,7 @@ void TrayItem::focusLostEvent() {
         qApp->processEvents();
     }
 
-    if (m_settings.opt[IconifyFocusLost] && m_window != XLibUtil::activeWindow(QX11Info::display())) {
+    if (m_settings.opt[IconifyFocusLost] && m_window != XLibUtil::activeWindow(XLibUtil::display())) {
         iconifyWindow();
     }
 }
@@ -634,11 +633,11 @@ void TrayItem::set_NET_WM_STATE(const char *type, bool set) {
 
     // set, true = add the state to the window. False, remove the state from
     // the window.
-    Display *display = QX11Info::display();
+    Display *display = XLibUtil::display();
     Atom atom = XInternAtom(display, type, False);
 
     qint64 l[2] = {set ? 1 : 0, static_cast<qint64>(atom)};
-    XLibUtil::sendMessage(display, QX11Info::appRootWindow(), m_window, "_NET_WM_STATE", 32, SubstructureNotifyMask, l, sizeof (l));
+    XLibUtil::sendMessage(display, XLibUtil::appRootWindow(), m_window, "_NET_WM_STATE", 32, SubstructureNotifyMask, l, sizeof (l));
 }
 
 void TrayItem::readDockedAppName() {
@@ -646,7 +645,7 @@ void TrayItem::readDockedAppName() {
         return;
     }
 
-    Display *display = QX11Info::display();
+    Display *display = XLibUtil::display();
     XClassHint ch;
     if (XGetClassHint(display, m_window, &ch)) {
         if (ch.res_class) {
@@ -672,7 +671,7 @@ void TrayItem::updateTitle() {
         return;
     }
 
-    Display *display = QX11Info::display();
+    Display *display = XLibUtil::display();
     char *windowName = 0;
     QString title;
 
@@ -863,7 +862,7 @@ QIcon TrayItem::createIcon(Window window) {
         return QIcon();
     }
 
-    Display* display = QX11Info::display();
+    Display* display = XLibUtil::display();
     QPixmap appIcon;
 
     // First try to get the icon from WM_HINTS
@@ -932,7 +931,7 @@ QIcon TrayItem::createIcon(Window window) {
 }
 
 bool TrayItem::isBadWindow() {
-    Display *display = QX11Info::display();
+    Display *display = XLibUtil::display();
 
     if (!XLibUtil::isValidWindowId(display, m_window)) {
         destroyEvent();
@@ -944,7 +943,7 @@ bool TrayItem::isBadWindow() {
 // Checks to see if the virtual desktop the window is on is currently 
 // displayed. Returns true if it is, otherwise false
 bool TrayItem::isOnCurrentDesktop() {
-    Display *display = QX11Info::display();
+    Display *display = XLibUtil::display();
     Atom type = None;
     int format;
     unsigned long nitems, after;

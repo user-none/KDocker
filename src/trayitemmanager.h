@@ -43,7 +43,7 @@ class TrayItemManager : public QObject, public QAbstractNativeEventFilter {
 public:
     TrayItemManager();
     ~TrayItemManager();
-    virtual bool nativeEventFilter(const QByteArray &eventType, void *message, long *result)  Q_DECL_OVERRIDE;
+    bool nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result) override;
     void processCommand(const QStringList &args);
 
 public slots:

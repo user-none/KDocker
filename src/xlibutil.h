@@ -23,7 +23,7 @@
 
 #include <QList>
 #include <QObject>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QString>
 #include <QTimer>
 #include <QEventLoop>
@@ -32,6 +32,7 @@
 
 #include <X11/Xlib-xcb.h>
 #include <X11/Xutil.h>
+#include <X11/Xlib.h>
 #include <Xmu/WinUtil.h>
 
 
@@ -57,14 +58,16 @@ public:
     static bool isValidWindowId(Display *display, Window w);
     static pid_t pid(Display *display, Window w);
     static Window pidToWid(Display *display, Window window, bool checkNormality, pid_t epid, QList<Window> dockedWindows = QList<Window>());
-    static bool analyzeWindow(Display *display, Window w, const QRegExp &ename);
-    static Window findWindow(Display *display, Window w, bool checkNormality, const QRegExp &ename, QList<Window> dockedWindows = QList<Window>());
+    static bool analyzeWindow(Display *display, Window w, const QRegularExpression &ename);
+    static Window findWindow(Display *display, Window w, bool checkNormality, const QRegularExpression &ename, QList<Window> dockedWindows = QList<Window>());
     static void sendMessage(Display *display, Window to, Window w, const char *type, int format, long mask, void *data, int size);
     static Window activeWindow(Display *display);
     static Window selectWindow(Display *display, GrabInfo &grabInfo, QString &error);
     static void subscribe(Display *display, Window w, long mask);
     static void unSubscribe(Display *display, Window w);
     static bool getCardinalProperty(Display *display, Window w, Atom prop, long *data);
+    static Display *display();
+    static Window appRootWindow();
 };
 
 #endif /* _XLIBUTIL_H */

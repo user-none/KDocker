@@ -48,8 +48,8 @@ int main(int argc, char *argv[]) {
 
     // Setup the translator
     QTranslator translator;
-    translator.load(QLocale::system().name(), ":/i18n");
-    app.installTranslator(&translator);
+    if (translator.load(QLocale::system().name(), ":/i18n"))
+        app.installTranslator(&translator);
 
     app.setOrganizationName(Constants::ORG_NAME);
     app.setOrganizationDomain(Constants::DOM_NAME);

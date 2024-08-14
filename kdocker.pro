@@ -1,6 +1,5 @@
 TEMPLATE = app
 CONFIG  += qt 
-QT      += x11extras
 TARGET   = kdocker
 
 isEmpty(SYSTEMQTSA) {

@@ -33,9 +33,7 @@ B<kdocker> [I<options>]I<>
  Name matching syntax. Choices are:
   n = normal, substring matching [default]
   r = regex (regular expression)
-  u = unix wildcard
   w = wildcard
-  x = W3C XML Schema 1.1
 
 =item B<-f>
 
@@ -57,10 +55,6 @@ B<kdocker> [I<options>]I<>
 =item B<-j>
 
  Case sensitive name (title) matching
-
-=item B<-k>
-
- Regex minimal matching
 
 =item B<-l>
 
