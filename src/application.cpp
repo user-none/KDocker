@@ -40,13 +40,13 @@ void Application::setKDockerInstance(KDocker *kdocker) {
 
 void Application::notifyCloseSignal() {
     char tmp = 1;
-    static_cast<void>(::write(m_closeSignalFd[0], &tmp, sizeof(tmp)));
+    [[maybe_unused]] ::write(m_closeSignalFd[0], &tmp, sizeof(tmp));
 }
 
 void Application::handleCloseSignal() {
     m_closeSignalSocketNotifier->setEnabled(false);
     char tmp;
-    static_cast<void>(::read(m_closeSignalFd[1], &tmp, sizeof(tmp)));
+    [[maybe_unused]] ::read(m_closeSignalFd[1], &tmp, sizeof(tmp));
 
     if (m_kdocker) {
         m_kdocker->undockAll();
