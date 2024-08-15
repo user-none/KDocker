@@ -413,3 +413,10 @@ Display *XLibUtil::display() {
 Window XLibUtil::appRootWindow() {
     return DefaultRootWindow(XLibUtil::display());
 }
+
+xcb_connection_t *XLibUtil::xcbConnection() {
+    // While testing, `xcb_connect(Null, 0)` did not generate events,
+    // however, `XGetXCBConnection` does. It is not known why or if
+    // there is additional configuration needed with `xcb_connect`.
+    return XGetXCBConnection(XLibUtil::display());
+}
