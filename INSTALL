@@ -8,7 +8,6 @@ Dependencies for Ubuntu 24.04
 - libxcb1-dev
 - libx11-xcb-dev
 - libxmu-dev
-- libxpm-dev
 
 Building
 1. edit kdocker.pro if necessary. It should be ready to go with no change.

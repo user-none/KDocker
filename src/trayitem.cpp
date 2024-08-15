@@ -29,7 +29,6 @@
 #include <QIcon>
 
 #include <Xatom.h>
-#include <X11/xpm.h>
 
 #include "trayitem.h"
 #include "xlibutil.h"
