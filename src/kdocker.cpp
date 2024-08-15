@@ -53,15 +53,9 @@ void KDocker::undockAll() {
     }
 }
 
-void KDocker::run() {
+void KDocker::run(const QStringList &arguments) {
     if (m_trayItemManager) {
-        m_trayItemManager->processCommand(QCoreApplication::arguments());
-    }
-}
-
-void KDocker::handleMessage(const QString &args) {
-    if (m_trayItemManager) {
-        m_trayItemManager->processCommand(args.split("\n"));
+        m_trayItemManager->processCommand(arguments);
     }
 }
 

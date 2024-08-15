@@ -23,6 +23,11 @@
 #include <QObject>
 #include <QTranslator>
 
+#include <QDBusConnection>
+#include <QDBusInterface>
+#include <QDBusReply>
+#include <QDBusError>
+
 #include <signal.h>
 
 #include "application.h"
@@ -36,8 +41,38 @@ static void sighandler(int sig) {
     dynamic_cast<Application*> (qApp)->notifyCloseSignal();
 }
 
+static void setupDbus(KDocker *kdocker) {
+    auto connection = QDBusConnection::sessionBus();
+    if (!connection.isConnected()) {
+        qCritical() << "Cannot connect to the D-Bus session bus";
+        ::exit(1);
+    }
+
+    // Can't register means another instance already has.
+    if (!connection.registerService(Constants::DBUS_NAME)) {
+        QDBusInterface iface(Constants::DBUS_NAME, Constants::DBUS_PATH);
+        if (!iface.isValid()) {
+            qCritical() << "Could not create DBus interface for messaging other instance";
+            ::exit(1);
+        }
+
+        // Tell the other instance what the caller wants to do.
+        QDBusReply<void> reply = iface.call("run", QCoreApplication::arguments());
+        if (!reply.isValid()) {
+            qCritical() << "Failed to message other instance: " << qPrintable(reply.error().message());
+            ::exit(1);
+        }
+
+        ::exit(0);
+    }
+
+    // Handle messages from another instance so this can be a single instance app.
+    connection.registerObject(Constants::DBUS_PATH, kdocker, QDBusConnection::ExportAllSlots);
+}
+
 int main(int argc, char *argv[]) {
-    Application app(Constants::APP_NAME, argc, argv);
+    //Application app(Constants::APP_NAME, argc, argv);
+    Application app(argc, argv);
 
     // setup signal handlers that undock and quit
     signal(SIGHUP, sighandler);
@@ -64,16 +99,13 @@ int main(int argc, char *argv[]) {
     // on the tty the instance has started from so we call this here.
     kdocker.preProcessCommand(argc, argv);
 
-    // Send the arguments in a message to another instance if there is one.
-    if (app.sendMessage(QCoreApplication::arguments().join("\n"))) {
-        return 0;
-    }
-
-    // Handle messages from another instance so this can be a single instance app.
-    QObject::connect(&app, SIGNAL(messageReceived(const QString&)), &kdocker, SLOT(handleMessage(const QString&)));
+    // Setup Dbus so we'll only have 1 instance running. This can also exit
+    // the application if KDocker is already running and the call is forwarded
+    // to that instance.
+    setupDbus(&kdocker);
 
     // Wait for the Qt event loop to be started before running.
-    QMetaObject::invokeMethod(&kdocker, "run", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(&kdocker, "run", Qt::QueuedConnection, Q_ARG(const QStringList &, QCoreApplication::arguments()));
 
     app.setKDockerInstance(&kdocker);
 

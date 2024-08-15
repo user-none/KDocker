@@ -20,17 +20,17 @@
 #ifndef _APPLICATION_H
 #define	_APPLICATION_H
 
-#include <QtSingleApplication>
+#include <QApplication>
 #include <QSocketNotifier>
 
 #include "kdocker.h"
 
 
-class Application : public QtSingleApplication {
+class Application : public QApplication {
     Q_OBJECT
 
 public:
-    Application(const QString &appId, int &argc, char **argv);
+    Application(int &argc, char **argv);
 
     void setKDockerInstance(KDocker *kdocker);
     void notifyCloseSignal();

@@ -41,10 +41,7 @@ public:
     void preProcessCommand(int argc, char **argv);
 
 public slots:
-    void run();
-
-private slots:
-    void handleMessage(const QString &args);
+    void run(const QStringList &arguments);
 
 private:
     QString formatHelpArgs(QList<QPair<QString, QString> > commands);

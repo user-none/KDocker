@@ -1,15 +1,10 @@
 TEMPLATE = app
 CONFIG  += qt 
+QT      += widgets dbus
 TARGET   = kdocker
 
-isEmpty(SYSTEMQTSA) {
-	include(3rdparty/qtsingleapplication/src/qtsingleapplication.pri)
-} else {
-	CONFIG += qtsingleapplication
-}
-
 DEPENDPATH += src
-INCLUDEPATH += . src  /usr/include/X11
+INCLUDEPATH += . src /usr/include/X11
 QMAKE_LIBDIR += /usr/X11/lib
 LIBS = -lX11 -lXmu -lxcb -lX11-xcb
 
