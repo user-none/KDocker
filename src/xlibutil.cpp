@@ -19,11 +19,13 @@
  */
 
 #include <QMetaType>
+#include <QGuiApplication>
 
 #include <stdio.h>
 #include <stdlib.h>
 
 #include <X11/Xatom.h>
+#include <X11/Xlib.h>
 #include <X11/cursorfont.h>
 
 #include "xlibutil.h"
@@ -33,6 +35,42 @@
 #define BIT1  (1 << 1)
 #define BIT2  (1 << 2)
 #define BIT3  (1 << 3)
+
+class DisplayHelper {
+    public:
+        static DisplayHelper *instance() {
+            if (_instance == nullptr) {
+                _instance = new DisplayHelper;
+            }
+            return _instance;
+        }
+
+        Display *getDisplay() {
+            return _display;
+        }
+
+        DisplayHelper(DisplayHelper &other) = delete;
+        void operator=(const DisplayHelper &) = delete;
+
+    private:
+        static DisplayHelper *_instance;
+        Display *_display;
+
+        DisplayHelper() {
+            _display = XOpenDisplay(NULL);
+        }
+
+        ~DisplayHelper() {
+            if (_display != nullptr)
+                XCloseDisplay(_display);
+            if (_instance != nullptr)
+                delete _instance;
+            _instance = nullptr;
+        }
+
+};
+
+DisplayHelper *DisplayHelper::_instance = nullptr;
 
 /*
  * Assert validity of the window id. Get window attributes for the heck of it
@@ -162,7 +200,7 @@ Window XLibUtil::pidToWid(Display *display, Window window, bool checkNormality, 
  * The Grand Window Analyzer. Checks if window w has a expected pid of epid
  * or a expected name of ename.
  */
-bool XLibUtil::analyzeWindow(Display *display, Window w, const QRegExp &ename) {
+bool XLibUtil::analyzeWindow(Display *display, Window w, const QRegularExpression &ename) {
     XClassHint ch;
 
     // no plans to analyze windows without a name
@@ -208,7 +246,7 @@ bool XLibUtil::analyzeWindow(Display *display, Window w, const QRegExp &ename) {
  * Given a starting window look though all children and try to find a window
  * that matches the ename.
  */
-Window XLibUtil::findWindow(Display *display, Window window, bool checkNormality, const QRegExp &ename, QList<Window> dockedWindows) {
+Window XLibUtil::findWindow(Display *display, Window window, bool checkNormality, const QRegularExpression &ename, QList<Window> dockedWindows) {
     Window w = None;
     Window root;
     Window parent;
@@ -283,7 +321,6 @@ Window XLibUtil::activeWindow(Display * display) {
 Window XLibUtil::selectWindow(Display *display, GrabInfo &grabInfo, QString &error) {
     int screen  = DefaultScreen(display);
     Window root = RootWindow(display, screen);
-
     Cursor cursor = XCreateFontCursor(display, XC_draped_box);
     if (cursor == None) {
         error = tr("Failed to create XC_draped_box");
@@ -310,13 +347,14 @@ Window XLibUtil::selectWindow(Display *display, GrabInfo &grabInfo, QString &err
 
     grabInfo.window = 0;
     grabInfo.button = 0;
-    grabInfo.qtimer-> setSingleShot(true);
-    grabInfo.qtimer-> start(20000);   // 20 second timeout
+    grabInfo.qtimer->setSingleShot(true);
+    //grabInfo.qtimer-> start(20000);   // 20 second timeout
+    grabInfo.qtimer->start(5000);   // 5 second timeout
 
     XSync(display, false);
 
     grabInfo.isGrabbing = true;    // Enable XCB_BUTTON_PRESS code in event filter
-    grabInfo.qloop-> exec();       // block until button pressed or timeout
+    grabInfo.qloop->exec();        // block until button pressed or timeout
 
     XUngrabPointer(display, CurrentTime);
     XUngrabKey(display, keyEsc, AnyModifier, root);
@@ -366,4 +404,19 @@ bool XLibUtil::getCardinalProperty(Display *display, Window w, Atom prop, long *
         return true;
     }
     return false;
+}
+
+Display *XLibUtil::display() {
+    return DisplayHelper::instance()->getDisplay();
+}
+
+Window XLibUtil::appRootWindow() {
+    return DefaultRootWindow(XLibUtil::display());
+}
+
+xcb_connection_t *XLibUtil::xcbConnection() {
+    // While testing, `xcb_connect(Null, 0)` did not generate events,
+    // however, `XGetXCBConnection` does. It is not known why or if
+    // there is additional configuration needed with `xcb_connect`.
+    return XGetXCBConnection(XLibUtil::display());
 }

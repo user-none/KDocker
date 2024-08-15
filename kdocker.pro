@@ -1,6 +1,5 @@
 TEMPLATE = app
 CONFIG  += qt 
-QT      += x11extras
 TARGET   = kdocker
 
 isEmpty(SYSTEMQTSA) {
@@ -12,7 +11,7 @@ isEmpty(SYSTEMQTSA) {
 DEPENDPATH += src
 INCLUDEPATH += . src  /usr/include/X11
 QMAKE_LIBDIR += /usr/X11/lib
-LIBS = -lX11 -lXpm -lXmu
+LIBS = -lX11 -lXmu -lxcb -lX11-xcb
 
 INSTALL_PATH = /usr/share/kdocker
 
@@ -58,7 +57,8 @@ HEADERS += src/application.h \
            src/scanner.h \
            src/trayitem.h \
            src/trayitemmanager.h \
-           src/xlibutil.h
+           src/xlibutil.h \
+           src/xcbeventreceiver.h
 SOURCES += src/application.cpp \
            src/constants.cpp \
            src/kdocker.cpp \
@@ -66,7 +66,8 @@ SOURCES += src/application.cpp \
            src/scanner.cpp \
            src/trayitem.cpp \
            src/trayitemmanager.cpp \
-           src/xlibutil.cpp
+           src/xlibutil.cpp \
+           src/xcbeventreceiver.cpp
 
 RESOURCES += resources/resources.qrc
 

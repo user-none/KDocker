@@ -28,7 +28,7 @@
     <binary>kdocker</binary>
   </provides>
   <releases>
-    <release version="5.4" timestamp="1651154731">
+    <release version="5.99" timestamp="1651154731">
       <description>Requires Qt Version 5</description>
     </release>
   </releases>

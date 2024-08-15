@@ -8,4 +8,5 @@ Makefile
 !*/.git*
 
 .DS_Store
+.qmake.stash
 *.swp
