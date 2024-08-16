@@ -35,7 +35,7 @@
 
 class Scanner;
 
-class TrayItemManager : public QObject {
+class TrayItemManager : public QObject, public QAbstractNativeEventFilter {
     Q_OBJECT
 
     // The Scanner needs to know which windows are docked.
@@ -44,6 +44,7 @@ class TrayItemManager : public QObject {
 public:
     TrayItemManager();
     ~TrayItemManager();
+    virtual bool nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result) override;
     void processCommand(const QStringList &args);
 
 public slots:
@@ -53,8 +54,6 @@ public slots:
     void undock(TrayItem *trayItem);
     void undockAll();
     void about();
-
-    void handleXcbEvent(void *event);
 
 private slots:
     void selectAndIconify();
@@ -68,7 +67,6 @@ private:
     bool isWindowDocked(Window window);
 
     Scanner *m_scanner;
-    XcbEventReciver *m_eventReceiver;
     TrayItemArgs m_initArgs;  // 'const' initializer (unset values)
     QList<TrayItem*> m_trayItems;
     GrabInfo m_grabInfo;

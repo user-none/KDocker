@@ -57,8 +57,7 @@ HEADERS += src/application.h \
            src/scanner.h \
            src/trayitem.h \
            src/trayitemmanager.h \
-           src/xlibutil.h \
-           src/xcbeventreceiver.h
+           src/xlibutil.h
 SOURCES += src/application.cpp \
            src/constants.cpp \
            src/kdocker.cpp \
@@ -66,8 +65,7 @@ SOURCES += src/application.cpp \
            src/scanner.cpp \
            src/trayitem.cpp \
            src/trayitemmanager.cpp \
-           src/xlibutil.cpp \
-           src/xcbeventreceiver.cpp
+           src/xlibutil.cpp
 
 RESOURCES += resources/resources.qrc
 
