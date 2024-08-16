@@ -1,13 +1,14 @@
 Prerequisites
 1. Make sure you have Qt 5 installed and working. If you dont know what Qt is,
-go to http://qt.nokia.com/products/. You will need qmake to compile.
+go to https://qt.io/. You will need qmake to compile.
 
-Dependencies for CentOS 7
-- qt5-qtbase-devel
-- qt5-qtx11extras-devel
-- libxcb-devel
-- libXmu-devel
-- libXpm-devel
+Dependencies for Ubuntu 24.04
+- build-essential
+- qtbase5-dev
+- libqt5x11extras5-dev
+- libxcb1-dev
+- libx11-xcb-dev
+- libxmu-dev
 
 Building
 1. edit kdocker.pro if necessary. It should be ready to go with no change.

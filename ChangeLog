@@ -1,3 +1,6 @@
+for version 5.5
+    - Better application icon fetching
+
 for version 5.4
     - Avoid deadlock during shut down on UNIX signals
 

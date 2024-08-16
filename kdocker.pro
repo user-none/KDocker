@@ -12,7 +12,7 @@ isEmpty(SYSTEMQTSA) {
 DEPENDPATH += src
 INCLUDEPATH += . src  /usr/include/X11
 QMAKE_LIBDIR += /usr/X11/lib
-LIBS = -lX11 -lXpm -lXmu
+LIBS = -lX11 -lXmu
 
 INSTALL_PATH = /usr/share/kdocker
 
