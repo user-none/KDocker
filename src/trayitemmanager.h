@@ -30,7 +30,6 @@
 
 #include "trayitem.h"
 #include "scanner.h"
-#include "xcbeventreceiver.h"
 
 
 class Scanner;
