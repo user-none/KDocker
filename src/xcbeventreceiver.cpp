@@ -32,6 +32,16 @@ void XcbEventReciver::run() {
     // when there is an event pending. We use an atom sent via a
     // client message to tell us when we should stop processing.
     while ((event = xcb_wait_for_event(connection))) {
+        if (event == NULL) {
+            break;
+        }
+
+        // Error received.
+        if ((event->response_type & ~0x80) == 0) {
+            free(event);
+            continue;
+        }
+
         // Check for our stop processing client message that
         // we can send telling us to stop processing events and break
         // out of the loop so the thread can exit.

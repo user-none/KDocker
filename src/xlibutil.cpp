@@ -58,6 +58,7 @@ class DisplayHelper {
 
         DisplayHelper() {
             _display = XOpenDisplay(NULL);
+            XSetEventQueueOwner(_display, XCBOwnsEventQueue);
         }
 
         ~DisplayHelper() {
@@ -65,6 +66,7 @@ class DisplayHelper {
                 XCloseDisplay(_display);
             if (_instance != nullptr)
                 delete _instance;
+            _display = nullptr;
             _instance = nullptr;
         }
 
