@@ -36,44 +36,6 @@
 #define BIT2  (1 << 2)
 #define BIT3  (1 << 3)
 
-class DisplayHelper {
-    public:
-        static DisplayHelper *instance() {
-            if (_instance == nullptr) {
-                _instance = new DisplayHelper;
-            }
-            return _instance;
-        }
-
-        Display *getDisplay() {
-            return _display;
-        }
-
-        DisplayHelper(DisplayHelper &other) = delete;
-        void operator=(const DisplayHelper &) = delete;
-
-    private:
-        static DisplayHelper *_instance;
-        Display *_display;
-
-        DisplayHelper() {
-            _display = XOpenDisplay(NULL);
-            XSetEventQueueOwner(_display, XCBOwnsEventQueue);
-        }
-
-        ~DisplayHelper() {
-            if (_display != nullptr)
-                XCloseDisplay(_display);
-            if (_instance != nullptr)
-                delete _instance;
-            _display = nullptr;
-            _instance = nullptr;
-        }
-
-};
-
-DisplayHelper *DisplayHelper::_instance = nullptr;
-
 /*
  * Assert validity of the window id. Get window attributes for the heck of it
  * and see if the request went through.
@@ -409,16 +371,9 @@ bool XLibUtil::getCardinalProperty(Display *display, Window w, Atom prop, long *
 }
 
 Display *XLibUtil::display() {
-    return DisplayHelper::instance()->getDisplay();
+    return qApp->nativeInterface<QNativeInterface::QX11Application>()->display();
 }
 
 Window XLibUtil::appRootWindow() {
     return DefaultRootWindow(XLibUtil::display());
-}
-
-xcb_connection_t *XLibUtil::xcbConnection() {
-    // While testing, `xcb_connect(Null, 0)` did not generate events,
-    // however, `XGetXCBConnection` does. It is not known why or if
-    // there is additional configuration needed with `xcb_connect`.
-    return XGetXCBConnection(XLibUtil::display());
 }
