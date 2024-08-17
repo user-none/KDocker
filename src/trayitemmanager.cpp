@@ -32,7 +32,7 @@
 #include <sys/types.h>
 
 #include <Xlib.h>
-#include <xcb/proto.h>
+#include <xcb/xproto.h>
 #include "xlibutil.h"
 
 #define  ESC_key  9

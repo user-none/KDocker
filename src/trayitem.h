@@ -34,7 +34,7 @@
 #include <QSystemTrayIcon>
 #include <QSettings>
 
-#include <xcb/proto.h>
+#include <xcb/xproto.h>
 
 #include "xlibutil.h"
 
