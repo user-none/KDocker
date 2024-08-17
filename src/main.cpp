@@ -59,12 +59,7 @@ static void setupDbus(KDocker *kdocker) {
         }
 
         // Tell the other instance what the caller wants to do.
-        QDBusReply<void> reply = iface.call("cmd", QCoreApplication::arguments().sliced(1));
-        if (!reply.isValid()) {
-            qCritical() << "Failed to message other instance: " << qPrintable(reply.error().message());
-            ::exit(1);
-        }
-
+        iface.call(QDBus::NoBlock, "cmd", QCoreApplication::arguments().sliced(1));
         ::exit(0);
     }
 
