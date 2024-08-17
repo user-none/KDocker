@@ -4,7 +4,7 @@ QT      += widgets dbus core
 TARGET   = kdocker
 
 INCLUDEPATH += . src /usr/include/X11
-LIBS = -lX11 -lXmu -lxcb -lX11-xcb
+LIBS = -lX11 -lXmu -lxcb
 
 INSTALL_PATH = /usr/share/kdocker
 
@@ -23,6 +23,16 @@ DEFINES += TRANSLATIONS_PATH=\\\"$${TRANSLATIONS_PATH}/i18n\\\"
 #translations.path = $$TRANSLATIONS_PATH
 #translations.files = build/i18n
 
+MANPODS += helpers/kdocker.pod
+
+man.name = "Compile man page"
+man.input = MANPODS
+man.output = build/man/${QMAKE_FILE_BASE}.1
+man.CONFIG = no_link target_predeps
+man.path = /usr/share/man/man1/
+man.commands = helpers/kdocker_man.sh ${QMAKE_FILE_NAME} ${QMAKE_FILE_OUT} "5.99"
+QMAKE_EXTRA_COMPILERS += man
+
 icons.path = /usr/share/icons/hicolor/128x128/apps
 icons.files = resources/images/kdocker.png
 
@@ -38,7 +48,7 @@ completion.files = helpers/kdocker
 target.path = /usr/bin
 
 #INSTALLS += target icons desktop completion translations
-INSTALLS += target icons appdata desktop completion
+INSTALLS += target icons appdata desktop completion man
 
 # Input
 HEADERS += src/application.h \
