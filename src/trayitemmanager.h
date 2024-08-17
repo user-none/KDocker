@@ -52,10 +52,10 @@ public slots:
     void remove(TrayItem *trayItem);
     void undock(TrayItem *trayItem);
     void undockAll();
+    void selectAndIconify();
     void about();
 
 private slots:
-    void selectAndIconify();
     void checkCount();
 
 signals:

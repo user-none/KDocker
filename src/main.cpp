@@ -18,6 +18,8 @@
  * USA.
  */
 
+#include "kdocker_adaptor.h"
+
 #include <QCoreApplication>
 #include <QLocale>
 #include <QObject>
@@ -57,7 +59,7 @@ static void setupDbus(KDocker *kdocker) {
         }
 
         // Tell the other instance what the caller wants to do.
-        QDBusReply<void> reply = iface.call("run", QCoreApplication::arguments());
+        QDBusReply<void> reply = iface.call("cmd", QCoreApplication::arguments().sliced(1));
         if (!reply.isValid()) {
             qCritical() << "Failed to message other instance: " << qPrintable(reply.error().message());
             ::exit(1);
@@ -67,7 +69,8 @@ static void setupDbus(KDocker *kdocker) {
     }
 
     // Handle messages from another instance so this can be a single instance app.
-    connection.registerObject(Constants::DBUS_PATH, kdocker, QDBusConnection::ExportAllSlots);
+    new KdockerInterfaceAdaptor(kdocker);
+    connection.registerObject(Constants::DBUS_PATH, kdocker);
 }
 
 int main(int argc, char *argv[]) {
@@ -105,7 +108,7 @@ int main(int argc, char *argv[]) {
     setupDbus(&kdocker);
 
     // Wait for the Qt event loop to be started before running.
-    QMetaObject::invokeMethod(&kdocker, "run", Qt::QueuedConnection, Q_ARG(const QStringList &, QCoreApplication::arguments()));
+    QMetaObject::invokeMethod(&kdocker, "cmd", Qt::QueuedConnection, Q_ARG(const QStringList &, QCoreApplication::arguments().sliced(1)));
 
     app.setKDockerInstance(&kdocker);
 

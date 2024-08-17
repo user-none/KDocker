@@ -53,9 +53,15 @@ void KDocker::undockAll() {
     }
 }
 
-void KDocker::run(const QStringList &arguments) {
+void KDocker::cmd(const QStringList &arguments) {
     if (m_trayItemManager) {
         m_trayItemManager->processCommand(arguments);
+    }
+}
+
+void KDocker::dockAnother() {
+    if (m_trayItemManager) {
+        m_trayItemManager->selectAndIconify();
     }
 }
 

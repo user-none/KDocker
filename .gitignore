@@ -10,3 +10,8 @@ Makefile
 .DS_Store
 .qmake.stash
 *.swp
+
+# Auto generated files
+# Can't specify where these get generated unfortanetly
+kdocker_adaptor.cpp
+kdocker_adaptor.h

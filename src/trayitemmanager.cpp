@@ -165,6 +165,8 @@ void TrayItemManager::processCommand(const QStringList &args) {
     // Turn the QStringList of arguments into something getopt can use.
     QList<QByteArray> bargs;
 
+    // We get only the arguments but as long as we're using `getopt` we need a program name to be the first argument.
+    bargs.append("kdocker");
     Q_FOREACH(QString s, args) {
         bargs.append(s.toLocal8Bit());
     }
@@ -371,7 +373,6 @@ void TrayItemManager::undock(TrayItem *trayItem) {
 }
 
 void TrayItemManager::undockAll() {
-
     Q_FOREACH(TrayItem *ti, m_trayItems) {
         undock(ti);
     }
