@@ -179,7 +179,7 @@ void KDocker::printHelp() {
     QList<QPair<QString, QString> > commands;
 
     out << tr("Usage: %1 [options] [command] -- [command options]").arg(qApp->applicationName().toLower()) << Qt::endl;
-    out << tr("Docks any application into the system tray") << Qt::endl;
+    out << tr("Docks most applications to the system tray") << Qt::endl;
     out << Qt::endl;
     out << tr("Command") << Qt::endl;
     out << tr("Run command and dock window") << Qt::endl;

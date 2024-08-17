@@ -1,7 +1,7 @@
 
 =head1 NAME
 
- kdocker - dock any application in the system tray
+ kdocker - dock most applications to the system tray
 
 =head1 SYNOPSIS
 
@@ -9,7 +9,7 @@ B<kdocker> [I<options>]I<>
 
 =head1 DESCRIPTION
 
- KDocker is a program that will dock any application to the system tray
+ KDocker is a program that will dock most applications to the system tray
 
 =head1 OPTIONS
 
@@ -112,8 +112,7 @@ B<kdocker> [I<options>]I<>
 
 =head1 AUTHOR
 
- KDocker was written by Girish Ramakrishnan
- Revised and maintained by John Schember
+ John Schember
 
 =head1 REPORTING BUGS
 
