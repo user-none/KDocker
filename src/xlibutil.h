@@ -67,7 +67,6 @@ public:
     static bool getCardinalProperty(Display *display, Window w, Atom prop, long *data);
     static Display *display();
     static Window appRootWindow();
-    static xcb_connection_t *xcbConnection();
 };
 
 #endif /* _XLIBUTIL_H */
