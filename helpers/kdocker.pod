@@ -108,6 +108,14 @@ B<kdocker> [I<options>]I<>
  Process id of the application to dock
  Assumes decimal number of the form ###...
 
+=item B<-z>
+
+ Run in the background and don't exit if no
+ windows are docked. Will not attempt to launch
+ or dock a window. Used to start KDocker as as
+ service for control via another instance of
+ the application or by DBus.
+
 =back
 
 =head1 AUTHOR

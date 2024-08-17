@@ -52,10 +52,11 @@ public slots:
     void remove(TrayItem *trayItem);
     void undock(TrayItem *trayItem);
     void undockAll();
+    void selectAndIconify();
+    void quit();
     void about();
 
 private slots:
-    void selectAndIconify();
     void checkCount();
 
 signals:
@@ -69,6 +70,7 @@ private:
     TrayItemArgs m_initArgs;  // 'const' initializer (unset values)
     QList<TrayItem*> m_trayItems;
     GrabInfo m_grabInfo;
+    bool m_daemon;
 };
 
 #endif	/* _TRAYITEMMANAGER_H */

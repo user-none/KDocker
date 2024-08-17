@@ -1,0 +1,45 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd">
+    <interface name="com.kdocker.KdockerInterface">
+        <method name="cmd">
+            <arg name="parameters" direction="in" type="as">
+                <doc:doc><doc:summary>Command line parameters to run</doc:summary></doc:doc>
+            </arg>
+            <doc:doc>
+                <doc:description>
+                    <doc:para>
+                        Execute the requested command line parameters
+                    </doc:para>
+                </doc:description>
+            </doc:doc>
+        </method>
+        <method name="undockAll">
+            <doc:doc>
+                <doc:description>
+                    <doc:para>
+                        Undock all docked windows
+                    </doc:para>
+                </doc:description>
+            </doc:doc>
+        </method>
+        <method name="dockAnother">
+            <doc:doc>
+                <doc:description>
+                    <doc:para>
+                        Docked another window
+                    </doc:para>
+                </doc:description>
+            </doc:doc>
+        </method>
+        <method name="quit">
+            <doc:doc>
+                <doc:description>
+                    <doc:para>
+                        Undock all windows and close KDocker
+                    </doc:para>
+                </doc:description>
+            </doc:doc>
+        </method>
+    </interface>
+</node>

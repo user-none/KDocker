@@ -38,6 +38,9 @@ public:
     static const char *OPTIONSTRING;
 
     static const QString ABOUT_MESSAGE;
+
+    static const QString DBUS_NAME;
+    static const QString DBUS_PATH;
 };
 
 #endif	/* _CONSTANTS_H */

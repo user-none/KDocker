@@ -1,30 +1,20 @@
 TEMPLATE = app
-CONFIG  += qt 
+CONFIG  += qt
+QT      += widgets dbus core
 TARGET   = kdocker
 
-isEmpty(SYSTEMQTSA) {
-	include(3rdparty/qtsingleapplication/src/qtsingleapplication.pri)
-} else {
-	CONFIG += qtsingleapplication
-}
-
-DEPENDPATH += src
-INCLUDEPATH += . src  /usr/include/X11
-QMAKE_LIBDIR += /usr/X11/lib
+INCLUDEPATH += . src /usr/include/X11
 LIBS = -lX11 -lXmu -lxcb -lX11-xcb
 
 INSTALL_PATH = /usr/share/kdocker
 
-TRANSLATIONS += resources/i18n/pl.ts
+DBUS_ADAPTORS += resources/dbus.kdocker.xml
 
-isEmpty(QMAKE_LRELEASE) {
-    QMAKE_LRELEASE = $$[QT_INSTALL_BINS]/lrelease
-    !exists($$QMAKE_LRELEASE) { QMAKE_LRELEASE = lrelease-qt4 }
-}
+TRANSLATIONS += resources/i18n/pl.ts
 
 #updateqm.input = TRANSLATIONS
 #updateqm.output = build/i18n/${QMAKE_FILE_BASE}.qm
-#updateqm.commands = $$QMAKE_LRELEASE -silent ${QMAKE_FILE_IN} -qm build/i18n/${QMAKE_FILE_BASE}.qm
+#updateqm.commands = lrelease -silent ${QMAKE_FILE_IN} -qm build/i18n/${QMAKE_FILE_BASE}.qm
 #updateqm.CONFIG += no_link target_predeps
 #QMAKE_EXTRA_COMPILERS += updateqm
 

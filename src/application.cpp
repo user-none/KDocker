@@ -23,7 +23,7 @@
 
 int Application::m_closeSignalFd[2];
 
-Application::Application(const QString &appId, int &argc, char **argv) : QtSingleApplication(appId, argc, argv) {
+Application::Application(int &argc, char **argv) : QApplication(argc, argv) {
     m_kdocker = 0;
 
     // Translate UNIX signals to Qt signals (See https://doc.qt.io/qt-5/unix-signals.html)

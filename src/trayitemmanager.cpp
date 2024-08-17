@@ -41,6 +41,7 @@ int ignoreXErrors(Display *, XErrorEvent *) {
 }
 
 TrayItemManager::TrayItemManager() {
+    m_daemon = false;
     m_scanner = new Scanner(this);
     connect(m_scanner, SIGNAL(windowFound(Window, TrayItemArgs)), this, SLOT(dockWindow(Window, TrayItemArgs)));
     connect(m_scanner, SIGNAL(stopping()), this, SLOT(checkCount()));
@@ -165,6 +166,8 @@ void TrayItemManager::processCommand(const QStringList &args) {
     // Turn the QStringList of arguments into something getopt can use.
     QList<QByteArray> bargs;
 
+    // We get only the arguments but as long as we're using `getopt` we need a program name to be the first argument.
+    bargs.append("kdocker");
     Q_FOREACH(QString s, args) {
         bargs.append(s.toLocal8Bit());
     }
@@ -260,8 +263,14 @@ void TrayItemManager::processCommand(const QStringList &args) {
             case 'x':
                 pid = atol(optarg);
                 break;
+            case 'z':
+                m_daemon = true;
+                break;
         } // switch (option)
     } // while (getopt)
+
+    if (m_daemon)
+        return;
 
     if (optind < argc || !windowNamePattern.isEmpty()) {
         // We are either launching an application and or matching by name.
@@ -371,7 +380,6 @@ void TrayItemManager::undock(TrayItem *trayItem) {
 }
 
 void TrayItemManager::undockAll() {
-
     Q_FOREACH(TrayItem *ti, m_trayItems) {
         undock(ti);
     }
@@ -395,7 +403,15 @@ void TrayItemManager::selectAndIconify() {
     }
 }
 
+void TrayItemManager::quit() {
+    undockAll();
+    qApp->quit();
+}
+
 void TrayItemManager::checkCount() {
+    if (m_daemon)
+        return;
+
     if (m_trayItems.isEmpty() && !m_scanner->isRunning()) {
         qApp->quit();
     }

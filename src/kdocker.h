@@ -36,15 +36,14 @@ public:
     KDocker();
     ~KDocker();
 
-    void undockAll();
-
     void preProcessCommand(int argc, char **argv);
 
 public slots:
-    void run();
+    void cmd(const QStringList &arguments);
+    void undockAll();
+    void dockAnother();
+    void quit();
 
-private slots:
-    void handleMessage(const QString &args);
 
 private:
     QString formatHelpArgs(QList<QPair<QString, QString> > commands);
