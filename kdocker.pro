@@ -6,51 +6,51 @@ TARGET   = kdocker
 INCLUDEPATH += . src /usr/include/X11
 LIBS = -lX11 -lXmu -lxcb
 
-INSTALL_PATH = /usr/share/kdocker
+# Application version that will be used any place the version is shown
+VERSION = 5.99
 
-DBUS_ADAPTORS += resources/dbus.kdocker.xml
-
-TRANSLATIONS += resources/i18n/pl.ts
-
-#updateqm.input = TRANSLATIONS
-#updateqm.output = build/i18n/${QMAKE_FILE_BASE}.qm
-#updateqm.commands = lrelease -silent ${QMAKE_FILE_IN} -qm build/i18n/${QMAKE_FILE_BASE}.qm
-#updateqm.CONFIG += no_link target_predeps
-#QMAKE_EXTRA_COMPILERS += updateqm
-
-TRANSLATIONS_PATH = $$INSTALL_PATH
-DEFINES += TRANSLATIONS_PATH=\\\"$${TRANSLATIONS_PATH}/i18n\\\"
-#translations.path = $$TRANSLATIONS_PATH
-#translations.files = build/i18n
-
+# Build man page from pod
 MANPODS += helpers/kdocker.pod
-
-man.name = "Compile man page"
 man.input = MANPODS
 man.output = build/man/${QMAKE_FILE_BASE}.1
 man.CONFIG = no_link target_predeps
 man.path = /usr/share/man/man1/
-man.commands = helpers/kdocker_man.sh ${QMAKE_FILE_NAME} ${QMAKE_FILE_OUT} "5.99"
+man.commands = helpers/kdocker_man.sh ${QMAKE_FILE_NAME} ${QMAKE_FILE_OUT} ${VERSION}
 QMAKE_EXTRA_COMPILERS += man
 
+# Install icons
 icons.path = /usr/share/icons/hicolor/128x128/apps
 icons.files = resources/images/kdocker.png
 
+# Install desktop file
 desktop.path = /usr/share/applications
 desktop.files = helpers/kdocker.desktop
 
+# Build the appdata xml
+APPDATA += helpers/appdata/kdocker.appdata.xml.in
+appdata.input = APPDATA
+appdata.output = build/appdata/${QMAKE_FILE_BASE}
+appdata.CONFIG = no_link target_predeps
 appdata.path = /usr/share/metainfo
-appdata.files = helpers/appdata/kdocker.appdata.xml
+appdata.commands = $$QMAKE_STREAM_EDITOR -e s/@VERSION@/$${VERSION}/g -e s/@TIMESTAMP@/$(date +%s)/g ${QMAKE_FILE_NAME} > ${QMAKE_FILE_OUT}
+QMAKE_EXTRA_COMPILERS += appdata
 
+# Install bash completions
 completion.path = /usr/share/bash-completion/completions
 completion.files = helpers/kdocker
 
+# Application install location
 target.path = /usr/bin
 
-#INSTALLS += target icons desktop completion translations
+# Every target that should be installed
 INSTALLS += target icons appdata desktop completion man
 
+# Make the version available to to source
+DEFINES += VERSION=\\\"$${VERSION}\\\"
+
 # Input
+DBUS_ADAPTORS += resources/dbus.kdocker.xml
+
 HEADERS += src/application.h \
            src/constants.h \
            src/kdocker.h \
