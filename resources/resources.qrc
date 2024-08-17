@@ -9,6 +9,5 @@
         <file>images/options.png</file>
         <file>images/question.png</file>
         <file>images/restore.png</file>
-        <file>i18n/pl.qm</file>
     </qresource>
 </RCC>

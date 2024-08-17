@@ -79,11 +79,6 @@ int main(int argc, char *argv[]) {
     signal(SIGINT, sighandler);
     signal(SIGUSR1, sighandler);
 
-    // Setup the translator
-    QTranslator translator;
-    if (translator.load(QLocale::system().name(), ":/i18n"))
-        app.installTranslator(&translator);
-
     app.setOrganizationName(Constants::ORG_NAME);
     app.setOrganizationDomain(Constants::DOM_NAME);
     app.setApplicationName(Constants::APP_NAME);

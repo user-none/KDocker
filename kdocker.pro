@@ -10,12 +10,12 @@ LIBS = -lX11 -lXmu -lxcb
 VERSION = 5.99
 
 # Build man page from pod
-MANPODS += helpers/kdocker.pod
+MANPODS += resources/man/kdocker.pod
 man.input = MANPODS
 man.output = build/man/${QMAKE_FILE_BASE}.1
 man.CONFIG = no_link target_predeps
 man.path = /usr/share/man/man1/
-man.commands = helpers/kdocker_man.sh ${QMAKE_FILE_NAME} ${QMAKE_FILE_OUT} ${VERSION}
+man.commands = pod2man --center \"General Commands Manual\" --release \"Version $${VERSION}\" --date \"`date +\'%e %B, %Y\'`\" ${QMAKE_FILE_NAME} ${QMAKE_FILE_OUT}
 QMAKE_EXTRA_COMPILERS += man
 
 # Install icons
@@ -24,20 +24,20 @@ icons.files = resources/images/kdocker.png
 
 # Install desktop file
 desktop.path = /usr/share/applications
-desktop.files = helpers/kdocker.desktop
+desktop.files = resources/kdocker.desktop
 
 # Build the appdata xml
-APPDATA += helpers/appdata/kdocker.appdata.xml.in
+APPDATA += resources/appdata/kdocker.appdata.xml.in
 appdata.input = APPDATA
 appdata.output = build/appdata/${QMAKE_FILE_BASE}
 appdata.CONFIG = no_link target_predeps
 appdata.path = /usr/share/metainfo
-appdata.commands = $$QMAKE_STREAM_EDITOR -e s/@VERSION@/$${VERSION}/g -e s/@TIMESTAMP@/$(date +%s)/g ${QMAKE_FILE_NAME} > ${QMAKE_FILE_OUT}
+appdata.commands = $$QMAKE_STREAM_EDITOR -e s/@VERSION@/$${VERSION}/g -e s/@TIMESTAMP@/`date +%s`/g ${QMAKE_FILE_NAME} > ${QMAKE_FILE_OUT}
 QMAKE_EXTRA_COMPILERS += appdata
 
 # Install bash completions
 completion.path = /usr/share/bash-completion/completions
-completion.files = helpers/kdocker
+completion.files = resources/bash-completion/kdocker
 
 # Application install location
 target.path = /usr/bin
@@ -49,7 +49,7 @@ INSTALLS += target icons appdata desktop completion man
 DEFINES += VERSION=\\\"$${VERSION}\\\"
 
 # Input
-DBUS_ADAPTORS += resources/dbus.kdocker.xml
+DBUS_ADAPTORS += resources/dbus/kdocker.xml
 
 HEADERS += src/application.h \
            src/constants.h \
