@@ -9,7 +9,9 @@ B<kdocker> [I<options>]I<>
 
 =head1 DESCRIPTION
 
- KDocker is a program that will dock any application to the system tray
+ KDocker is a program that will dock any application to the system tray.
+ With a few caveats. Specifically, X11 must be used and the desktop must
+ have a system tray. KDocker does not work with Wayland.
 
 =head1 OPTIONS
 
@@ -107,6 +109,14 @@ B<kdocker> [I<options>]I<>
 
  Process id of the application to dock
  Assumes decimal number of the form ###...
+
+=item B<-z>
+
+ Run in the background and don't exit if no
+ windows are docked. Will not attempt to launch
+ or dock a window. Used to start KDocker as as
+ service for control via another instance of
+ the application or by DBus.
 
 =back
 

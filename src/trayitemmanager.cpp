@@ -41,6 +41,7 @@ int ignoreXErrors(Display *, XErrorEvent *) {
 }
 
 TrayItemManager::TrayItemManager() {
+    m_daemon = false;
     m_scanner = new Scanner(this);
     connect(m_scanner, SIGNAL(windowFound(Window, TrayItemArgs)), this, SLOT(dockWindow(Window, TrayItemArgs)));
     connect(m_scanner, SIGNAL(stopping()), this, SLOT(checkCount()));
@@ -262,8 +263,14 @@ void TrayItemManager::processCommand(const QStringList &args) {
             case 'x':
                 pid = atol(optarg);
                 break;
+            case 'z':
+                m_daemon = true;
+                break;
         } // switch (option)
     } // while (getopt)
+
+    if (m_daemon)
+        return;
 
     if (optind < argc || !windowNamePattern.isEmpty()) {
         // We are either launching an application and or matching by name.
@@ -396,7 +403,15 @@ void TrayItemManager::selectAndIconify() {
     }
 }
 
+void TrayItemManager::quit() {
+    undockAll();
+    qApp->quit();
+}
+
 void TrayItemManager::checkCount() {
+    if (m_daemon)
+        return;
+
     if (m_trayItems.isEmpty() && !m_scanner->isRunning()) {
         qApp->quit();
     }

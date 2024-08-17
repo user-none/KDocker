@@ -65,6 +65,12 @@ void KDocker::dockAnother() {
     }
 }
 
+void KDocker::quit() {
+    if (m_trayItemManager) {
+        m_trayItemManager->quit();
+    }
+}
+
 /*
  * handle arguments that output information to the user. We want to handle
  * them here so they are printed on the tty that the application is run from.

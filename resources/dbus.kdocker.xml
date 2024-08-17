@@ -32,5 +32,14 @@
                 </doc:description>
             </doc:doc>
         </method>
+        <method name="quit">
+            <doc:doc>
+                <doc:description>
+                    <doc:para>
+                        Undock all windows and close KDocker
+                    </doc:para>
+                </doc:description>
+            </doc:doc>
+        </method>
     </interface>
 </node>

@@ -42,6 +42,7 @@ public slots:
     void cmd(const QStringList &arguments);
     void undockAll();
     void dockAnother();
+    void quit();
 
 
 private:
