@@ -30,7 +30,6 @@
 
 #include <sys/types.h>
 
-#include <X11/Xlib-xcb.h>
 #include <X11/Xutil.h>
 #include <X11/Xlib.h>
 #include <Xmu/WinUtil.h>
