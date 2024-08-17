@@ -1,7 +1,7 @@
 
 =head1 NAME
 
- kdocker - dock any application in the system tray
+ kdocker - dock most applications to the system tray
 
 =head1 SYNOPSIS
 
@@ -9,9 +9,7 @@ B<kdocker> [I<options>]I<>
 
 =head1 DESCRIPTION
 
- KDocker is a program that will dock any application to the system tray.
- With a few caveats. Specifically, X11 must be used and the desktop must
- have a system tray. KDocker does not work with Wayland.
+ KDocker is a program that will dock most applications to the system tray
 
 =head1 OPTIONS
 
@@ -122,8 +120,7 @@ B<kdocker> [I<options>]I<>
 
 =head1 AUTHOR
 
- KDocker was written by Girish Ramakrishnan
- Revised and maintained by John Schember
+ John Schember
 
 =head1 REPORTING BUGS
 
