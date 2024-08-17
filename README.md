@@ -21,13 +21,11 @@ KDE     | show / hide | opens menu             | show / hide  | nothing
 Gnome   | opens menu  | opens menu             | show / hide  | nothing
 Mate    | opens menu  | opens Mate applet menu | opens menu   | nothing
 LXDE    | show / hide | opens menu             | show / hide  | show / hide
-XFCE    | N/A         | N/A                    | N/A          | N/A
+XFCE    | show / hide | opens menu             | show / hide  | nothing
 
 ### Notes
 
-Gnaome, not all distros install the system tray plugin by default.
-
-XFCE, KDocker items do not show in the system tray.
+Gnome, not all distros install the system tray plugin by default.
 
 
 ## Website
