@@ -23,7 +23,6 @@
 #include <QCoreApplication>
 #include <QLocale>
 #include <QObject>
-#include <QTranslator>
 
 #include <QDBusConnection>
 #include <QDBusInterface>
@@ -34,16 +33,15 @@
 
 #include "application.h"
 #include "constants.h"
-#include "kdocker.h"
+#include "trayitemmanager.h"
+#include "commandlineargs.h"
 
 
-static void sighandler(int sig) {
-    Q_UNUSED(sig);
-
+static void sighandler([[maybe_unused]] int sig) {
     dynamic_cast<Application*> (qApp)->notifyCloseSignal();
 }
 
-static void setupDbus(KDocker *kdocker) {
+static void setupDbus(TrayItemManager *trayitemmanager) {
     auto connection = QDBusConnection::sessionBus();
     if (!connection.isConnected()) {
         qCritical() << "Cannot connect to the D-Bus session bus";
@@ -64,12 +62,11 @@ static void setupDbus(KDocker *kdocker) {
     }
 
     // Handle messages from another instance so this can be a single instance app.
-    new KdockerInterfaceAdaptor(kdocker);
-    connection.registerObject(Constants::DBUS_PATH, kdocker);
+   // new KdockerInterfaceAdaptor(trayitemmanager);
+    //connection.registerObject(Constants::DBUS_PATH, trayitemmanager);
 }
 
 int main(int argc, char *argv[]) {
-    //Application app(Constants::APP_NAME, argc, argv);
     Application app(argc, argv);
 
     // setup signal handlers that undock and quit
@@ -83,24 +80,35 @@ int main(int argc, char *argv[]) {
     app.setOrganizationDomain(Constants::DOM_NAME);
     app.setApplicationName(Constants::APP_NAME);
     app.setApplicationVersion(Constants::APP_VERSION);
+
     // Quitting will be handled by the TrayItemManager in the KDocker instance.
     // It will determine when there is nothing left running.
     app.setQuitOnLastWindowClosed(false);
 
-    KDocker kdocker;
-    // This can exit the application. We want the output of any help text output
-    // on the tty the instance has started from so we call this here.
-    kdocker.preProcessCommand(argc, argv);
+    Command command;
+    TrayItemConfig config;
+    bool daemon = false;
+    if (!CommandLineArgs::processArgs(app.arguments(), command, config, daemon)) {
+        ::exit(1);
+    }
 
+    TrayItemManager trayItemManager;
+    qDebug() << daemon;
+    if (daemon) {
+        trayItemManager.setDaemon();
+    }
     // Setup Dbus so we'll only have 1 instance running. This can also exit
     // the application if KDocker is already running and the call is forwarded
     // to that instance.
-    setupDbus(&kdocker);
+    //setupDbus(&trayItemManager);
 
     // Wait for the Qt event loop to be started before running.
-    QMetaObject::invokeMethod(&kdocker, "cmd", Qt::QueuedConnection, Q_ARG(const QStringList &, QCoreApplication::arguments().sliced(1)));
+    //QMetaObject::invokeMethod(&trayItemManager, "processCommand", Qt::QueuedConnection, Q_ARG(const QStringList &, QCoreApplication::arguments().sliced(1)));
+    QMetaObject::invokeMethod(&trayItemManager, "processCommand", Qt::QueuedConnection,
+            Q_ARG(const Command &, command),
+            Q_ARG(const TrayItemConfig &, config));
 
-    app.setKDockerInstance(&kdocker);
+    app.setTrayItemManagerInstance(&trayItemManager);
 
     return app.exec();
 }

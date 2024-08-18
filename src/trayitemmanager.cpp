@@ -24,6 +24,7 @@
 #include <QTextStream>
 
 #include "constants.h"
+#include "trayitemconfig.h"
 #include "trayitemmanager.h"
 
 #include <getopt.h>
@@ -44,13 +45,8 @@ int ignoreXErrors(Display *, XErrorEvent *) {
 TrayItemManager::TrayItemManager() {
     m_daemon = false;
     m_scanner = new Scanner(this);
-    connect(m_scanner, SIGNAL(windowFound(Window, TrayItemArgs)), this, SLOT(dockWindow(Window, TrayItemArgs)));
+    connect(m_scanner, SIGNAL(windowFound(Window, TrayItemConfig)), this, SLOT(dockWindow(Window, TrayItemConfig)));
     connect(m_scanner, SIGNAL(stopping()), this, SLOT(checkCount()));
-    // 'const' TrayItemArgs initializer
-    m_initArgs.iBalloonTimeout = -1;
-    for (int opt=0; opt < Option_MAX; opt++) {
-        m_initArgs.opt[opt] = NOARG;  // unset all
-    }
     m_grabInfo.qtimer = new QTimer;
     m_grabInfo.qloop  = new QEventLoop;
     m_grabInfo.isGrabbing = false;
@@ -67,6 +63,7 @@ TrayItemManager::TrayItemManager() {
 TrayItemManager::~TrayItemManager() {
     while (!m_trayItems.isEmpty()) {
         TrayItem *t = m_trayItems.takeFirst();
+        undock(t);
         delete t;
     }
     delete m_grabInfo.qtimer;
@@ -75,10 +72,7 @@ TrayItemManager::~TrayItemManager() {
     qApp-> removeNativeEventFilter(this);
 }
 
-bool TrayItemManager::nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result) {
-    Q_UNUSED(eventType); // Platform string; not used
-    Q_UNUSED(result);    // Win* OS only
-
+bool TrayItemManager::nativeEventFilter([[maybe_unused]] const QByteArray &eventType, void *message, [[maybe_unused]] qintptr *result) {
     static xcb_window_t dockedWindow = 0;  //     zero: event ignored (default) ...
                                            // non-zero: pass to TrayItem::xcbEventFilter
     switch (static_cast<xcb_generic_event_t *>(message)-> response_type & ~0x80) {
@@ -147,6 +141,59 @@ bool TrayItemManager::nativeEventFilter(const QByteArray &eventType, void *messa
     return false;
 }
 
+void TrayItemManager::processCommand(const Command &command, const TrayItemConfig &config) {
+    Window window;
+
+    switch (command.getType()) {
+        case Command::CommandType::NoCommand:
+            checkCount();
+            return;
+        case Command::CommandType::Title:
+            m_scanner->enqueueSearch(command.getSearchPattern(), config, command.getTimeout(), command.getCheckNormality());
+            checkCount();
+            break;
+        case Command::CommandType::WindowId:
+            window = command.getWindowId();
+            if (!XLibUtil::isValidWindowId(XLibUtil::display(), window)) {
+                QMessageBox::critical(0, qApp->applicationName(), tr("Invalid window id"));
+                checkCount();
+                return;
+            }
+            dockWindow(window, config);
+            break;
+        case Command::CommandType::Pid:
+            window = XLibUtil::pidToWid(XLibUtil::display(), XLibUtil::appRootWindow(), command.getCheckNormality(), command.getPid(), dockedWindows());
+            if (!XLibUtil::isValidWindowId(XLibUtil::display(), window)) {
+                QMessageBox::critical(0, qApp->applicationName(), tr("Invalid window id"));
+                checkCount();
+                return;
+            }
+            dockWindow(window, config);
+            break;
+        case Command::CommandType::Run:
+            m_scanner->enqueueRun(command.getRunApp(), command.getRunAppArguments(), config, command.getTimeout(), command.getCheckNormality(), command.getSearchPattern());
+            checkCount();
+            return;
+        case Command::CommandType::Select:
+            window = userSelectWindow(command.getCheckNormality());
+            if (window) {
+                dockWindow(window, config);
+            }
+            checkCount();
+            break;
+        case Command::CommandType::Focused:
+            window = XLibUtil::activeWindow(XLibUtil::display());
+            if (!window) {
+                QMessageBox::critical(0, qApp->applicationName(), tr("Cannot dock the active window because no window has focus"));
+                checkCount();
+                return;
+            }
+            dockWindow(window, config);
+            break;
+    }
+}
+
+#if 0
 void TrayItemManager::processCommand(const QStringList &args) {
     enum PatternType
     {
@@ -163,7 +210,7 @@ void TrayItemManager::processCommand(const QStringList &args) {
     QString windowNamePattern;
     PatternType patType = PatternType::Normal;
     QRegularExpression::PatternOptions patternOptions = QRegularExpression::CaseInsensitiveOption;
-    TrayItemArgs settings = m_initArgs;
+    TrayItemConfig settings = m_initArgs;
     // Turn the QStringList of arguments into something getopt can use.
     QList<QByteArray> bargs;
 
@@ -318,8 +365,9 @@ void TrayItemManager::processCommand(const QStringList &args) {
         }
     }
 }
+#endif
 
-void TrayItemManager::dockWindow(Window window, const TrayItemArgs settings) {
+void TrayItemManager::dockWindow(Window window, const TrayItemConfig &settings) {
     if (isWindowDocked(window)) {
         QMessageBox::information(0, qApp->applicationName(), tr("This window is already docked.\nClick on system tray icon to toggle docking."));
         checkCount();
@@ -387,6 +435,7 @@ void TrayItemManager::undockAll() {
 }
 
 void TrayItemManager::about() {
+#if 0
     QMessageBox aboutBox;
     aboutBox.setIconPixmap(QPixmap(":/images/kdocker.png"));
     aboutBox.setWindowTitle(tr("About %1 - %2").arg(qApp->applicationName()).arg(qApp->applicationVersion()));
@@ -394,6 +443,11 @@ void TrayItemManager::about() {
     aboutBox.setInformativeText(tr("See %1 for more information.").arg("<a href=\"https://github.com/user-none/KDocker\">https://github.com/user-none/KDocker</a>"));
     aboutBox.setStandardButtons(QMessageBox::Ok);
     aboutBox.exec();
+#endif
+}
+
+void TrayItemManager::setDaemon() {
+    m_daemon = true;
 }
 
 void TrayItemManager::selectAndIconify() {

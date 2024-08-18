@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2009 John Schember <john@nachtimwald.com>
+ *  Copyright (C) 2024 John Schember <john@nachtimwald.com>
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,24 +17,23 @@
  * USA.
  */
 
-#ifndef _CONSTANTS_H
-#define	_CONSTANTS_H
 
-#include <QObject>
-#include <QString>
+#ifndef _COMMANDLINEARGS_H
+#define	_COMMANDLINEARGS_H
 
+#include <QCommandLineParser>
 
-class Constants : QObject {
-    Q_OBJECT
+#include "command.h"
+#include "trayitemconfig.h"
 
-public:
-    static const QString APP_NAME;
-    static const QString ORG_NAME;
-    static const QString DOM_NAME;
-    static const QString APP_VERSION;
+class CommandLineArgs {
+    public:
+        static bool processArgs(const QStringList &arguments, Command &command, TrayItemConfig &config, bool &daemon);
 
-    static const QString DBUS_NAME;
-    static const QString DBUS_PATH;
+    private:
+        static bool validateParserArgs(const QCommandLineParser &parser);
+        static void buildConfig(const QCommandLineParser &parser, TrayItemConfig &config);
+        static void buildCommand(const QCommandLineParser &parser, Command &command);
 };
 
-#endif	/* _CONSTANTS_H */
+#endif // _COMMANDLINEARGS_H

@@ -21,16 +21,16 @@
 #ifndef _TRAYITEMMANAGER_H
 #define	_TRAYITEMMANAGER_H
 
+#include "trayitem.h"
+#include "scanner.h"
+#include "command.h"
+
 #include <QtCore/QAbstractNativeEventFilter>
 #include <QList>
 #include <QObject>
 #include <QStringList>
 
 #include <sys/types.h>
-
-#include "trayitem.h"
-#include "scanner.h"
-
 
 class Scanner;
 
@@ -44,10 +44,10 @@ public:
     TrayItemManager();
     ~TrayItemManager();
     virtual bool nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result) override;
-    void processCommand(const QStringList &args);
 
 public slots:
-    void dockWindow(Window window, const TrayItemArgs settings);
+    void processCommand(const Command &command, const TrayItemConfig &config);
+    void dockWindow(Window window, const TrayItemConfig &settings);
     Window userSelectWindow(bool checkNormality = true);
     void remove(TrayItem *trayItem);
     void undock(TrayItem *trayItem);
@@ -55,6 +55,7 @@ public slots:
     void selectAndIconify();
     void quit();
     void about();
+    void setDaemon();
 
 private slots:
     void checkCount();
@@ -67,7 +68,7 @@ private:
     bool isWindowDocked(Window window);
 
     Scanner *m_scanner;
-    TrayItemArgs m_initArgs;  // 'const' initializer (unset values)
+    TrayItemConfig m_initArgs;
     QList<TrayItem*> m_trayItems;
     GrabInfo m_grabInfo;
     bool m_daemon;

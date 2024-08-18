@@ -17,7 +17,7 @@ B<kdocker> [I<options>]I<>
 
 =item B<-a>
 
- Show author information
+ Show about information
 
 =item B<-b>
 
@@ -32,12 +32,12 @@ B<kdocker> [I<options>]I<>
 
  Name matching syntax. Choices are:
   n = normal, substring matching [default]
-  r = regex (regular expression)
+  r = regular expression
   w = wildcard
 
 =item B<-f>
 
- Dock window that has focus (active window)
+ Dock the window that has focus (active window)
 
 =item B<-h>
 

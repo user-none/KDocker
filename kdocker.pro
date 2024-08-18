@@ -52,18 +52,22 @@ DEFINES += VERSION=\\\"$${VERSION}\\\"
 DBUS_ADAPTORS += resources/dbus/kdocker.xml
 
 HEADERS += src/application.h \
+           src/command.h \
+           src/commandlineargs.h \
            src/constants.h \
-           src/kdocker.h \
            src/scanner.h \
            src/trayitem.h \
+           src/trayitemconfig.h \
            src/trayitemmanager.h \
            src/xlibutil.h
 SOURCES += src/application.cpp \
+           src/command.cpp \
+           src/commandlineargs.cpp \
            src/constants.cpp \
-           src/kdocker.cpp \
            src/main.cpp \
            src/scanner.cpp \
            src/trayitem.cpp \
+           src/trayitemconfig.cpp \
            src/trayitemmanager.cpp \
            src/xlibutil.cpp
 
