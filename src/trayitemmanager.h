@@ -47,6 +47,16 @@ public:
 
 public slots:
     void processCommand(const Command &command, const TrayItemConfig &config);
+
+    void processCommandSearch();
+    void processCommandRun();
+    void processCommandWindowId(int wid, const TrayItemConfig &config);
+    void processCommandPid(int pid, bool checkNormality, const TrayItemConfig &config);
+    void selectWindow(bool checkNormality, const TrayItemConfig &config);
+    void processCommandFocused(const TrayItemConfig &config);
+
+
+
     void dockWindow(Window window, const TrayItemConfig &settings);
     Window userSelectWindow(bool checkNormality = true);
     void remove(TrayItem *trayItem);
@@ -55,7 +65,7 @@ public slots:
     void selectAndIconify();
     void quit();
     void about();
-    void setDaemon();
+    void daemonize();
 
 private slots:
     void checkCount();

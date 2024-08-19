@@ -24,6 +24,7 @@
 #include <QLocale>
 #include <QObject>
 
+#include <QDBusMetaType>
 #include <QDBusConnection>
 #include <QDBusInterface>
 #include <QDBusReply>
@@ -41,29 +42,42 @@ static void sighandler([[maybe_unused]] int sig) {
     dynamic_cast<Application*> (qApp)->notifyCloseSignal();
 }
 
-static void setupDbus(TrayItemManager *trayitemmanager) {
+static bool setupDbus(TrayItemManager *trayitemmanager) {
     auto connection = QDBusConnection::sessionBus();
     if (!connection.isConnected()) {
         qCritical() << "Cannot connect to the D-Bus session bus";
         ::exit(1);
     }
 
-    // Can't register means another instance already has.
-    if (!connection.registerService(Constants::DBUS_NAME)) {
-        QDBusInterface iface(Constants::DBUS_NAME, Constants::DBUS_PATH);
-        if (!iface.isValid()) {
-            qCritical() << "Could not create DBus interface for messaging other instance";
-            ::exit(1);
-        }
-
-        // Tell the other instance what the caller wants to do.
-        iface.call(QDBus::NoBlock, "cmd", QCoreApplication::arguments().sliced(1));
-        ::exit(0);
+    bool registered = connection.registerService(Constants::DBUS_NAME);
+    if (registered) {
+        new KdockerInterfaceAdaptor(trayitemmanager);
+        connection.registerObject(Constants::DBUS_PATH, trayitemmanager);
     }
 
-    // Handle messages from another instance so this can be a single instance app.
-   // new KdockerInterfaceAdaptor(trayitemmanager);
-    //connection.registerObject(Constants::DBUS_PATH, trayitemmanager);
+   return registered;
+}
+
+static void sendDbusCommand(const Command &command, const TrayItemConfig &config, bool daemon) {
+    QDBusInterface iface(Constants::DBUS_NAME, Constants::DBUS_PATH);
+    if (!iface.isValid()) {
+        qCritical() << "Could not create DBus interface for messaging other instance";
+        ::exit(1);
+    }
+
+    if (daemon)
+        iface.call(QDBus::NoBlock, "daemonize");
+
+    switch (command.getType()) {
+        case Command::CommandType::Select:
+            iface.call(QDBus::NoBlock, "selectWindow", command.getCheckNormality(), QVariant::fromValue(config));
+            break;
+    }
+
+    // Tell the other instance what the caller wants to do.
+    //iface.call(QDBus::NoBlock, "cmd", QCoreApplication::arguments().sliced(1));
+    //::exit(0);
+
 }
 
 int main(int argc, char *argv[]) {
@@ -85,25 +99,27 @@ int main(int argc, char *argv[]) {
     // It will determine when there is nothing left running.
     app.setQuitOnLastWindowClosed(false);
 
+    // Parse the command line arguments so we know what to do
     Command command;
     TrayItemConfig config;
     bool daemon = false;
-    if (!CommandLineArgs::processArgs(app.arguments(), command, config, daemon)) {
-        ::exit(1);
-    }
+    if (!CommandLineArgs::processArgs(app.arguments(), command, config, daemon))
+        return 1;
 
     TrayItemManager trayItemManager;
-    qDebug() << daemon;
-    if (daemon) {
-        trayItemManager.setDaemon();
+
+    qRegisterMetaType<TrayItemConfig>("TrayItemConfig");
+    qDBusRegisterMetaType<TrayItemConfig>();
+
+    // Setup Dbus so we'll only have 1 instance running
+    if (!setupDbus(&trayItemManager)) {
+        // Can't register means another instance already has. Any commands
+        // were sent to that instance and there is nothing more for us to do.
+        sendDbusCommand(command, config, daemon);
+        return 0;
     }
-    // Setup Dbus so we'll only have 1 instance running. This can also exit
-    // the application if KDocker is already running and the call is forwarded
-    // to that instance.
-    //setupDbus(&trayItemManager);
 
     // Wait for the Qt event loop to be started before running.
-    //QMetaObject::invokeMethod(&trayItemManager, "processCommand", Qt::QueuedConnection, Q_ARG(const QStringList &, QCoreApplication::arguments().sliced(1)));
     QMetaObject::invokeMethod(&trayItemManager, "processCommand", Qt::QueuedConnection,
             Q_ARG(const Command &, command),
             Q_ARG(const TrayItemConfig &, config));

@@ -14,6 +14,33 @@
                 </doc:description>
             </doc:doc>
         </method>
+
+        <method name="selectWindow">
+            <arg name="checkNormality" direction="in" type="b">
+                <doc:doc><doc:summary>Check if it's a normal window. Error if not.</doc:summary></doc:doc>
+            </arg>
+            <arg name="windowConfig" direction="in" type="a{ss}">
+            </arg>
+            <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="TrayItemConfig"/>
+            <doc:doc>
+                <doc:description>
+                    <doc:para>
+                        Select the window to dock
+                    </doc:para>
+                </doc:description>
+            </doc:doc>
+        </method>
+
+        <method name="daemonize">
+            <doc:doc>
+                <doc:description>
+                    <doc:para>
+                        Have KDocker continue running when nothing is docked
+                    </doc:para>
+                </doc:description>
+            </doc:doc>
+        </method>
+
         <method name="undockAll">
             <doc:doc>
                 <doc:description>

@@ -21,6 +21,8 @@
 #ifndef _COMMAND_H
 #define	_COMMAND_H
 
+//#include <QDBusMetaType>
+#include <QDBusArgument>
 #include <QMetaType>
 #include <QRegularExpression>
 #include <QString>
@@ -39,6 +41,9 @@ class Command {
         };
 
         Command();
+
+        friend QDBusArgument &operator<<(QDBusArgument &argument, const Command &command);
+        friend const QDBusArgument &operator>>(const QDBusArgument &argument, Command &command);
 
         Command::CommandType getType() const;
         QRegularExpression getSearchPattern() const;
@@ -71,5 +76,6 @@ class Command {
 
 Q_DECLARE_METATYPE(Command::CommandType)
 Q_DECLARE_METATYPE(Command)
+//qDBusRegisterMetaType<Command>();
 
 #endif // _COMMAND_H

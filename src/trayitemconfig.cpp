@@ -20,6 +20,17 @@
 
 #include "trayitemconfig.h"
 
+static const char *DKEY_ICONP    = "icon";
+static const char *DKEY_AICOP    = "attention-icon";
+static const char *DKEY_ICONFFOC = "iconify-focus-lost";
+static const char *DKEY_ICONFMIN = "iconify-minimized";
+static const char *DKEY_ICONFOBS = "iconify-obscured";
+static const char *DKEY_NOTIFYT  = "notify-time";
+static const char *DKEY_QUIET    = "quiet";
+static const char *DKEY_SKPAG    = "skip-pager";
+static const char *DKEY_STICKY   = "sticky";
+static const char *DKEY_SKTASK   = "skip-taskbar";
+
 TrayItemConfig::TrayItemConfig() :
         m_iconifyFocusLost(TrayItemConfig::TriState::Unset),
         m_iconifyMinimized(TrayItemConfig::TriState::Unset),
@@ -33,36 +44,142 @@ TrayItemConfig::TrayItemConfig() :
 {
 }
 
-TrayItemConfig::TrayItemConfig(const TrayItemConfig &obj) {
-    m_iconPath = obj.m_iconPath;
-    m_attentionIconPath = obj.m_attentionIconPath;
-    m_iconifyFocusLost = obj.m_iconifyFocusLost;
-    m_iconifyMinimized = obj.m_iconifyMinimized;
-    m_iconifyObscured = obj.m_iconifyObscured;
-    m_notifyTime = obj.m_notifyTime;
-    m_quiet = obj.m_quiet;
-    m_skipPager = obj.m_skipPager;
-    m_sticky = obj.m_sticky;
-    m_skipTaskbar = obj.m_skipTaskbar;
-    m_lockToDesktop = obj.m_lockToDesktop;
+TrayItemConfig::TrayItemConfig(const TrayItemConfig &other) {
+    m_iconPath = other.m_iconPath;
+    m_attentionIconPath = other.m_attentionIconPath;
+    m_iconifyFocusLost = other.m_iconifyFocusLost;
+    m_iconifyMinimized = other.m_iconifyMinimized;
+    m_iconifyObscured = other.m_iconifyObscured;
+    m_notifyTime = other.m_notifyTime;
+    m_quiet = other.m_quiet;
+    m_skipPager = other.m_skipPager;
+    m_sticky = other.m_sticky;
+    m_skipTaskbar = other.m_skipTaskbar;
+    m_lockToDesktop = other.m_lockToDesktop;
 }
 
-TrayItemConfig& TrayItemConfig::operator=(const TrayItemConfig &obj) {
-    if (this == &obj)
+TrayItemConfig& TrayItemConfig::operator=(const TrayItemConfig &other) {
+    if (this == &other)
         return *this;
 
-    m_iconPath = obj.m_iconPath;
-    m_attentionIconPath = obj.m_attentionIconPath;
-    m_iconifyFocusLost = obj.m_iconifyFocusLost;
-    m_iconifyMinimized = obj.m_iconifyMinimized;
-    m_iconifyObscured = obj.m_iconifyObscured;
-    m_notifyTime = obj.m_notifyTime;
-    m_quiet = obj.m_quiet;
-    m_skipPager = obj.m_skipPager;
-    m_sticky = obj.m_sticky;
-    m_skipTaskbar = obj.m_skipTaskbar;
-    m_lockToDesktop = obj.m_lockToDesktop;
+    m_iconPath = other.m_iconPath;
+    m_attentionIconPath = other.m_attentionIconPath;
+    m_iconifyFocusLost = other.m_iconifyFocusLost;
+    m_iconifyMinimized = other.m_iconifyMinimized;
+    m_iconifyObscured = other.m_iconifyObscured;
+    m_notifyTime = other.m_notifyTime;
+    m_quiet = other.m_quiet;
+    m_skipPager = other.m_skipPager;
+    m_sticky = other.m_sticky;
+    m_skipTaskbar = other.m_skipTaskbar;
+    m_lockToDesktop = other.m_lockToDesktop;
     return *this;
+}
+
+QDBusArgument &operator<<(QDBusArgument &argument, const TrayItemConfig &config) {
+    argument.beginMap(QMetaType::fromType<QString>(), QMetaType::fromType<QString>());
+
+    if (!config.m_iconPath.isEmpty()) {
+        argument.beginMapEntry();
+        argument << DKEY_ICONP << config.m_iconPath;
+        argument.endMapEntry();
+    }
+
+    if (!config.m_attentionIconPath.isEmpty()) {
+        argument.beginMapEntry();
+        argument << DKEY_AICOP << config.m_attentionIconPath;
+        argument.endMapEntry();
+    }
+
+    if (config.m_iconifyFocusLost != TrayItemConfig::TriState::Unset) {
+        argument.beginMapEntry();
+        argument << DKEY_ICONFFOC << ((config.m_iconifyFocusLost == TrayItemConfig::TriState::SetTrue) ? "true" : "false");
+        argument.endMapEntry();
+    }
+
+    if (config.m_iconifyMinimized != TrayItemConfig::TriState::Unset) {
+        argument.beginMapEntry();
+        argument << DKEY_ICONFMIN << ((config.m_iconifyMinimized == TrayItemConfig::TriState::SetTrue) ? "true" : "false");
+        argument.endMapEntry();
+    }
+
+    if (config.m_iconifyObscured != TrayItemConfig::TriState::Unset) {
+        argument.beginMapEntry();
+        argument << DKEY_ICONFOBS << ((config.m_iconifyObscured == TrayItemConfig::TriState::SetTrue) ? "true" : "false");
+        argument.endMapEntry();
+    }
+
+    if (config.m_notifyTime > -1) {
+        argument.beginMapEntry();
+        argument << DKEY_NOTIFYT << QString::number(config.m_notifyTime / 1000);
+        argument.endMapEntry();
+    }
+
+    if (config.m_quiet != TrayItemConfig::TriState::Unset) {
+        argument.beginMapEntry();
+        argument << DKEY_QUIET << ((config.m_quiet == TrayItemConfig::TriState::SetTrue) ? "true" : "false");
+        argument.endMapEntry();
+    }
+
+    if (config.m_skipPager != TrayItemConfig::TriState::Unset) {
+        argument.beginMapEntry();
+        argument << DKEY_SKPAG << ((config.m_skipPager == TrayItemConfig::TriState::SetTrue) ? "true" : "false");
+        argument.endMapEntry();
+    }
+
+    if (config.m_skipTaskbar != TrayItemConfig::TriState::Unset) {
+        argument.beginMapEntry();
+        argument << DKEY_SKTASK << ((config.m_skipTaskbar == TrayItemConfig::TriState::SetTrue) ? "true" : "false");
+        argument.endMapEntry();
+    }
+
+    if (config.m_sticky != TrayItemConfig::TriState::Unset) {
+        argument.beginMapEntry();
+        argument << DKEY_STICKY << ((config.m_sticky == TrayItemConfig::TriState::SetTrue) ? "true" : "false");
+        argument.endMapEntry();
+    }
+
+    argument.endMap();
+    return argument;
+}
+
+const QDBusArgument &operator>>(const QDBusArgument &argument, TrayItemConfig &config) {
+    argument.beginMap();
+
+    while (!argument.atEnd()) {
+        QString key;
+        QString val;
+
+        argument.beginMapEntry();
+        argument >> key >> val;
+        argument.endMapEntry();
+
+        if (QString::compare(key, DKEY_ICONP, Qt::CaseInsensitive) == 0) {
+            config.m_iconPath = val;
+        } else if (QString::compare(key, DKEY_AICOP, Qt::CaseInsensitive) == 0) {
+            config.m_attentionIconPath = val;
+        } else if (QString::compare(key, DKEY_ICONFFOC, Qt::CaseInsensitive) == 0) {
+            config.m_iconifyFocusLost = QVariant(val).toBool() ? TrayItemConfig::TriState::SetTrue : TrayItemConfig::TriState::SetFalse;
+        } else if (QString::compare(key, DKEY_ICONFMIN, Qt::CaseInsensitive) == 0) {
+            config.m_iconifyMinimized = QVariant(val).toBool() ? TrayItemConfig::TriState::SetTrue : TrayItemConfig::TriState::SetFalse;
+        } else if (QString::compare(key, DKEY_ICONFOBS, Qt::CaseInsensitive) == 0) {
+            config.m_iconifyObscured = QVariant(val).toBool() ? TrayItemConfig::TriState::SetTrue : TrayItemConfig::TriState::SetFalse;
+        } else if (QString::compare(key, DKEY_NOTIFYT, Qt::CaseInsensitive) == 0) {
+            bool ok;
+            config.m_notifyTime = val.toInt(&ok) * 1000;
+        } else if (QString::compare(key, DKEY_QUIET, Qt::CaseInsensitive) == 0) {
+            config.m_quiet = QVariant(val).toBool() ? TrayItemConfig::TriState::SetTrue : TrayItemConfig::TriState::SetFalse;
+        } else if (QString::compare(key, DKEY_SKPAG, Qt::CaseInsensitive) == 0) {
+            config.m_skipPager = QVariant(val).toBool() ? TrayItemConfig::TriState::SetTrue : TrayItemConfig::TriState::SetFalse;
+        } else if (QString::compare(key, DKEY_STICKY, Qt::CaseInsensitive) == 0) {
+            config.m_sticky = QVariant(val).toBool() ? TrayItemConfig::TriState::SetTrue : TrayItemConfig::TriState::SetFalse;
+        } else if (QString::compare(key, DKEY_SKTASK, Qt::CaseInsensitive) == 0) {
+            config.m_skipTaskbar = QVariant(val).toBool() ? TrayItemConfig::TriState::SetTrue : TrayItemConfig::TriState::SetFalse;
+        }
+    }
+
+    argument.endMap();
+    return argument;
 }
 
 QString TrayItemConfig::getIconPath() const {

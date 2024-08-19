@@ -28,7 +28,7 @@
 #include <QImage>
 #include <QIcon>
 
-#include <Xatom.h>
+#include <X11/Xatom.h>
 
 #include "trayitem.h"
 #include "xlibutil.h"

@@ -69,9 +69,8 @@ bool CommandLineArgs::processArgs(const QStringList &arguments, Command &command
 
     parser.process(arguments);
 
-    if (!validateParserArgs(parser)) {
+    if (!validateParserArgs(parser))
         return false;
-    }
 
     buildConfig(parser, config);
     buildCommand(parser, command);

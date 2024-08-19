@@ -28,7 +28,7 @@
 #include "scanner.h"
 #include "xlibutil.h"
 
-#include <Xlib.h>
+#include <X11/Xlib.h>
 
 ProcessId::ProcessId(const QString &command, pid_t pid, const TrayItemConfig &config, int count, int maxCount, bool checkNormality, const QRegularExpression &windowName) :
     command(command),

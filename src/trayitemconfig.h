@@ -21,6 +21,7 @@
 #ifndef _TRAYITEMCONFIG
 #define	_TRAYITEMCONFIG
 
+#include <QDBusArgument>
 #include <QMetaType>
 #include <QString>
 
@@ -33,8 +34,12 @@ class TrayItemConfig {
         };
 
         TrayItemConfig();
-        TrayItemConfig(const TrayItemConfig &obj);
-        TrayItemConfig& operator=(const TrayItemConfig &obj);
+        ~TrayItemConfig() { };
+        TrayItemConfig(const TrayItemConfig &other);
+        TrayItemConfig& operator=(const TrayItemConfig &other);
+
+        friend QDBusArgument &operator<<(QDBusArgument &argument, const TrayItemConfig &config);
+        friend const QDBusArgument &operator>>(const QDBusArgument &argument, TrayItemConfig &config);
 
         QString getIconPath() const;
         QString getAttentionIconPath() const;
@@ -105,7 +110,6 @@ class TrayItemConfig {
         TrayItemConfig::TriState m_lockToDesktop;
 };
 
-Q_DECLARE_METATYPE(TrayItemConfig::TriState)
 Q_DECLARE_METATYPE(TrayItemConfig)
 
 #endif // _TRAYITEMCONFIG

@@ -32,7 +32,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 
-#include <Xlib.h>
+#include <X11/Xlib.h>
 #include <xcb/xproto.h>
 #include "xlibutil.h"
 
@@ -193,179 +193,47 @@ void TrayItemManager::processCommand(const Command &command, const TrayItemConfi
     }
 }
 
-#if 0
-void TrayItemManager::processCommand(const QStringList &args) {
-    enum PatternType
-    {
-        Normal,
-        Regex,
-        Wildcard
-    };
+// XXX
+void TrayItemManager::processCommandSearch() {}
+void TrayItemManager::processCommandRun() {}
 
-    int option;
-    pid_t pid = 0;
-    Window window = 0;
-    bool checkNormality = true;
-    int maxTime = 5;
-    QString windowNamePattern;
-    PatternType patType = PatternType::Normal;
-    QRegularExpression::PatternOptions patternOptions = QRegularExpression::CaseInsensitiveOption;
-    TrayItemConfig settings = m_initArgs;
-    // Turn the QStringList of arguments into something getopt can use.
-    QList<QByteArray> bargs;
-
-    // We get only the arguments but as long as we're using `getopt` we need a program name to be the first argument.
-    bargs.append("kdocker");
-    Q_FOREACH(QString s, args) {
-        bargs.append(s.toLocal8Bit());
-    }
-    int argc = bargs.count();
-    // Use a const char * here and a const_cast later because it is faster.
-    // Using char * will cause a deep copy.
-    const char *argv[argc + 1];
-    for (int i = 0; i < argc; i++) {
-        argv[i] = bargs[i].data();
-    }
-
-    /* Options: a, h, u, v are all handled by the KDocker class because we
-     * want them to print on the tty the instance was called from.
-     */
-    optind = 0; // initialise the getopt static
-    while ((option = getopt(argc, const_cast<char **> (argv), Constants::OPTIONSTRING)) != -1) {
-        switch (option) {
-            case '?':
-                checkCount();
-                return;
-            case 'b':
-                checkNormality = false;
-                break;
-            case 'd':
-                maxTime = atoi(optarg);
-                break;
-            case 'e':
-                if (QString::fromLocal8Bit(optarg).compare("n") == 0) {
-                    patType = PatternType::Normal;
-                } else if (QString::fromLocal8Bit(optarg).compare("r") == 0) {
-                    patType = PatternType::Regex;
-                } else if (QString::fromLocal8Bit(optarg).compare("w") == 0) {
-                    patType = PatternType::Wildcard;
-                } else {
-                    QMessageBox::critical(0, qApp->applicationName(), tr("Invalid name matting option: %1.\n\nChoices are: %2.").arg(optarg).arg("n, r, w"));
-                    checkCount();
-                    return;
-                }
-                break;
-            case 'f':
-                window = XLibUtil::activeWindow(XLibUtil::display());
-                if (!window) {
-                    QMessageBox::critical(0, qApp->applicationName(), tr("Cannot dock the active window because no window has focus."));
-                    checkCount();
-                    return;
-                }
-                break;
-            case 'i':
-                settings.sCustomIcon = QString::fromLocal8Bit(optarg);
-                break;
-            case 'I':
-                settings.sAttentionIcon = QString::fromLocal8Bit(optarg);
-                break;
-            case 'j':
-                patternOptions = QRegularExpression::NoPatternOption;
-                break;
-            case 'l':
-                settings.opt[IconifyFocusLost] = true;
-                break;
-            case 'm':
-                settings.opt[IconifyMinimized] = false;
-                break;
-            case 'n':
-                windowNamePattern = QString::fromLocal8Bit(optarg);
-                break;
-            case 'o':
-                settings.opt[IconifyObscured] = true;
-                break;
-            case 'p':
-                settings.iBalloonTimeout = atoi(optarg) * 1000;   // convert to ms
-                break;
-            case 'q':
-                settings.iBalloonTimeout = 0;   // same as '-p 0'
-                break;
-            case 'r':
-                settings.opt[SkipPager] = true;
-                break;
-            case 's':
-                settings.opt[Sticky] = true;
-                break;
-            case 't':
-                settings.opt[SkipTaskbar] = true;
-                break;
-            case 'w':
-                bool ok;
-                window = static_cast<Window>(QString(optarg).toInt(&ok, 0));
-                if (!XLibUtil::isValidWindowId(XLibUtil::display(), window)) {
-                    QMessageBox::critical(0, qApp->applicationName(), tr("Invalid window id."));
-                    checkCount();
-                    return;
-                }
-                break;
-            case 'x':
-                pid = atol(optarg);
-                break;
-            case 'z':
-                m_daemon = true;
-                break;
-        } // switch (option)
-    } // while (getopt)
-
-    if (m_daemon)
-        return;
-
-    if (optind < argc || !windowNamePattern.isEmpty()) {
-        // We are either launching an application and or matching by name.
-        QString command;
-        QStringList arguments;
-
-        // Store the command and it's arguments if the user specified them.
-        if (optind < argc) {
-            command = argv[optind];
-            for (int i = optind + 1; i < argc; i++) {
-                arguments << QString::fromLocal8Bit(argv[i]);
-            }
-        }
-
-        // Add the parameters the scanner should use to match. If a command was specified it will be started by the scanner.
-        QRegularExpression windowName;
-        switch (patType) {
-            case PatternType::Normal:
-                windowName.setPattern(QRegularExpression::escape(windowNamePattern));
-                break;
-            case PatternType::Regex:
-                windowName.setPattern(windowNamePattern);
-                break;
-            case PatternType::Wildcard:
-                windowName.setPattern(QRegularExpression::wildcardToRegularExpression(windowNamePattern));
-                break;
-        }
-        windowName.setPatternOptions(patternOptions);
-        m_scanner->enqueue(command, arguments, settings, maxTime, checkNormality, windowName);
+void TrayItemManager::processCommandWindowId(int wid, const TrayItemConfig &config) {
+    Window window = wid;
+    if (!XLibUtil::isValidWindowId(XLibUtil::display(), window)) {
+        QMessageBox::critical(0, qApp->applicationName(), tr("Invalid window id"));
         checkCount();
-    } else {
-        if (!window) {
-            if (pid != 0) {
-                window = XLibUtil::pidToWid(XLibUtil::display(), XLibUtil::appRootWindow(), checkNormality, pid, dockedWindows());
-            } else {
-                window = userSelectWindow(checkNormality);
-            }
-        }
-        if (window) {
-            dockWindow(window, settings);
-        } else {
-            // No window was selected or set.
-            checkCount();
-        }
+        return;
     }
+    dockWindow(window, config);
 }
-#endif
+
+void TrayItemManager::processCommandPid(int pid, bool checkNormality, const TrayItemConfig &config) {
+    Window window = XLibUtil::pidToWid(XLibUtil::display(), XLibUtil::appRootWindow(), checkNormality, pid, dockedWindows());
+    if (!XLibUtil::isValidWindowId(XLibUtil::display(), window)) {
+        QMessageBox::critical(0, qApp->applicationName(), tr("Invalid window id"));
+        checkCount();
+        return;
+    }
+    dockWindow(window, config);
+}
+
+void TrayItemManager::selectWindow(bool checkNormality, const TrayItemConfig &config) {
+    Window window = userSelectWindow(checkNormality);
+    if (window) {
+        dockWindow(window, config);
+    }
+    checkCount();
+}
+
+void TrayItemManager::processCommandFocused(const TrayItemConfig &config) {
+    Window window = XLibUtil::activeWindow(XLibUtil::display());
+    if (!window) {
+        QMessageBox::critical(0, qApp->applicationName(), tr("Cannot dock the active window because no window has focus"));
+        checkCount();
+        return;
+    }
+    dockWindow(window, config);
+}
 
 void TrayItemManager::dockWindow(Window window, const TrayItemConfig &settings) {
     if (isWindowDocked(window)) {
@@ -446,7 +314,7 @@ void TrayItemManager::about() {
 #endif
 }
 
-void TrayItemManager::setDaemon() {
+void TrayItemManager::daemonize() {
     m_daemon = true;
 }
 
