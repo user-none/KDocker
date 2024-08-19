@@ -30,23 +30,23 @@
 
 #include <X11/Xlib.h>
 
-ProcessId::ProcessId(const QString &command, pid_t pid, const TrayItemConfig &config, uint count, uint maxCount, bool checkNormality, const QRegularExpression &windowName) :
+ProcessId::ProcessId(const QString &command, pid_t pid, const TrayItemConfig &config, uint timeout, bool checkNormality, const QRegularExpression &windowName) :
     command(command),
     pid(pid),
     config(config),
-    count(count),
-    maxCount(maxCount),
+    timeout(timeout),
     checkNormality(checkNormality),
     windowName(windowName)
 {
+    etimer.start();
 }
 
 ProcessId::ProcessId(const ProcessId &obj) {
     command = obj.command;
     pid = obj.pid;
     config = obj.config;
-    count = obj.count;
-    maxCount = obj.maxCount;
+    etimer = obj.etimer;
+    timeout = obj.timeout;
     checkNormality = obj.checkNormality;
     windowName = obj.windowName;
 }
@@ -58,13 +58,16 @@ ProcessId& ProcessId::operator=(const ProcessId &obj) {
     command = obj.command;
     pid = obj.pid;
     config = obj.config;
-    count = obj.count;
-    maxCount = obj.maxCount;
+    etimer = obj.etimer;
+    timeout = obj.timeout;
     checkNormality = obj.checkNormality;
     windowName = obj.windowName;
     return *this;
 }
 
+// XXX: Scanner assumes check is always 1 second and uses count
+// to check time. Need to change to use an elapsed time for a
+// timeout independent of the check interval.
 Scanner::Scanner(TrayItemManager *manager) {
     m_manager = manager;
     m_timer = new QTimer();
@@ -92,8 +95,9 @@ void Scanner::enqueue(const QString &command, const QStringList &arguments, cons
     if (maxTime == 0) {
         maxTime = 1;
     }
+    maxTime *= 1000;
 
-    ProcessId processId(command, 0, config, 0, maxTime, checkNormality, windowName);
+    ProcessId processId(command, 0, config, maxTime, checkNormality, windowName);
     if (!command.isEmpty()) {
         // Launch the requested application.
         started = QProcess::startDetached(command, arguments, "", &pid);
@@ -117,7 +121,6 @@ void Scanner::check() {
     QMutableListIterator<ProcessId> pi(m_processes);
     while (pi.hasNext()) {
         ProcessId id = pi.next();
-        id.count++;
         pi.setValue(id);
 
         Window w = None;
@@ -141,8 +144,8 @@ void Scanner::check() {
             emit windowFound(w, id.config);
             pi.remove();
         } else {
-            if (id.count >= id.maxCount) {
-                QMessageBox::information(0, tr("KDocker"), tr("Could not find a matching window for %1 in the specified time: %2 seconds.").arg(id.command).arg(QString::number(id.maxCount)));
+            if (id.etimer.hasExpired(id.timeout)) {
+                QMessageBox::information(0, tr("KDocker"), tr("Could not find a matching window for %1 in the specified time: %2 seconds.").arg(id.command).arg(QString::number(id.timeout / 1000)));
                 pi.remove();
             }
         }

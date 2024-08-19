@@ -28,6 +28,7 @@
 #include <QRegularExpression>
 #include <QString>
 #include <QTimer>
+#include <QElapsedTimer>
 
 #include <sys/types.h>
 
@@ -37,7 +38,7 @@ class ProcessId {
     friend class Scanner;
 
     public:
-        ProcessId(const QString &command, pid_t pid, const TrayItemConfig &config, uint count, uint maxCount, bool checkNormality, const QRegularExpression &windowName);
+        ProcessId(const QString &command, pid_t pid, const TrayItemConfig &config, uint timeout, bool checkNormality, const QRegularExpression &windowName);
         ProcessId(const ProcessId &obj);
         ProcessId& operator=(const ProcessId &obj);
 
@@ -45,8 +46,8 @@ class ProcessId {
         QString command;
         pid_t pid;
         TrayItemConfig config;
-        uint count;
-        uint maxCount;
+        QElapsedTimer etimer;
+        uint timeout;
         bool checkNormality;
         QRegularExpression windowName;
 };
