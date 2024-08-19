@@ -35,14 +35,12 @@
 class TrayItemManager;
 
 class ProcessId {
-    friend class Scanner;
-
     public:
         ProcessId(const QString &command, pid_t pid, const TrayItemConfig &config, uint timeout, bool checkNormality, const QRegularExpression &windowName);
         ProcessId(const ProcessId &obj);
         ProcessId& operator=(const ProcessId &obj);
 
-   private:
+   pubic:
         QString command;
         pid_t pid;
         TrayItemConfig config;

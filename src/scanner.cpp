@@ -65,9 +65,6 @@ ProcessId& ProcessId::operator=(const ProcessId &obj) {
     return *this;
 }
 
-// XXX: Scanner assumes check is always 1 second and uses count
-// to check time. Need to change to use an elapsed time for a
-// timeout independent of the check interval.
 Scanner::Scanner(TrayItemManager *manager) {
     m_manager = manager;
     m_timer = new QTimer();
