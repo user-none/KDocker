@@ -41,6 +41,7 @@ from KDE nor does KDE need to be installed.
 Build dependencies for Ubuntu 24.04
 
 - build-essential
+- cmake
 - qt6-base-dev
 - libx11-dev
 - libxcb1-dev
@@ -48,9 +49,10 @@ Build dependencies for Ubuntu 24.04
 
 Building
 
-1. `qmake6`
-2. `make`
-3. `make install` (optional)
+1. `mkdir build`
+2. `cd build`
+3. `cmake ..`
+4. `make`
 
 *IMPORTANT*: Close all previous instances of KDocker that are running before running
 a new build. KDocker is a single instance application.
