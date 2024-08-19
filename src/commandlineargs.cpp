@@ -35,7 +35,7 @@ bool CommandLineArgs::processArgs(const QStringList &arguments, Command &command
             "3. Specifying a window id (-w)\n" \
             "4. Specifying a pid (-x)\n" \
             "5. Not specifying any of the above. KDocker will have you select the window to dock. Negated by the -z option\n\n" \
-            "The -n option is compatible with application launching. Useful if the application opens multiple windows");
+            "The -n option is compatible with application launching. Useful if the application spawns another process (E.g. a launcher)");
     parser.addHelpOption();
     parser.addVersionOption();
 

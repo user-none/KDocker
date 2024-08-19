@@ -36,18 +36,17 @@ class TrayItemManager;
 
 class ProcessId {
     public:
-        ProcessId(const QString &command, pid_t pid, const TrayItemConfig &config, uint timeout, bool checkNormality, const QRegularExpression &windowName);
+        ProcessId(const QString &command, pid_t pid, const TrayItemConfig &config, uint timeout, bool checkNormality, const QRegularExpression &searchPattern);
         ProcessId(const ProcessId &obj);
         ProcessId& operator=(const ProcessId &obj);
 
-   pubic:
         QString command;
         pid_t pid;
         TrayItemConfig config;
         QElapsedTimer etimer;
         uint timeout;
         bool checkNormality;
-        QRegularExpression windowName;
+        QRegularExpression searchPattern;
 };
 
 // Launches commands and looks for the window ids they create.
@@ -58,23 +57,26 @@ class Scanner : public QObject {
 public:
     Scanner(TrayItemManager *manager);
     ~Scanner();
-    void enqueueSearch(const QRegularExpression &windowName, uint maxTime, bool checkNormality, const TrayItemConfig &config);
-    void enqueueLaunch(const QString &command, const QStringList &arguments, const QRegularExpression &windowName, uint maxTime, bool checkNormality, const TrayItemConfig &config);
+    void enqueueSearch(const QRegularExpression &searchPattern, uint maxTime, bool checkNormality, const TrayItemConfig &config);
+    void enqueueLaunch(const QString &command, const QStringList &arguments, const QRegularExpression &searchPattern, uint maxTime, bool checkNormality, const TrayItemConfig &config);
     bool isRunning();
 
 private slots:
     void check();
+    void checkPid();
+    void checkTitle();
 
 signals:
     void windowFound(Window, const TrayItemConfig &);
     void stopping();
 
 private:
-    void enqueue(const QString &command, const QStringList &arguments, const QRegularExpression &windowName, const TrayItemConfig &config, uint maxTime, bool checkNormality);
+    void enqueue(const QString &command, const QStringList &arguments, const QRegularExpression &searchPattern, const TrayItemConfig &config, uint maxTime, bool checkNormality);
 
     TrayItemManager *m_manager;
     QTimer *m_timer;
-    QList<ProcessId> m_processes;
+    QList<ProcessId> m_processesPid;
+    QList<ProcessId> m_processesTitle;
 };
 
 #endif	/* _SCANNER_H */
