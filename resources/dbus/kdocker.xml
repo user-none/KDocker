@@ -2,7 +2,7 @@
 "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd">
     <interface name="com.kdocker.KdockerInterface">
-
+        <!-- Docking methods -->
         <method name="dockWindowTitle">
             <arg name="searchPattern" direction="in" type="s">
                 <doc:doc><doc:summary>Window title search pattern</doc:summary></doc:doc>
@@ -116,21 +116,23 @@
             </doc:doc>
         </method>
 
-        <method name="daemonize">
-            <doc:doc>
-                <doc:description>
-                    <doc:para>
-                        Have KDocker continue running when nothing is docked
-                    </doc:para>
-                </doc:description>
-            </doc:doc>
-        </method>
-
+        <!-- Docked window managmeent -->
         <method name="undockAll">
             <doc:doc>
                 <doc:description>
                     <doc:para>
                         Undock all docked windows
+                    </doc:para>
+                </doc:description>
+            </doc:doc>
+        </method>
+
+        <!-- KDocker behavior -->
+        <method name="daemonize">
+            <doc:doc>
+                <doc:description>
+                    <doc:para>
+                        Have KDocker continue running when nothing is docked
                     </doc:para>
                 </doc:description>
             </doc:doc>
