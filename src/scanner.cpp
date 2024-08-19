@@ -30,7 +30,7 @@
 
 #include <X11/Xlib.h>
 
-ProcessId::ProcessId(const QString &command, pid_t pid, const TrayItemConfig &config, int count, int maxCount, bool checkNormality, const QRegularExpression &windowName) :
+ProcessId::ProcessId(const QString &command, pid_t pid, const TrayItemConfig &config, uint count, uint maxCount, bool checkNormality, const QRegularExpression &windowName) :
     command(command),
     pid(pid),
     config(config),
@@ -68,8 +68,8 @@ ProcessId& ProcessId::operator=(const ProcessId &obj) {
 Scanner::Scanner(TrayItemManager *manager) {
     m_manager = manager;
     m_timer = new QTimer();
-    // Check every second if a window has been created.
-    m_timer->setInterval(1000);
+    // Check every 1/4 second if a window has been created.
+    m_timer->setInterval(250);
     connect(m_timer, SIGNAL(timeout()), this, SLOT(check()));
 }
 
@@ -77,19 +77,19 @@ Scanner::~Scanner() {
     delete m_timer;
 }
 
-void Scanner::enqueueSearch(const QRegularExpression &windowName, const TrayItemConfig &config, int maxTime, bool checkNormality) {
+void Scanner::enqueueSearch(const QRegularExpression &windowName, uint maxTime, bool checkNormality, const TrayItemConfig &config) {
     enqueue(QString(), QStringList(), windowName, config, maxTime, checkNormality);
 }
 
-void Scanner::enqueueRun(const QString &command, const QStringList &arguments, const TrayItemConfig &config, int maxTime, bool checkNormality, const QRegularExpression &windowName) {
+void Scanner::enqueueLaunch(const QString &command, const QStringList &arguments, const QRegularExpression &windowName, uint maxTime, bool checkNormality, const TrayItemConfig &config) {
     enqueue(command, arguments, windowName, config, maxTime, checkNormality);
 }
 
-void Scanner::enqueue(const QString &command, const QStringList &arguments, const QRegularExpression &windowName, const TrayItemConfig &config, int maxTime, bool checkNormality) {
+void Scanner::enqueue(const QString &command, const QStringList &arguments, const QRegularExpression &windowName, const TrayItemConfig &config, uint maxTime, bool checkNormality) {
     qint64 pid = 0;
     bool started = true;
 
-    if (maxTime <= 0) {
+    if (maxTime == 0) {
         maxTime = 1;
     }
 

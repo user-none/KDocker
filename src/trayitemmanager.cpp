@@ -141,63 +141,17 @@ bool TrayItemManager::nativeEventFilter([[maybe_unused]] const QByteArray &event
     return false;
 }
 
-void TrayItemManager::processCommand(const Command &command, const TrayItemConfig &config) {
-    Window window;
-
-    switch (command.getType()) {
-        case Command::CommandType::NoCommand:
-            checkCount();
-            return;
-        case Command::CommandType::Title:
-            m_scanner->enqueueSearch(command.getSearchPattern(), config, command.getTimeout(), command.getCheckNormality());
-            checkCount();
-            break;
-        case Command::CommandType::WindowId:
-            window = command.getWindowId();
-            if (!XLibUtil::isValidWindowId(XLibUtil::display(), window)) {
-                QMessageBox::critical(0, qApp->applicationName(), tr("Invalid window id"));
-                checkCount();
-                return;
-            }
-            dockWindow(window, config);
-            break;
-        case Command::CommandType::Pid:
-            window = XLibUtil::pidToWid(XLibUtil::display(), XLibUtil::appRootWindow(), command.getCheckNormality(), command.getPid(), dockedWindows());
-            if (!XLibUtil::isValidWindowId(XLibUtil::display(), window)) {
-                QMessageBox::critical(0, qApp->applicationName(), tr("Invalid window id"));
-                checkCount();
-                return;
-            }
-            dockWindow(window, config);
-            break;
-        case Command::CommandType::Run:
-            m_scanner->enqueueRun(command.getRunApp(), command.getRunAppArguments(), config, command.getTimeout(), command.getCheckNormality(), command.getSearchPattern());
-            checkCount();
-            return;
-        case Command::CommandType::Select:
-            window = userSelectWindow(command.getCheckNormality());
-            if (window) {
-                dockWindow(window, config);
-            }
-            checkCount();
-            break;
-        case Command::CommandType::Focused:
-            window = XLibUtil::activeWindow(XLibUtil::display());
-            if (!window) {
-                QMessageBox::critical(0, qApp->applicationName(), tr("Cannot dock the active window because no window has focus"));
-                checkCount();
-                return;
-            }
-            dockWindow(window, config);
-            break;
-    }
+void TrayItemManager::dockWindowTitle(const QString &searchPattern, uint timeout, bool checkNormality, const TrayItemConfig &config) {
+    m_scanner->enqueueSearch(QRegularExpression(searchPattern), timeout, checkNormality, config);
+    checkCount();
 }
 
-// XXX
-void TrayItemManager::processCommandSearch() {}
-void TrayItemManager::processCommandRun() {}
+void TrayItemManager::dockLaunchApp(const QString &app, const QStringList &appArguments, const QString &searchPattern, uint timeout, bool checkNormality, const TrayItemConfig &config) {
+    m_scanner->enqueueLaunch(app, appArguments, QRegularExpression(searchPattern), timeout, checkNormality, config);
+    checkCount();
+}
 
-void TrayItemManager::processCommandWindowId(int wid, const TrayItemConfig &config) {
+void TrayItemManager::dockWindowId(int wid, const TrayItemConfig &config) {
     Window window = wid;
     if (!XLibUtil::isValidWindowId(XLibUtil::display(), window)) {
         QMessageBox::critical(0, qApp->applicationName(), tr("Invalid window id"));
@@ -207,7 +161,7 @@ void TrayItemManager::processCommandWindowId(int wid, const TrayItemConfig &conf
     dockWindow(window, config);
 }
 
-void TrayItemManager::processCommandPid(int pid, bool checkNormality, const TrayItemConfig &config) {
+void TrayItemManager::dockPid(int pid, bool checkNormality, const TrayItemConfig &config) {
     Window window = XLibUtil::pidToWid(XLibUtil::display(), XLibUtil::appRootWindow(), checkNormality, pid, dockedWindows());
     if (!XLibUtil::isValidWindowId(XLibUtil::display(), window)) {
         QMessageBox::critical(0, qApp->applicationName(), tr("Invalid window id"));
@@ -217,7 +171,7 @@ void TrayItemManager::processCommandPid(int pid, bool checkNormality, const Tray
     dockWindow(window, config);
 }
 
-void TrayItemManager::selectWindow(bool checkNormality, const TrayItemConfig &config) {
+void TrayItemManager::dockSelectWindow(bool checkNormality, const TrayItemConfig &config) {
     Window window = userSelectWindow(checkNormality);
     if (window) {
         dockWindow(window, config);
@@ -225,7 +179,7 @@ void TrayItemManager::selectWindow(bool checkNormality, const TrayItemConfig &co
     checkCount();
 }
 
-void TrayItemManager::processCommandFocused(const TrayItemConfig &config) {
+void TrayItemManager::dockFocused(const TrayItemConfig &config) {
     Window window = XLibUtil::activeWindow(XLibUtil::display());
     if (!window) {
         QMessageBox::critical(0, qApp->applicationName(), tr("Cannot dock the active window because no window has focus"));

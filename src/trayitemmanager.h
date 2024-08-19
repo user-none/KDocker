@@ -46,28 +46,25 @@ public:
     virtual bool nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result) override;
 
 public slots:
-    void processCommand(const Command &command, const TrayItemConfig &config);
+    void dockWindowTitle(const QString &searchPattern, uint timeout, bool checkNormality, const TrayItemConfig &config);
+    void dockLaunchApp(const QString &app, const QStringList &appArguments, const QString &searchPattern, uint timeout, bool checkNormality, const TrayItemConfig &config);
+    void dockWindowId(int wid, const TrayItemConfig &config);
+    void dockPid(int pid, bool checkNormality, const TrayItemConfig &config);
+    void dockSelectWindow(bool checkNormality, const TrayItemConfig &config);
+    void dockFocused(const TrayItemConfig &config);
 
-    void processCommandSearch();
-    void processCommandRun();
-    void processCommandWindowId(int wid, const TrayItemConfig &config);
-    void processCommandPid(int pid, bool checkNormality, const TrayItemConfig &config);
-    void selectWindow(bool checkNormality, const TrayItemConfig &config);
-    void processCommandFocused(const TrayItemConfig &config);
+    void undockAll();
+    void quit();
+    void daemonize();
 
-
-
+private slots:
     void dockWindow(Window window, const TrayItemConfig &settings);
     Window userSelectWindow(bool checkNormality = true);
     void remove(TrayItem *trayItem);
     void undock(TrayItem *trayItem);
-    void undockAll();
     void selectAndIconify();
-    void quit();
     void about();
-    void daemonize();
 
-private slots:
     void checkCount();
 
 signals:

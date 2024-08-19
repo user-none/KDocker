@@ -30,31 +30,28 @@ bool CommandLineArgs::processArgs(const QStringList &arguments, Command &command
     parser.setApplicationDescription("" \
             "Dock almost anything\n\n" \
             "Kdocker can dock a window in a few different ways\n" \
-            "1. By specifying an application to run (app argument)\n" \
-            "2. Specifying a window title to match (-n)\n" \
+            "1. By specifying an application to launch (app argument)\n" \
+            "2. Specifying a regular expression to find a window based on its title (-n)\n" \
             "3. Specifying a window id (-w)\n" \
             "4. Specifying a pid (-x)\n" \
             "5. Not specifying any of the above. KDocker will have you select the window to dock. Negated by the -z option\n\n" \
-            "Only one of 1-4 methods can be used. They are mutually exclusive. "
-            "All other options apply to the docked window that's started or found.");
+            "The -n option is compatible with application launching. Useful if the application opens multiple windows");
     parser.addHelpOption();
     parser.addVersionOption();
 
-    parser.addPositionalArgument("app", "Optional application to run. Use -- followed by any application arguments");
+    parser.addPositionalArgument("app", "Optional application to launch. Use -- followed by any application arguments");
     parser.setOptionsAfterPositionalArgumentsMode(QCommandLineParser::ParseAsPositionalArguments);
 
     parser.addOptions({
         { { "b", "blind" }, "Suppress the warning dialog when docking non-normal windows (blind mode)" },
         { { "d", "timeout" }, "Maximum time in seconds to allow for a command to start and open a window", "sec", "5" },
-        { { "e", "title-match" }, "Name matching syntax. n = normal, substring matching (default). r = regular expression. w = wildcard.", "match", "n" },
         { { "f", "dock-focused" }, "Dock the window that has focus (active window)" },
         // Don't use h or help because they're already handled by the parser object.
         { { "i", "icon" }, "Custom icon path", "file" },
         { { "I", "attention-icon" }, "Custom attention icon path. This icon is set if the title  of the application window changes while it is iconified", "file" },
-        { { "j", "case-match" }, "Case sensitive title matching" },
         { { "l", "iconify-focus-lost" }, "Iconify when focus lost" },
         { "m", "Don't iconfiy when minimized" },
-        { { "n", "title" }, "Match window based on its title. Used with -e and -j options", "title" },
+        { { "n", "search-pattern" }, "Match window based on its title using a PCRE regular expression", "search-pattern" },
         { { "o", "iconify-obscured" }, "Iconify when obscured by other windows" },
         { { "p", "notify-time" }, "Maximum time in seconds to display a notification when window title changes", "sec", "4" },
         { { "q", "quiet" }, "Disable notifying window title changes" },
@@ -156,59 +153,47 @@ void CommandLineArgs::buildConfig(const QCommandLineParser &parser, TrayItemConf
 void CommandLineArgs::buildCommand(const QCommandLineParser &parser, Command &command) {
     // Title is separate from the rest because a title can be used when launching an app.
     // If launching an app the command type will be changed.
-    if (parser.isSet("title")) {
-        QRegularExpression pattern;
-        QString title = parser.value("title");
-
-        QString matchType = parser.value("title-match");
-        if (QString::compare(matchType, "r", Qt::CaseInsensitive) == 0) {
-            pattern.setPattern(title);
-        } else if (QString::compare(matchType, "w", Qt::CaseInsensitive) == 0) {
-            pattern.setPattern(QRegularExpression::wildcardToRegularExpression(title));
-        } else {
-            pattern.setPattern(QRegularExpression::escape(title));
-        }
-
-        QRegularExpression::PatternOptions patternOptions = QRegularExpression::CaseInsensitiveOption;
-        if (parser.isSet("case-match")) {
-            patternOptions = QRegularExpression::NoPatternOption;
-        }
-        pattern.setPatternOptions(patternOptions);
-        command.setSearchPattern(pattern);
+    if (parser.isSet("search-pattern")) {
+        command.setType(Command::Type::Title);
+        command.setSearchPattern(parser.value("search-pattern"));
     } 
-    
+
+    // Timeout can be used by search pattern and launch
+    if (parser.isSet("timeout")) {
+        bool ok;
+        uint timeout = QString(parser.value("timeout")).toUInt(&ok, 0);
+        if (!ok || timeout == 0) {
+            timeout = 1;
+        }
+        if (timeout > 100) {
+            timeout = 100;
+        }
+        command.setTimeout(timeout);
+    }
+
+    // Can be used by search-pattern, launch, select, focused
+    if (parser.isSet("blind"))
+        command.setCheckNormality(false);
+
+    // Arguments that dictate specific actionst that are mutually exclusive
     if (parser.isSet("window-id")) {
         bool ok;
-        command.setType(Command::CommandType::WindowId);
+        command.setType(Command::Type::WindowId);
         command.setWindowId(QString(parser.value("window-id")).toUInt(&ok, 0));
     } else if (parser.isSet("pid")) {
         bool ok;
-        command.setType(Command::CommandType::Pid);
+        command.setType(Command::Type::Pid);
         command.setPid(QString(parser.value("pid")).toUInt(&ok, 0));
     } else if (parser.positionalArguments().size() > 0) {
-        command.setType(Command::CommandType::Run);
-        if (parser.isSet("timeout")) {
-            bool ok;
-            uint timeout = QString(parser.value("timeout")).toUInt(&ok, 0);
-            if (timeout == 0) {
-                timeout = 1;
-            }
-            if (timeout > 100) {
-                timeout = 100;
-            }
-            command.setTimeout(timeout);
-        }
-        command.setRunApp(parser.positionalArguments().at(0));
-        command.setRunAppArguments(parser.positionalArguments().sliced(1));
+        command.setType(Command::Type::Launch);
+        command.setLaunchApp(parser.positionalArguments().at(0));
+        command.setLaunchAppArguments(parser.positionalArguments().sliced(1));
     } else if (parser.isSet("dock-focused")) {
-        command.setType(Command::CommandType::Focused);
-        if (parser.isSet("blind")) {
-            command.setCheckNormality(false);
-        }
-    } else {
-        if (parser.isSet("blind")) {
-            command.setCheckNormality(false);
-        }
-        command.setType(Command::CommandType::Select);
+        command.setType(Command::Type::Focused);
+    }
+    
+    if (command.getType() == Command::Type::NoCommand) {
+        // None of the other commands were specified leaving select window as the only option
+        command.setType(Command::Type::Select);
     }
 }

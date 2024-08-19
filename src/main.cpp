@@ -65,22 +65,46 @@ static void sendDbusCommand(const Command &command, const TrayItemConfig &config
         ::exit(1);
     }
 
+    // Non command command
     if (daemon)
         iface.call(QDBus::NoBlock, "daemonize");
 
     switch (command.getType()) {
-        case Command::CommandType::Select:
-            iface.call(QDBus::NoBlock, "selectWindow", command.getCheckNormality(), QVariant::fromValue(config));
+        case Command::Type::NoCommand:
+            break;
+        case Command::Type::Title:
+            iface.call(QDBus::NoBlock, "dockWindowTitle", command.getSearchPattern(), command.getTimeout(), command.getCheckNormality(), QVariant::fromValue(config));
+            break;
+        case Command::Type::Launch:
+            iface.call(QDBus::NoBlock, "dockLaunchApp", command.getLaunchApp(), command.getLaunchAppArguments(), command.getSearchPattern(), command.getTimeout(), command.getCheckNormality(), QVariant::fromValue(config));
+            break;
+        case Command::Type::WindowId:
+            iface.call(QDBus::NoBlock, "dockWindowId", command.getWindowId(), QVariant::fromValue(config));
+            break;
+        case Command::Type::Pid:
+            iface.call(QDBus::NoBlock, "dockPid", command.getPid(), command.getCheckNormality(), QVariant::fromValue(config));
+            break;
+        case Command::Type::Select:
+            if (daemon) {
+                break;
+            }
+            iface.call(QDBus::NoBlock, "dockSelectWindow", command.getCheckNormality(), QVariant::fromValue(config));
+            break;
+        case Command::Type::Focused:
+            iface.call(QDBus::NoBlock, "dockFocused", QVariant::fromValue(config));
             break;
     }
+}
 
-    // Tell the other instance what the caller wants to do.
-    //iface.call(QDBus::NoBlock, "cmd", QCoreApplication::arguments().sliced(1));
-    //::exit(0);
-
+static void registerTypes() {
+    qRegisterMetaType<TrayItemConfig>("TrayItemConfig");
+    qDBusRegisterMetaType<TrayItemConfig>();
 }
 
 int main(int argc, char *argv[]) {
+    // Register all our meta types so they're available
+    registerTypes();
+
     Application app(argc, argv);
 
     // setup signal handlers that undock and quit
@@ -107,24 +131,17 @@ int main(int argc, char *argv[]) {
         return 1;
 
     TrayItemManager trayItemManager;
-
-    qRegisterMetaType<TrayItemConfig>("TrayItemConfig");
-    qDBusRegisterMetaType<TrayItemConfig>();
+    app.setTrayItemManagerInstance(&trayItemManager);
 
     // Setup Dbus so we'll only have 1 instance running
-    if (!setupDbus(&trayItemManager)) {
-        // Can't register means another instance already has. Any commands
-        // were sent to that instance and there is nothing more for us to do.
-        sendDbusCommand(command, config, daemon);
+    bool dbus_registered = setupDbus(&trayItemManager);
+    // Send the requested action through DBus regardless if this is the only instance.
+    sendDbusCommand(command, config, daemon);
+
+    // Can't register dbus means another instance already has. Requests
+    // were handled by the other instance and there is nothing more for us to do.
+    if (!dbus_registered)
         return 0;
-    }
-
-    // Wait for the Qt event loop to be started before running.
-    QMetaObject::invokeMethod(&trayItemManager, "processCommand", Qt::QueuedConnection,
-            Q_ARG(const Command &, command),
-            Q_ARG(const TrayItemConfig &, config));
-
-    app.setTrayItemManagerInstance(&trayItemManager);
 
     return app.exec();
 }

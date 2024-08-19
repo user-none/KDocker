@@ -24,18 +24,17 @@
 //#include <QDBusMetaType>
 #include <QDBusArgument>
 #include <QMetaType>
-#include <QRegularExpression>
 #include <QString>
 #include <QStringList>
 
 class Command {
     public:
-        enum class CommandType {
-            NoCommand,
+        enum class Type {
+            NoCommand = 0,
             Title,
             WindowId,
             Pid,
-            Run,
+            Launch,
             Select,
             Focused
         };
@@ -45,36 +44,36 @@ class Command {
         friend QDBusArgument &operator<<(QDBusArgument &argument, const Command &command);
         friend const QDBusArgument &operator>>(const QDBusArgument &argument, Command &command);
 
-        Command::CommandType getType() const;
-        QRegularExpression getSearchPattern() const;
+        Command::Type getType() const;
+        QString getSearchPattern() const;
         uint getWindowId() const;
         uint getPid() const;
-        QString getRunApp() const;
-        QStringList getRunAppArguments() const;
+        QString getLaunchApp() const;
+        QStringList getLaunchAppArguments() const;
         uint getTimeout() const;
         bool getCheckNormality() const;
 
-        void setType(Command::CommandType type);
-        void setSearchPattern(const QRegularExpression &pattern);
+        void setType(Command::Type type);
+        void setSearchPattern(const QString &pattern);
         void setWindowId(uint wid);
         void setPid(uint pid);
-        void setRunApp(const QString &app);
-        void setRunAppArguments(const QStringList &args);
+        void setLaunchApp(const QString &app);
+        void setLaunchAppArguments(const QStringList &args);
         void setTimeout(uint v);
         void setCheckNormality(bool v);
 
     private:
-        Command::CommandType m_type;
-        QRegularExpression m_searchPattern;
+        Command::Type m_type;
+        QString m_searchPattern;
         uint m_windowId;
         uint m_pid;
-        QString m_runApp;
-        QStringList m_runAppArguments;
+        QString m_launchApp;
+        QStringList m_launchAppArguments;
         uint m_timeout;
         bool m_checkNormality;
 };
 
-Q_DECLARE_METATYPE(Command::CommandType)
+Q_DECLARE_METATYPE(Command::Type)
 Q_DECLARE_METATYPE(Command)
 //qDBusRegisterMetaType<Command>();
 

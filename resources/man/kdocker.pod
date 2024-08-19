@@ -28,13 +28,6 @@ B<kdocker> [I<options>]I<>
  Maximum time in seconds to allow for a command to start and open a window
  [default: 5 seconds]
 
-=item B<-e> I<type>
-
- Name matching syntax. Choices are:
-  n = normal, substring matching [default]
-  r = regular expression
-  w = wildcard
-
 =item B<-f>
 
  Dock the window that has focus (active window)
@@ -52,10 +45,6 @@ B<kdocker> [I<options>]I<>
  Custom attention icon path. This icon is set if the title
  of the application window changes while it is iconified.
 
-=item B<-j>
-
- Case sensitive name (title) matching
-
 =item B<-l>
 
  Iconify when focus lost
@@ -66,7 +55,7 @@ B<kdocker> [I<options>]I<>
 
 =item B<-n> I<name>
 
- Match window based on its title
+ Match window based on its title using PCRE compatible regular expression
 
 =item B<-o>
 

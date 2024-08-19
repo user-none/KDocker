@@ -37,7 +37,7 @@ class ProcessId {
     friend class Scanner;
 
     public:
-        ProcessId(const QString &command, pid_t pid, const TrayItemConfig &config, int count, int maxCount, bool checkNormality, const QRegularExpression &windowName);
+        ProcessId(const QString &command, pid_t pid, const TrayItemConfig &config, uint count, uint maxCount, bool checkNormality, const QRegularExpression &windowName);
         ProcessId(const ProcessId &obj);
         ProcessId& operator=(const ProcessId &obj);
 
@@ -45,8 +45,8 @@ class ProcessId {
         QString command;
         pid_t pid;
         TrayItemConfig config;
-        int count;
-        int maxCount;
+        uint count;
+        uint maxCount;
         bool checkNormality;
         QRegularExpression windowName;
 };
@@ -59,8 +59,8 @@ class Scanner : public QObject {
 public:
     Scanner(TrayItemManager *manager);
     ~Scanner();
-    void enqueueSearch(const QRegularExpression &windowName, const TrayItemConfig &config, int maxTime = 30, bool checkNormality = true);
-    void enqueueRun(const QString &command, const QStringList &arguments, const TrayItemConfig &config, int maxTime = 30, bool checkNormality = true, const QRegularExpression &windowName = QRegularExpression());
+    void enqueueSearch(const QRegularExpression &windowName, uint maxTime, bool checkNormality, const TrayItemConfig &config);
+    void enqueueLaunch(const QString &command, const QStringList &arguments, const QRegularExpression &windowName, uint maxTime, bool checkNormality, const TrayItemConfig &config);
     bool isRunning();
 
 private slots:
@@ -71,7 +71,7 @@ signals:
     void stopping();
 
 private:
-    void enqueue(const QString &command, const QStringList &arguments, const QRegularExpression &windowName, const TrayItemConfig &config, int maxTime, bool checkNormality);
+    void enqueue(const QString &command, const QStringList &arguments, const QRegularExpression &windowName, const TrayItemConfig &config, uint maxTime, bool checkNormality);
 
     TrayItemManager *m_manager;
     QTimer *m_timer;

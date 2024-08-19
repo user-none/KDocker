@@ -2,20 +2,93 @@
 "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd">
     <interface name="com.kdocker.KdockerInterface">
-        <method name="cmd">
-            <arg name="parameters" direction="in" type="as">
-                <doc:doc><doc:summary>Command line parameters to run</doc:summary></doc:doc>
+
+        <method name="dockWindowTitle">
+            <arg name="searchPattern" direction="in" type="s">
+                <doc:doc><doc:summary>Window title search pattern</doc:summary></doc:doc>
             </arg>
+            <arg name="timeout" direction="in" type="u">
+                <doc:doc><doc:summary>Time in seconds to search for a window with a matching title</doc:summary></doc:doc>
+            </arg>
+            <arg name="checkNormality" direction="in" type="b">
+                <doc:doc><doc:summary>Check if it's a normal window. Error if not.</doc:summary></doc:doc>
+            </arg>
+            <arg name="windowConfig" direction="in" type="a{ss}">
+                <doc:doc><doc:summary></doc:summary></doc:doc>
+            </arg>
+            <annotation name="org.qtproject.QtDBus.QtTypeName.In3" value="TrayItemConfig"/>
             <doc:doc>
                 <doc:description>
                     <doc:para>
-                        Execute the requested command line parameters
+                        Dock by searching for a window with a title matching the given pattern
                     </doc:para>
                 </doc:description>
             </doc:doc>
         </method>
-
-        <method name="selectWindow">
+        <method name="dockLaunchApp">
+            <arg name="app" direction="in" type="s">
+                <doc:doc><doc:summary>Application to launch</doc:summary></doc:doc>
+            </arg>
+            <arg name="args" direction="in" type="as">
+                <doc:doc><doc:summary>Application command line arguments</doc:summary></doc:doc>
+            </arg>
+            <arg name="searchPattern" direction="in" type="s">
+                <doc:doc><doc:summary>Window title search pattern</doc:summary></doc:doc>
+            </arg>
+            <arg name="timeout" direction="in" type="u">
+                <doc:doc><doc:summary>Time in seconds to search for a window with a matching title</doc:summary></doc:doc>
+            </arg>
+            <arg name="checkNormality" direction="in" type="b">
+                <doc:doc><doc:summary>Check if it's a normal window. Error if not.</doc:summary></doc:doc>
+            </arg>
+            <arg name="windowConfig" direction="in" type="a{ss}">
+                <doc:doc><doc:summary></doc:summary></doc:doc>
+            </arg>
+            <annotation name="org.qtproject.QtDBus.QtTypeName.In5" value="TrayItemConfig"/>
+            <doc:doc>
+                <doc:description>
+                    <doc:para>
+                        Dock by searching for a window with a title matching the given pattern
+                    </doc:para>
+                </doc:description>
+            </doc:doc>
+        </method>
+        <method name="dockWindowId">
+            <arg name="windowId" direction="in" type="u">
+                <doc:doc><doc:summary>X11 Window id</doc:summary></doc:doc>
+            </arg>
+            <arg name="windowConfig" direction="in" type="a{ss}">
+                <doc:doc><doc:summary></doc:summary></doc:doc>
+            </arg>
+            <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="TrayItemConfig"/>
+            <doc:doc>
+                <doc:description>
+                    <doc:para>
+                        Dock window by window id
+                    </doc:para>
+                </doc:description>
+            </doc:doc>
+        </method>
+        <method name="dockPid">
+            <arg name="pid" direction="in" type="u">
+                <doc:doc><doc:summary>Process id</doc:summary></doc:doc>
+            </arg>
+            <arg name="checkNormality" direction="in" type="b">
+                <doc:doc><doc:summary>Check if it's a normal window. Error if not.</doc:summary></doc:doc>
+            </arg>
+            <arg name="windowConfig" direction="in" type="a{ss}">
+                <doc:doc><doc:summary></doc:summary></doc:doc>
+            </arg>
+            <annotation name="org.qtproject.QtDBus.QtTypeName.In2" value="TrayItemConfig"/>
+            <doc:doc>
+                <doc:description>
+                    <doc:para>
+                        Dock window by process id
+                    </doc:para>
+                </doc:description>
+            </doc:doc>
+        </method>
+        <method name="dockSelectWindow">
             <arg name="checkNormality" direction="in" type="b">
                 <doc:doc><doc:summary>Check if it's a normal window. Error if not.</doc:summary></doc:doc>
             </arg>
@@ -26,6 +99,18 @@
                 <doc:description>
                     <doc:para>
                         Select the window to dock
+                    </doc:para>
+                </doc:description>
+            </doc:doc>
+        </method>
+        <method name="dockFocused">
+            <arg name="windowConfig" direction="in" type="a{ss}">
+            </arg>
+            <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="TrayItemConfig"/>
+            <doc:doc>
+                <doc:description>
+                    <doc:para>
+                        Dock the currently focused window
                     </doc:para>
                 </doc:description>
             </doc:doc>
@@ -46,15 +131,6 @@
                 <doc:description>
                     <doc:para>
                         Undock all docked windows
-                    </doc:para>
-                </doc:description>
-            </doc:doc>
-        </method>
-        <method name="dockAnother">
-            <doc:doc>
-                <doc:description>
-                    <doc:para>
-                        Docked another window
                     </doc:para>
                 </doc:description>
             </doc:doc>
