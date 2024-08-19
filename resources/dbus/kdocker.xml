@@ -16,7 +16,7 @@
             <arg name="windowConfig" direction="in" type="a{ss}">
                 <doc:doc><doc:summary></doc:summary></doc:doc>
             </arg>
-            <annotation name="org.qtproject.QtDBus.QtTypeName.In3" value="TrayItemConfig"/>
+            <annotation name="org.qtproject.QtDBus.QtTypeName.In3" value="TrayItemOptions"/>
             <doc:doc>
                 <doc:description>
                     <doc:para>
@@ -44,7 +44,7 @@
             <arg name="windowConfig" direction="in" type="a{ss}">
                 <doc:doc><doc:summary></doc:summary></doc:doc>
             </arg>
-            <annotation name="org.qtproject.QtDBus.QtTypeName.In5" value="TrayItemConfig"/>
+            <annotation name="org.qtproject.QtDBus.QtTypeName.In5" value="TrayItemOptions"/>
             <doc:doc>
                 <doc:description>
                     <doc:para>
@@ -60,7 +60,7 @@
             <arg name="windowConfig" direction="in" type="a{ss}">
                 <doc:doc><doc:summary></doc:summary></doc:doc>
             </arg>
-            <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="TrayItemConfig"/>
+            <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="TrayItemOptions"/>
             <doc:doc>
                 <doc:description>
                     <doc:para>
@@ -79,7 +79,7 @@
             <arg name="windowConfig" direction="in" type="a{ss}">
                 <doc:doc><doc:summary></doc:summary></doc:doc>
             </arg>
-            <annotation name="org.qtproject.QtDBus.QtTypeName.In2" value="TrayItemConfig"/>
+            <annotation name="org.qtproject.QtDBus.QtTypeName.In2" value="TrayItemOptions"/>
             <doc:doc>
                 <doc:description>
                     <doc:para>
@@ -94,7 +94,7 @@
             </arg>
             <arg name="windowConfig" direction="in" type="a{ss}">
             </arg>
-            <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="TrayItemConfig"/>
+            <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="TrayItemOptions"/>
             <doc:doc>
                 <doc:description>
                     <doc:para>
@@ -106,7 +106,7 @@
         <method name="dockFocused">
             <arg name="windowConfig" direction="in" type="a{ss}">
             </arg>
-            <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="TrayItemConfig"/>
+            <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="TrayItemOptions"/>
             <doc:doc>
                 <doc:description>
                     <doc:para>

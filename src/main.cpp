@@ -58,7 +58,7 @@ static bool setupDbus(TrayItemManager *trayitemmanager) {
    return registered;
 }
 
-static void sendDbusCommand(const Command &command, const TrayItemConfig &config, bool daemon) {
+static void sendDbusCommand(const Command &command, const TrayItemOptions &config, bool daemon) {
     QDBusInterface iface(Constants::DBUS_NAME, Constants::DBUS_PATH);
     if (!iface.isValid()) {
         qCritical() << "Could not create DBus interface for messaging other instance";
@@ -97,8 +97,8 @@ static void sendDbusCommand(const Command &command, const TrayItemConfig &config
 }
 
 static void registerTypes() {
-    qRegisterMetaType<TrayItemConfig>("TrayItemConfig");
-    qDBusRegisterMetaType<TrayItemConfig>();
+    qRegisterMetaType<TrayItemOptions>("TrayItemOptions");
+    qDBusRegisterMetaType<TrayItemOptions>();
 }
 
 int main(int argc, char *argv[]) {
@@ -125,7 +125,7 @@ int main(int argc, char *argv[]) {
 
     // Parse the command line arguments so we know what to do
     Command command;
-    TrayItemConfig config;
+    TrayItemOptions config;
     bool daemon = false;
     if (!CommandLineArgs::processArgs(app.arguments(), command, config, daemon))
         return 1;

@@ -46,19 +46,19 @@ public:
     virtual bool nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result) override;
 
 public slots:
-    void dockWindowTitle(const QString &searchPattern, uint timeout, bool checkNormality, const TrayItemConfig &config);
-    void dockLaunchApp(const QString &app, const QStringList &appArguments, const QString &searchPattern, uint timeout, bool checkNormality, const TrayItemConfig &config);
-    void dockWindowId(int wid, const TrayItemConfig &config);
-    void dockPid(int pid, bool checkNormality, const TrayItemConfig &config);
-    void dockSelectWindow(bool checkNormality, const TrayItemConfig &config);
-    void dockFocused(const TrayItemConfig &config);
+    void dockWindowTitle(const QString &searchPattern, uint timeout, bool checkNormality, const TrayItemOptions &config);
+    void dockLaunchApp(const QString &app, const QStringList &appArguments, const QString &searchPattern, uint timeout, bool checkNormality, const TrayItemOptions &config);
+    void dockWindowId(int wid, const TrayItemOptions &config);
+    void dockPid(int pid, bool checkNormality, const TrayItemOptions &config);
+    void dockSelectWindow(bool checkNormality, const TrayItemOptions &config);
+    void dockFocused(const TrayItemOptions &config);
 
     void undockAll();
     void quit();
     void daemonize();
 
 private slots:
-    void dockWindow(Window window, const TrayItemConfig &settings);
+    void dockWindow(Window window, const TrayItemOptions &settings);
     Window userSelectWindow(bool checkNormality = true);
     void remove(TrayItem *trayItem);
     void undock(TrayItem *trayItem);
@@ -75,7 +75,7 @@ private:
     bool isWindowDocked(Window window);
 
     Scanner *m_scanner;
-    TrayItemConfig m_initArgs;
+    TrayItemOptions m_initArgs;
     QList<TrayItem*> m_trayItems;
     GrabInfo m_grabInfo;
     bool m_daemon;

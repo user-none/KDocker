@@ -33,7 +33,7 @@
 #include "trayitem.h"
 #include "xlibutil.h"
 
-TrayItem::TrayItem(Window window, const TrayItemConfig &args) {
+TrayItem::TrayItem(Window window, const TrayItemOptions &args) {
     m_wantsAttention = false;
     m_iconified = false;
     m_is_restoring = false;
@@ -52,16 +52,16 @@ TrayItem::TrayItem(Window window, const TrayItemConfig &args) {
 
     readDockedAppName();
 
-    m_settings.setIconPath(          readSetting(args.getIconPath(),               "CustomIcon",       TrayItemConfig::defaultIconPath()));
-    m_settings.setAttentionIconPath( readSetting(args.getAttentionIconPath(),      "AttentionIcon",    TrayItemConfig::defaultAttentionIconPath()));
-    m_settings.setNotifyTime(        readSetting(args.getNotifyTime(),             "BalloonTimeout",   TrayItemConfig::defaultNotifyTime()));
-    m_settings.setSticky(            readSetting(args.getStickyState(),            "Sticky",           TrayItemConfig::defaultSticky()));
-    m_settings.setSkipPager(         readSetting(args.getSkipPagerState(),         "SkipPager",        TrayItemConfig::defaultSkipPager()));
-    m_settings.setSkipTaskbar(       readSetting(args.getSkipTaskbarState(),       "SkipTaskbar",      TrayItemConfig::defaultSkipTaskbar()));
-    m_settings.setIconifyMinimized(  readSetting(args.getIconifyMinimizedState(),  "IconifyMinimized", TrayItemConfig::defaultIconifyMinimized()));
-    m_settings.setIconifyObscured(   readSetting(args.getIconifyObscuredState(),   "IconifyObscured",  TrayItemConfig::defaultIconifyObscured()));
-    m_settings.setIconifyFocusLost(  readSetting(args.getIconifyFocusLostState(),  "IconifyFocusLost", TrayItemConfig::defaultIconifyFocusLost()));
-    m_settings.setLockToDesktop(     readSetting(args.getLockToDesktopState(),     "LockToDesktop",    TrayItemConfig::defaultLockToDesktop()));
+    m_settings.setIconPath(          readSetting(args.getIconPath(),               "CustomIcon",       TrayItemOptions::defaultIconPath()));
+    m_settings.setAttentionIconPath( readSetting(args.getAttentionIconPath(),      "AttentionIcon",    TrayItemOptions::defaultAttentionIconPath()));
+    m_settings.setNotifyTime(        readSetting(args.getNotifyTime(),             "BalloonTimeout",   TrayItemOptions::defaultNotifyTime()));
+    m_settings.setSticky(            readSetting(args.getStickyState(),            "Sticky",           TrayItemOptions::defaultSticky()));
+    m_settings.setSkipPager(         readSetting(args.getSkipPagerState(),         "SkipPager",        TrayItemOptions::defaultSkipPager()));
+    m_settings.setSkipTaskbar(       readSetting(args.getSkipTaskbarState(),       "SkipTaskbar",      TrayItemOptions::defaultSkipTaskbar()));
+    m_settings.setIconifyMinimized(  readSetting(args.getIconifyMinimizedState(),  "IconifyMinimized", TrayItemOptions::defaultIconifyMinimized()));
+    m_settings.setIconifyObscured(   readSetting(args.getIconifyObscuredState(),   "IconifyObscured",  TrayItemOptions::defaultIconifyObscured()));
+    m_settings.setIconifyFocusLost(  readSetting(args.getIconifyFocusLostState(),  "IconifyFocusLost", TrayItemOptions::defaultIconifyFocusLost()));
+    m_settings.setLockToDesktop(     readSetting(args.getLockToDesktopState(),     "LockToDesktop",    TrayItemOptions::defaultLockToDesktop()));
 
     updateTitle();
     updateIcon();
@@ -96,15 +96,15 @@ TrayItem::~TrayItem() {
     delete m_contextMenu;
 }
 
-bool TrayItem::readSetting(TrayItemConfig::TriState argSetting, QString key, bool kdockerDefault) {
+bool TrayItem::readSetting(TrayItemOptions::TriState argSetting, QString key, bool kdockerDefault) {
     /* Precedence:
      * 1) Command line overrides         (argSetting, if positive)
      * 2) User app-specific defaults     (QSettings: "<m_dockedAppName>/<key>")
      * 3) User global defaults           (QSettings: "_GLOBAL_DEFAULTS/<key>")
      * 4) KDocker defaults               (#define DEFAULT_keyname)
      */
-    if (argSetting != TrayItemConfig::TriState::Unset) {
-        return (argSetting == TrayItemConfig::TriState::SetTrue ? true : false);
+    if (argSetting != TrayItemOptions::TriState::Unset) {
+        return (argSetting == TrayItemOptions::TriState::SetTrue ? true : false);
     }
     key.prepend("%1/");   // Add formatting to local QString copy
     return m_config.value(key.arg(m_dockedAppName),
@@ -135,11 +135,11 @@ int TrayItem::nonZeroBalloonTimeout() {
     if (!bto) {
         bto = m_config.value(fmt.arg("_GLOBAL_DEFAULTS"), 0).toInt();
     }
-    return bto ? bto : TrayItemConfig::defaultNotifyTime();
+    return bto ? bto : TrayItemOptions::defaultNotifyTime();
 }
 
-TrayItemConfig TrayItem::readConfigGlobals() {
-    TrayItemConfig config;
+TrayItemOptions TrayItem::readConfigGlobals() {
+    TrayItemOptions config;
 
     m_config.beginGroup("_GLOBAL_DEFAULTS");
       config.setIconPath(          m_config.value("CustomIcon",       config.getIconPath()).toString());
@@ -166,7 +166,7 @@ void TrayItem::saveSettingsGlobal()
 
 void TrayItem::saveSettingsApp()
 {
-    TrayItemConfig globals = readConfigGlobals();
+    TrayItemOptions globals = readConfigGlobals();
 
     m_config.beginGroup(m_dockedAppName);
       QVariant keyval;

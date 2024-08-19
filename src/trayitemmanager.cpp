@@ -24,7 +24,7 @@
 #include <QTextStream>
 
 #include "constants.h"
-#include "trayitemconfig.h"
+#include "trayitemoptions.h"
 #include "trayitemmanager.h"
 
 #include <getopt.h>
@@ -45,7 +45,7 @@ int ignoreXErrors(Display *, XErrorEvent *) {
 TrayItemManager::TrayItemManager() {
     m_daemon = false;
     m_scanner = new Scanner(this);
-    connect(m_scanner, SIGNAL(windowFound(Window, TrayItemConfig)), this, SLOT(dockWindow(Window, TrayItemConfig)));
+    connect(m_scanner, SIGNAL(windowFound(Window, TrayItemOptions)), this, SLOT(dockWindow(Window, TrayItemOptions)));
     connect(m_scanner, SIGNAL(stopping()), this, SLOT(checkCount()));
     m_grabInfo.qtimer = new QTimer;
     m_grabInfo.qloop  = new QEventLoop;
@@ -141,17 +141,17 @@ bool TrayItemManager::nativeEventFilter([[maybe_unused]] const QByteArray &event
     return false;
 }
 
-void TrayItemManager::dockWindowTitle(const QString &searchPattern, uint timeout, bool checkNormality, const TrayItemConfig &config) {
+void TrayItemManager::dockWindowTitle(const QString &searchPattern, uint timeout, bool checkNormality, const TrayItemOptions &config) {
     m_scanner->enqueueSearch(QRegularExpression(searchPattern), timeout, checkNormality, config);
     checkCount();
 }
 
-void TrayItemManager::dockLaunchApp(const QString &app, const QStringList &appArguments, const QString &searchPattern, uint timeout, bool checkNormality, const TrayItemConfig &config) {
+void TrayItemManager::dockLaunchApp(const QString &app, const QStringList &appArguments, const QString &searchPattern, uint timeout, bool checkNormality, const TrayItemOptions &config) {
     m_scanner->enqueueLaunch(app, appArguments, QRegularExpression(searchPattern), timeout, checkNormality, config);
     checkCount();
 }
 
-void TrayItemManager::dockWindowId(int wid, const TrayItemConfig &config) {
+void TrayItemManager::dockWindowId(int wid, const TrayItemOptions &config) {
     Window window = wid;
     if (!XLibUtil::isValidWindowId(XLibUtil::display(), window)) {
         QMessageBox::critical(0, qApp->applicationName(), tr("Invalid window id"));
@@ -161,7 +161,7 @@ void TrayItemManager::dockWindowId(int wid, const TrayItemConfig &config) {
     dockWindow(window, config);
 }
 
-void TrayItemManager::dockPid(int pid, bool checkNormality, const TrayItemConfig &config) {
+void TrayItemManager::dockPid(int pid, bool checkNormality, const TrayItemOptions &config) {
     Window window = XLibUtil::pidToWid(XLibUtil::display(), XLibUtil::appRootWindow(), checkNormality, pid, dockedWindows());
     if (!XLibUtil::isValidWindowId(XLibUtil::display(), window)) {
         QMessageBox::critical(0, qApp->applicationName(), tr("Invalid window id"));
@@ -171,7 +171,7 @@ void TrayItemManager::dockPid(int pid, bool checkNormality, const TrayItemConfig
     dockWindow(window, config);
 }
 
-void TrayItemManager::dockSelectWindow(bool checkNormality, const TrayItemConfig &config) {
+void TrayItemManager::dockSelectWindow(bool checkNormality, const TrayItemOptions &config) {
     Window window = userSelectWindow(checkNormality);
     if (window) {
         dockWindow(window, config);
@@ -179,7 +179,7 @@ void TrayItemManager::dockSelectWindow(bool checkNormality, const TrayItemConfig
     checkCount();
 }
 
-void TrayItemManager::dockFocused(const TrayItemConfig &config) {
+void TrayItemManager::dockFocused(const TrayItemOptions &config) {
     Window window = XLibUtil::activeWindow(XLibUtil::display());
     if (!window) {
         QMessageBox::critical(0, qApp->applicationName(), tr("Cannot dock the active window because no window has focus"));
@@ -189,7 +189,7 @@ void TrayItemManager::dockFocused(const TrayItemConfig &config) {
     dockWindow(window, config);
 }
 
-void TrayItemManager::dockWindow(Window window, const TrayItemConfig &settings) {
+void TrayItemManager::dockWindow(Window window, const TrayItemOptions &settings) {
     if (isWindowDocked(window)) {
         QMessageBox::information(0, qApp->applicationName(), tr("This window is already docked.\nClick on system tray icon to toggle docking."));
         checkCount();

@@ -30,7 +30,7 @@
 
 #include <X11/Xlib.h>
 
-ProcessId::ProcessId(const QString &command, pid_t pid, const TrayItemConfig &config, uint timeout, bool checkNormality, const QRegularExpression &searchPattern) :
+ProcessId::ProcessId(const QString &command, pid_t pid, const TrayItemOptions &config, uint timeout, bool checkNormality, const QRegularExpression &searchPattern) :
     command(command),
     pid(pid),
     config(config),
@@ -77,7 +77,7 @@ Scanner::~Scanner() {
     delete m_timer;
 }
 
-void Scanner::enqueueSearch(const QRegularExpression &searchPattern, uint maxTime, bool checkNormality, const TrayItemConfig &config) {
+void Scanner::enqueueSearch(const QRegularExpression &searchPattern, uint maxTime, bool checkNormality, const TrayItemOptions &config) {
     if (maxTime == 0)
         maxTime = 1;
     maxTime *= 1000;
@@ -87,7 +87,7 @@ void Scanner::enqueueSearch(const QRegularExpression &searchPattern, uint maxTim
     m_timer->start();
 }
 
-void Scanner::enqueueLaunch(const QString &command, const QStringList &arguments, const QRegularExpression &searchPattern, uint maxTime, bool checkNormality, const TrayItemConfig &config) {
+void Scanner::enqueueLaunch(const QString &command, const QStringList &arguments, const QRegularExpression &searchPattern, uint maxTime, bool checkNormality, const TrayItemOptions &config) {
     if (maxTime == 0)
         maxTime = 1;
     maxTime *= 1000;

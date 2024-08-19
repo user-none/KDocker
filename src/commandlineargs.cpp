@@ -24,7 +24,7 @@
 
 #include "commandlineargs.h"
 
-bool CommandLineArgs::processArgs(const QStringList &arguments, Command &command, TrayItemConfig &config, bool &daemon) {
+bool CommandLineArgs::processArgs(const QStringList &arguments, Command &command, TrayItemOptions &config, bool &daemon) {
     QCommandLineParser parser;
 
     parser.setApplicationDescription("" \
@@ -116,7 +116,7 @@ bool CommandLineArgs::validateParserArgs(const QCommandLineParser &parser) {
     return true;
 }
 
-void CommandLineArgs::buildConfig(const QCommandLineParser &parser, TrayItemConfig &config) {
+void CommandLineArgs::buildConfig(const QCommandLineParser &parser, TrayItemOptions &config) {
     if (parser.isSet("icon")) {
         config.setIconPath(parser.value("icon"));
     }
@@ -124,29 +124,29 @@ void CommandLineArgs::buildConfig(const QCommandLineParser &parser, TrayItemConf
         config.setAttentionIconPath(parser.value("attention-icon"));
     }
     if (parser.isSet("iconify-focus-lost")) {
-        config.setIconifyFocusLost(TrayItemConfig::TriState::SetTrue);
+        config.setIconifyFocusLost(TrayItemOptions::TriState::SetTrue);
     }
     if (parser.isSet("m")) {
-        config.setIconifyMinimized(TrayItemConfig::TriState::SetFalse);
+        config.setIconifyMinimized(TrayItemOptions::TriState::SetFalse);
     }
     if (parser.isSet("iconify-obscured")) {
-        config.setIconifyObscured(TrayItemConfig::TriState::SetTrue);
+        config.setIconifyObscured(TrayItemOptions::TriState::SetTrue);
     }
     if (parser.isSet("notify-time")) {
         bool ok;
         config.setNotifyTime(QString(parser.value("notify-time")).toUInt(&ok, 0) * 1000);
     }
     if (parser.isSet("quiet")) {
-        config.setQuiet(TrayItemConfig::TriState::SetTrue);
+        config.setQuiet(TrayItemOptions::TriState::SetTrue);
     }
     if (parser.isSet("skip-pager")) {
-        config.setSkipPager(TrayItemConfig::TriState::SetTrue);
+        config.setSkipPager(TrayItemOptions::TriState::SetTrue);
     }
     if (parser.isSet("sticky")) {
-        config.setSticky(TrayItemConfig::TriState::SetTrue);
+        config.setSticky(TrayItemOptions::TriState::SetTrue);
     }
     if (parser.isSet("skip-taskbar")) {
-        config.setSkipTaskbar(TrayItemConfig::TriState::SetTrue);
+        config.setSkipTaskbar(TrayItemOptions::TriState::SetTrue);
     }
 }
 

@@ -18,14 +18,14 @@
  */
 
 
-#ifndef _TRAYITEMCONFIG
-#define	_TRAYITEMCONFIG
+#ifndef _TRAYITEMOPTIONS
+#define	_TRAYITEMOPTIONS
 
 #include <QDBusArgument>
 #include <QMetaType>
 #include <QString>
 
-class TrayItemConfig {
+class TrayItemOptions {
     public:
         enum class TriState {
             Unset = -1,
@@ -33,25 +33,25 @@ class TrayItemConfig {
             SetFalse = false
         };
 
-        TrayItemConfig();
-        ~TrayItemConfig() { };
-        TrayItemConfig(const TrayItemConfig &other);
-        TrayItemConfig& operator=(const TrayItemConfig &other);
+        TrayItemOptions();
+        ~TrayItemOptions() { };
+        TrayItemOptions(const TrayItemOptions &other);
+        TrayItemOptions& operator=(const TrayItemOptions &other);
 
-        friend QDBusArgument &operator<<(QDBusArgument &argument, const TrayItemConfig &config);
-        friend const QDBusArgument &operator>>(const QDBusArgument &argument, TrayItemConfig &config);
+        friend QDBusArgument &operator<<(QDBusArgument &argument, const TrayItemOptions &config);
+        friend const QDBusArgument &operator>>(const QDBusArgument &argument, TrayItemOptions &config);
 
         QString getIconPath() const;
         QString getAttentionIconPath() const;
-        TrayItemConfig::TriState getIconifyFocusLostState() const;
-        TrayItemConfig::TriState getIconifyMinimizedState() const;
-        TrayItemConfig::TriState getIconifyObscuredState() const;
+        TrayItemOptions::TriState getIconifyFocusLostState() const;
+        TrayItemOptions::TriState getIconifyMinimizedState() const;
+        TrayItemOptions::TriState getIconifyObscuredState() const;
         int getNotifyTimeState() const;
-        TrayItemConfig::TriState getQuietState() const;
-        TrayItemConfig::TriState getSkipPagerState() const;
-        TrayItemConfig::TriState getStickyState() const;
-        TrayItemConfig::TriState getSkipTaskbarState() const;
-        TrayItemConfig::TriState getLockToDesktopState() const;
+        TrayItemOptions::TriState getQuietState() const;
+        TrayItemOptions::TriState getSkipPagerState() const;
+        TrayItemOptions::TriState getStickyState() const;
+        TrayItemOptions::TriState getSkipTaskbarState() const;
+        TrayItemOptions::TriState getLockToDesktopState() const;
 
         bool getIconifyFocusLost() const;
         bool getIconifyMinimized() const;
@@ -65,14 +65,14 @@ class TrayItemConfig {
 
         void setIconPath(const QString &v);
         void setAttentionIconPath(const QString &v);
-        void setIconifyFocusLost(TrayItemConfig::TriState v);
-        void setIconifyMinimized(TrayItemConfig::TriState v);
-        void setIconifyObscured(TrayItemConfig::TriState v);
-        void setQuiet(TrayItemConfig::TriState v);
-        void setSkipPager(TrayItemConfig::TriState v);
-        void setSticky(TrayItemConfig::TriState v);
-        void setSkipTaskbar(TrayItemConfig::TriState v);
-        void setLockToDesktop(TrayItemConfig::TriState v);
+        void setIconifyFocusLost(TrayItemOptions::TriState v);
+        void setIconifyMinimized(TrayItemOptions::TriState v);
+        void setIconifyObscured(TrayItemOptions::TriState v);
+        void setQuiet(TrayItemOptions::TriState v);
+        void setSkipPager(TrayItemOptions::TriState v);
+        void setSticky(TrayItemOptions::TriState v);
+        void setSkipTaskbar(TrayItemOptions::TriState v);
+        void setLockToDesktop(TrayItemOptions::TriState v);
 
         void setIconifyFocusLost(bool v);
         void setIconifyMinimized(bool v);
@@ -99,17 +99,17 @@ class TrayItemConfig {
     private:
         QString m_iconPath;
         QString m_attentionIconPath;
-        TrayItemConfig::TriState m_iconifyFocusLost;
-        TrayItemConfig::TriState m_iconifyMinimized;
-        TrayItemConfig::TriState m_iconifyObscured;
+        TrayItemOptions::TriState m_iconifyFocusLost;
+        TrayItemOptions::TriState m_iconifyMinimized;
+        TrayItemOptions::TriState m_iconifyObscured;
         int m_notifyTime; // In milliseconds
-        TrayItemConfig::TriState m_quiet;
-        TrayItemConfig::TriState m_skipPager;
-        TrayItemConfig::TriState m_sticky;
-        TrayItemConfig::TriState m_skipTaskbar;
-        TrayItemConfig::TriState m_lockToDesktop;
+        TrayItemOptions::TriState m_quiet;
+        TrayItemOptions::TriState m_skipPager;
+        TrayItemOptions::TriState m_sticky;
+        TrayItemOptions::TriState m_skipTaskbar;
+        TrayItemOptions::TriState m_lockToDesktop;
 };
 
-Q_DECLARE_METATYPE(TrayItemConfig)
+Q_DECLARE_METATYPE(TrayItemOptions)
 
-#endif // _TRAYITEMCONFIG
+#endif // _TRAYITEMOPTIONS

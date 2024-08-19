@@ -60,13 +60,13 @@ set(SOURCES
     src/main.cpp
     src/scanner.cpp
     src/trayitem.cpp
-    src/trayitemconfig.cpp
+    src/trayitemoptions.cpp
     src/trayitemmanager.cpp
     src/xlibutil.cpp
 )
 
 # Generate the dbus adaptor 
-qt_add_dbus_adaptor(SOURCES resources/dbus/kdocker.xml trayitemconfig.h "" kdocker_adaptor)
+qt_add_dbus_adaptor(SOURCES resources/dbus/kdocker.xml trayitemoptions.h "" kdocker_adaptor)
 
 # Add resources
 qt_add_resources(SOURCES resources/resources.qrc)

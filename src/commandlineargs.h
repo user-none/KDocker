@@ -24,15 +24,15 @@
 #include <QCommandLineParser>
 
 #include "command.h"
-#include "trayitemconfig.h"
+#include "trayitemoptions.h"
 
 class CommandLineArgs {
     public:
-        static bool processArgs(const QStringList &arguments, Command &command, TrayItemConfig &config, bool &daemon);
+        static bool processArgs(const QStringList &arguments, Command &command, TrayItemOptions &config, bool &daemon);
 
     private:
         static bool validateParserArgs(const QCommandLineParser &parser);
-        static void buildConfig(const QCommandLineParser &parser, TrayItemConfig &config);
+        static void buildConfig(const QCommandLineParser &parser, TrayItemOptions &config);
         static void buildCommand(const QCommandLineParser &parser, Command &command);
 };
 

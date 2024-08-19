@@ -36,13 +36,13 @@ class TrayItemManager;
 
 class ProcessId {
     public:
-        ProcessId(const QString &command, pid_t pid, const TrayItemConfig &config, uint timeout, bool checkNormality, const QRegularExpression &searchPattern);
+        ProcessId(const QString &command, pid_t pid, const TrayItemOptions &config, uint timeout, bool checkNormality, const QRegularExpression &searchPattern);
         ProcessId(const ProcessId &obj);
         ProcessId& operator=(const ProcessId &obj);
 
         QString command;
         pid_t pid;
-        TrayItemConfig config;
+        TrayItemOptions config;
         QElapsedTimer etimer;
         uint timeout;
         bool checkNormality;
@@ -57,8 +57,8 @@ class Scanner : public QObject {
 public:
     Scanner(TrayItemManager *manager);
     ~Scanner();
-    void enqueueSearch(const QRegularExpression &searchPattern, uint maxTime, bool checkNormality, const TrayItemConfig &config);
-    void enqueueLaunch(const QString &command, const QStringList &arguments, const QRegularExpression &searchPattern, uint maxTime, bool checkNormality, const TrayItemConfig &config);
+    void enqueueSearch(const QRegularExpression &searchPattern, uint maxTime, bool checkNormality, const TrayItemOptions &config);
+    void enqueueLaunch(const QString &command, const QStringList &arguments, const QRegularExpression &searchPattern, uint maxTime, bool checkNormality, const TrayItemOptions &config);
     bool isRunning();
 
 private slots:
@@ -67,11 +67,11 @@ private slots:
     void checkTitle();
 
 signals:
-    void windowFound(Window, const TrayItemConfig &);
+    void windowFound(Window, const TrayItemOptions &);
     void stopping();
 
 private:
-    void enqueue(const QString &command, const QStringList &arguments, const QRegularExpression &searchPattern, const TrayItemConfig &config, uint maxTime, bool checkNormality);
+    void enqueue(const QString &command, const QStringList &arguments, const QRegularExpression &searchPattern, const TrayItemOptions &config, uint maxTime, bool checkNormality);
 
     TrayItemManager *m_manager;
     QTimer *m_timer;

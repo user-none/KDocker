@@ -36,7 +36,7 @@
 
 #include <xcb/xproto.h>
 
-#include "trayitemconfig.h"
+#include "trayitemoptions.h"
 #include "xlibutil.h"
 
 #ifndef None
@@ -47,7 +47,7 @@ class TrayItem : public QSystemTrayIcon {
     Q_OBJECT
 
 public:
-    TrayItem(Window window, const TrayItemConfig &config);
+    TrayItem(Window window, const TrayItemOptions &config);
     ~TrayItem();
 
     Window dockedWindow();
@@ -98,11 +98,11 @@ protected:
 
 private:
     //   readSetting overloaded function
-    bool    readSetting(TrayItemConfig::TriState argSetting, QString key, bool kdockerDefault);
+    bool    readSetting(TrayItemOptions::TriState argSetting, QString key, bool kdockerDefault);
     int     readSetting(int    argSetting, QString key, int    kdockerDefault);
     QString readSetting(const QString &argSetting, QString key, const QString &kdockerDefault);
     int  nonZeroBalloonTimeout();
-    TrayItemConfig readConfigGlobals();
+    TrayItemOptions readConfigGlobals();
     void saveSettings();
 
     void minimizeEvent();
@@ -134,7 +134,7 @@ private:
     QIcon m_attentionIcon;
 
     QSettings m_config;
-    TrayItemConfig m_settings;
+    TrayItemOptions m_settings;
 
     // SizeHint of m_window
     XSizeHints m_sizeHint;
