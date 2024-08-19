@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2009 John Schember <john@nachtimwald.com>
+ *  Copyright (C) 2009, 2012, 2015 John Schember <john@nachtimwald.com>
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,24 +17,13 @@
  * USA.
  */
 
-#ifndef _CONSTANTS_H
-#define	_CONSTANTS_H
-
-#include <QObject>
-#include <QString>
+#include "constants.h"
 
 
-class Constants : QObject {
-    Q_OBJECT
+const QString Constants::APP_NAME    = "KDocker";
+const QString Constants::ORG_NAME    = "com.kdocker";
+const QString Constants::DOM_NAME    = "kdocker.com";
+const QString Constants::APP_VERSION = "@VERSION@";
 
-public:
-    static const QString APP_NAME;
-    static const QString ORG_NAME;
-    static const QString DOM_NAME;
-    static const QString APP_VERSION;
-
-    static const QString DBUS_NAME;
-    static const QString DBUS_PATH;
-};
-
-#endif	/* _CONSTANTS_H */
+const QString Constants::DBUS_NAME   = "com.kdocker.kdocker";
+const QString Constants::DBUS_PATH   = "/controller";

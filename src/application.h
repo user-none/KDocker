@@ -23,7 +23,7 @@
 #include <QApplication>
 #include <QSocketNotifier>
 
-#include "kdocker.h"
+#include "trayitemmanager.h"
 
 
 class Application : public QApplication {
@@ -32,14 +32,14 @@ class Application : public QApplication {
 public:
     Application(int &argc, char **argv);
 
-    void setKDockerInstance(KDocker *kdocker);
+    void setTrayItemManagerInstance(TrayItemManager *trayItemManager);
     void notifyCloseSignal();
 
 public slots:
     void handleCloseSignal();
 
 private:
-    KDocker *m_kdocker;
+    TrayItemManager *m_trayItemManager;
 
     static int m_closeSignalFd[2];
     QSocketNotifier *m_closeSignalSocketNotifier;

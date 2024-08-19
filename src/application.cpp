@@ -24,7 +24,7 @@
 int Application::m_closeSignalFd[2];
 
 Application::Application(int &argc, char **argv) : QApplication(argc, argv) {
-    m_kdocker = 0;
+    m_trayItemManager = 0;
 
     // Translate UNIX signals to Qt signals (See https://doc.qt.io/qt-5/unix-signals.html)
     if (::socketpair(AF_UNIX, SOCK_STREAM, 0, m_closeSignalFd))
@@ -34,8 +34,8 @@ Application::Application(int &argc, char **argv) : QApplication(argc, argv) {
     connect(m_closeSignalSocketNotifier, SIGNAL(activated(QSocketDescriptor)), this, SLOT(handleCloseSignal()));
 }
 
-void Application::setKDockerInstance(KDocker *kdocker) {
-    m_kdocker = kdocker;
+void Application::setTrayItemManagerInstance(TrayItemManager *trayitemmanager) {
+    m_trayItemManager = trayitemmanager;
 }
 
 void Application::notifyCloseSignal() {
@@ -48,8 +48,8 @@ void Application::handleCloseSignal() {
     char tmp;
     [[maybe_unused]] ssize_t r = ::read(m_closeSignalFd[1], &tmp, sizeof(tmp));
 
-    if (m_kdocker) {
-        m_kdocker->undockAll();
+    if (m_trayItemManager) {
+        m_trayItemManager->undockAll();
     }
     quit();
 

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2009, 2012, 2015 John Schember <john@nachtimwald.com>
+ *  Copyright (C) 2024 John Schember <john@nachtimwald.com>
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,18 +17,23 @@
  * USA.
  */
 
-#include "constants.h"
 
+#ifndef _COMMANDLINEARGS_H
+#define	_COMMANDLINEARGS_H
 
-const QString Constants::APP_NAME    = "KDocker";
-const QString Constants::ORG_NAME    = "com.kdocker";
-const QString Constants::DOM_NAME    = "kdocker.com";
-const QString Constants::WEBSITE     = "https://github.com/user-none/KDocker";
-const QString Constants::APP_VERSION = VERSION;
+#include <QCommandLineParser>
 
-const char *Constants::OPTIONSTRING  = "+abd:e:fhi:I:jklmn:op:qrstvuw:x:z";
+#include "command.h"
+#include "trayitemconfig.h"
 
-const QString Constants::ABOUT_MESSAGE = QString("%1 %2\n\n%3").arg(Constants::APP_NAME).arg(Constants::APP_VERSION).arg(Constants::WEBSITE);
+class CommandLineArgs {
+    public:
+        static bool processArgs(const QStringList &arguments, Command &command, TrayItemConfig &config, bool &daemon);
 
-const QString Constants::DBUS_NAME   = "com.kdocker.kdocker";
-const QString Constants::DBUS_PATH   = "/controller";
+    private:
+        static bool validateParserArgs(const QCommandLineParser &parser);
+        static void buildConfig(const QCommandLineParser &parser, TrayItemConfig &config);
+        static void buildCommand(const QCommandLineParser &parser, Command &command);
+};
+
+#endif // _COMMANDLINEARGS_H

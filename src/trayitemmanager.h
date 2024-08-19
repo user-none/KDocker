@@ -21,16 +21,16 @@
 #ifndef _TRAYITEMMANAGER_H
 #define	_TRAYITEMMANAGER_H
 
+#include "trayitem.h"
+#include "scanner.h"
+#include "command.h"
+
 #include <QtCore/QAbstractNativeEventFilter>
 #include <QList>
 #include <QObject>
 #include <QStringList>
 
 #include <sys/types.h>
-
-#include "trayitem.h"
-#include "scanner.h"
-
 
 class Scanner;
 
@@ -44,19 +44,27 @@ public:
     TrayItemManager();
     ~TrayItemManager();
     virtual bool nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result) override;
-    void processCommand(const QStringList &args);
 
 public slots:
-    void dockWindow(Window window, const TrayItemArgs settings);
+    void dockWindowTitle(const QString &searchPattern, uint timeout, bool checkNormality, const TrayItemConfig &config);
+    void dockLaunchApp(const QString &app, const QStringList &appArguments, const QString &searchPattern, uint timeout, bool checkNormality, const TrayItemConfig &config);
+    void dockWindowId(int wid, const TrayItemConfig &config);
+    void dockPid(int pid, bool checkNormality, const TrayItemConfig &config);
+    void dockSelectWindow(bool checkNormality, const TrayItemConfig &config);
+    void dockFocused(const TrayItemConfig &config);
+
+    void undockAll();
+    void quit();
+    void daemonize();
+
+private slots:
+    void dockWindow(Window window, const TrayItemConfig &settings);
     Window userSelectWindow(bool checkNormality = true);
     void remove(TrayItem *trayItem);
     void undock(TrayItem *trayItem);
-    void undockAll();
     void selectAndIconify();
-    void quit();
     void about();
 
-private slots:
     void checkCount();
 
 signals:
@@ -67,7 +75,7 @@ private:
     bool isWindowDocked(Window window);
 
     Scanner *m_scanner;
-    TrayItemArgs m_initArgs;  // 'const' initializer (unset values)
+    TrayItemConfig m_initArgs;
     QList<TrayItem*> m_trayItems;
     GrabInfo m_grabInfo;
     bool m_daemon;

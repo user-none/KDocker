@@ -32,7 +32,7 @@
 
 #include <X11/Xutil.h>
 #include <X11/Xlib.h>
-#include <Xmu/WinUtil.h>
+#include <X11/Xmu/WinUtil.h>
 
 
 #undef Bool

@@ -23,8 +23,8 @@
 #include <QCoreApplication>
 #include <QLocale>
 #include <QObject>
-#include <QTranslator>
 
+#include <QDBusMetaType>
 #include <QDBusConnection>
 #include <QDBusInterface>
 #include <QDBusReply>
@@ -34,42 +34,77 @@
 
 #include "application.h"
 #include "constants.h"
-#include "kdocker.h"
+#include "trayitemmanager.h"
+#include "commandlineargs.h"
 
 
-static void sighandler(int sig) {
-    Q_UNUSED(sig);
-
+static void sighandler([[maybe_unused]] int sig) {
     dynamic_cast<Application*> (qApp)->notifyCloseSignal();
 }
 
-static void setupDbus(KDocker *kdocker) {
+static bool setupDbus(TrayItemManager *trayitemmanager) {
     auto connection = QDBusConnection::sessionBus();
     if (!connection.isConnected()) {
         qCritical() << "Cannot connect to the D-Bus session bus";
         ::exit(1);
     }
 
-    // Can't register means another instance already has.
-    if (!connection.registerService(Constants::DBUS_NAME)) {
-        QDBusInterface iface(Constants::DBUS_NAME, Constants::DBUS_PATH);
-        if (!iface.isValid()) {
-            qCritical() << "Could not create DBus interface for messaging other instance";
-            ::exit(1);
-        }
-
-        // Tell the other instance what the caller wants to do.
-        iface.call(QDBus::NoBlock, "cmd", QCoreApplication::arguments().sliced(1));
-        ::exit(0);
+    bool registered = connection.registerService(Constants::DBUS_NAME);
+    if (registered) {
+        new KdockerInterfaceAdaptor(trayitemmanager);
+        connection.registerObject(Constants::DBUS_PATH, trayitemmanager);
     }
 
-    // Handle messages from another instance so this can be a single instance app.
-    new KdockerInterfaceAdaptor(kdocker);
-    connection.registerObject(Constants::DBUS_PATH, kdocker);
+   return registered;
+}
+
+static void sendDbusCommand(const Command &command, const TrayItemConfig &config, bool daemon) {
+    QDBusInterface iface(Constants::DBUS_NAME, Constants::DBUS_PATH);
+    if (!iface.isValid()) {
+        qCritical() << "Could not create DBus interface for messaging other instance";
+        ::exit(1);
+    }
+
+    // Non command command
+    if (daemon)
+        iface.call(QDBus::NoBlock, "daemonize");
+
+    switch (command.getType()) {
+        case Command::Type::NoCommand:
+            break;
+        case Command::Type::Title:
+            iface.call(QDBus::NoBlock, "dockWindowTitle", command.getSearchPattern(), command.getTimeout(), command.getCheckNormality(), QVariant::fromValue(config));
+            break;
+        case Command::Type::Launch:
+            iface.call(QDBus::NoBlock, "dockLaunchApp", command.getLaunchApp(), command.getLaunchAppArguments(), command.getSearchPattern(), command.getTimeout(), command.getCheckNormality(), QVariant::fromValue(config));
+            break;
+        case Command::Type::WindowId:
+            iface.call(QDBus::NoBlock, "dockWindowId", command.getWindowId(), QVariant::fromValue(config));
+            break;
+        case Command::Type::Pid:
+            iface.call(QDBus::NoBlock, "dockPid", command.getPid(), command.getCheckNormality(), QVariant::fromValue(config));
+            break;
+        case Command::Type::Select:
+            if (daemon) {
+                break;
+            }
+            iface.call(QDBus::NoBlock, "dockSelectWindow", command.getCheckNormality(), QVariant::fromValue(config));
+            break;
+        case Command::Type::Focused:
+            iface.call(QDBus::NoBlock, "dockFocused", QVariant::fromValue(config));
+            break;
+    }
+}
+
+static void registerTypes() {
+    qRegisterMetaType<TrayItemConfig>("TrayItemConfig");
+    qDBusRegisterMetaType<TrayItemConfig>();
 }
 
 int main(int argc, char *argv[]) {
-    //Application app(Constants::APP_NAME, argc, argv);
+    // Register all our meta types so they're available
+    registerTypes();
+
     Application app(argc, argv);
 
     // setup signal handlers that undock and quit
@@ -83,24 +118,30 @@ int main(int argc, char *argv[]) {
     app.setOrganizationDomain(Constants::DOM_NAME);
     app.setApplicationName(Constants::APP_NAME);
     app.setApplicationVersion(Constants::APP_VERSION);
+
     // Quitting will be handled by the TrayItemManager in the KDocker instance.
     // It will determine when there is nothing left running.
     app.setQuitOnLastWindowClosed(false);
 
-    KDocker kdocker;
-    // This can exit the application. We want the output of any help text output
-    // on the tty the instance has started from so we call this here.
-    kdocker.preProcessCommand(argc, argv);
+    // Parse the command line arguments so we know what to do
+    Command command;
+    TrayItemConfig config;
+    bool daemon = false;
+    if (!CommandLineArgs::processArgs(app.arguments(), command, config, daemon))
+        return 1;
 
-    // Setup Dbus so we'll only have 1 instance running. This can also exit
-    // the application if KDocker is already running and the call is forwarded
-    // to that instance.
-    setupDbus(&kdocker);
+    TrayItemManager trayItemManager;
+    app.setTrayItemManagerInstance(&trayItemManager);
 
-    // Wait for the Qt event loop to be started before running.
-    QMetaObject::invokeMethod(&kdocker, "cmd", Qt::QueuedConnection, Q_ARG(const QStringList &, QCoreApplication::arguments().sliced(1)));
+    // Setup Dbus so we'll only have 1 instance running
+    bool dbus_registered = setupDbus(&trayItemManager);
+    // Send the requested action through DBus regardless if this is the only instance.
+    sendDbusCommand(command, config, daemon);
 
-    app.setKDockerInstance(&kdocker);
+    // Can't register dbus means another instance already has. Requests
+    // were handled by the other instance and there is nothing more for us to do.
+    if (!dbus_registered)
+        return 0;
 
     return app.exec();
 }

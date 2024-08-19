@@ -20,6 +20,9 @@
 #ifndef _SCANNER_H
 #define	_SCANNER_H
 
+#include "command.h"
+#include "trayitemmanager.h"
+
 #include <QList>
 #include <QObject>
 #include <QRegularExpression>
@@ -28,19 +31,24 @@
 
 #include <sys/types.h>
 
-#include "trayitemmanager.h"
-
-
 class TrayItemManager;
 
-struct ProcessId {
-    QString command;
-    pid_t pid;
-    TrayItemArgs settings;
-    int count;
-    int maxCount;
-    bool checkNormality;
-    QRegularExpression windowName;
+class ProcessId {
+    friend class Scanner;
+
+    public:
+        ProcessId(const QString &command, pid_t pid, const TrayItemConfig &config, uint count, uint maxCount, bool checkNormality, const QRegularExpression &windowName);
+        ProcessId(const ProcessId &obj);
+        ProcessId& operator=(const ProcessId &obj);
+
+   private:
+        QString command;
+        pid_t pid;
+        TrayItemConfig config;
+        uint count;
+        uint maxCount;
+        bool checkNormality;
+        QRegularExpression windowName;
 };
 
 // Launches commands and looks for the window ids they create.
@@ -51,17 +59,20 @@ class Scanner : public QObject {
 public:
     Scanner(TrayItemManager *manager);
     ~Scanner();
-    void enqueue(const QString &command, const QStringList &arguments, TrayItemArgs settings, int maxTime = 30, bool checkNormality = true, const QRegularExpression &windowName = QRegularExpression());
+    void enqueueSearch(const QRegularExpression &windowName, uint maxTime, bool checkNormality, const TrayItemConfig &config);
+    void enqueueLaunch(const QString &command, const QStringList &arguments, const QRegularExpression &windowName, uint maxTime, bool checkNormality, const TrayItemConfig &config);
     bool isRunning();
 
 private slots:
     void check();
 
 signals:
-    void windowFound(Window, TrayItemArgs);
+    void windowFound(Window, const TrayItemConfig &);
     void stopping();
 
 private:
+    void enqueue(const QString &command, const QStringList &arguments, const QRegularExpression &windowName, const TrayItemConfig &config, uint maxTime, bool checkNormality);
+
     TrayItemManager *m_manager;
     QTimer *m_timer;
     QList<ProcessId> m_processes;

@@ -36,59 +36,18 @@
 
 #include <xcb/xproto.h>
 
+#include "trayitemconfig.h"
 #include "xlibutil.h"
 
 #ifndef None
 #pragma pop_macro("None")
 #endif
 
-#define DEFAULT_CustomIcon        QString()
-#define DEFAULT_AttentionIcon     QString()
-#define DEFAULT_BalloonTimeout    4000       // 4 seconds
-#define DEFAULT_SkipTaskbar       false
-#define DEFAULT_SkipPager         false
-#define DEFAULT_Sticky            false
-#define DEFAULT_IconifyMinimized  true
-#define DEFAULT_IconifyObscured   false
-#define DEFAULT_IconifyFocusLost  false
-#define DEFAULT_LockToDesktop     true       // Restore to original desktop (default) else restore to active desktop
-
-#define NOARG (int8_t)-1    // 'bool' in unset state
-
-
-enum Option
-{
-    SkipTaskbar,
-    SkipPager,
-    Sticky,
-    IconifyMinimized,
-    IconifyObscured,
-    IconifyFocusLost,
-    LockToDesktop,
-    Option_MAX
-};
-
-struct TrayItemArgs {   // from cmd line only
-    QString sCustomIcon;
-    QString sAttentionIcon;
-    int iBalloonTimeout;
-    int8_t opt[Option_MAX];
-};
-
-typedef TrayItemArgs TrayItemConfig;
-
-struct TrayItemSettings {  // from 1) cmd line, 2) app config, 3) global config, 4) default
-    QString sCustomIcon;
-    QString sAttentionIcon;
-    int iBalloonTimeout;
-    bool opt[Option_MAX];
-};
-
 class TrayItem : public QSystemTrayIcon {
     Q_OBJECT
 
 public:
-    TrayItem(Window window, const TrayItemArgs args);
+    TrayItem(Window window, const TrayItemConfig &config);
     ~TrayItem();
 
     Window dockedWindow();
@@ -139,9 +98,9 @@ protected:
 
 private:
     //   readSetting overloaded function
-    bool    readSetting(int8_t  argSetting, QString key, bool    kdockerDefault);
-    int     readSetting(int     argSetting, QString key, int     kdockerDefault);
-    QString readSetting(QString argSetting, QString key, QString kdockerDefault);
+    bool    readSetting(TrayItemConfig::TriState argSetting, QString key, bool kdockerDefault);
+    int     readSetting(int    argSetting, QString key, int    kdockerDefault);
+    QString readSetting(const QString &argSetting, QString key, const QString &kdockerDefault);
     int  nonZeroBalloonTimeout();
     TrayItemConfig readConfigGlobals();
     void saveSettings();
@@ -175,7 +134,7 @@ private:
     QIcon m_attentionIcon;
 
     QSettings m_config;
-    TrayItemSettings m_settings;
+    TrayItemConfig m_settings;
 
     // SizeHint of m_window
     XSizeHints m_sizeHint;

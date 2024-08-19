@@ -28,14 +28,48 @@
 #include "scanner.h"
 #include "xlibutil.h"
 
-#include <Xlib.h>
+#include <X11/Xlib.h>
 
+ProcessId::ProcessId(const QString &command, pid_t pid, const TrayItemConfig &config, uint count, uint maxCount, bool checkNormality, const QRegularExpression &windowName) :
+    command(command),
+    pid(pid),
+    config(config),
+    count(count),
+    maxCount(maxCount),
+    checkNormality(checkNormality),
+    windowName(windowName)
+{
+}
+
+ProcessId::ProcessId(const ProcessId &obj) {
+    command = obj.command;
+    pid = obj.pid;
+    config = obj.config;
+    count = obj.count;
+    maxCount = obj.maxCount;
+    checkNormality = obj.checkNormality;
+    windowName = obj.windowName;
+}
+
+ProcessId& ProcessId::operator=(const ProcessId &obj) {
+    if (this == &obj)
+        return *this;
+
+    command = obj.command;
+    pid = obj.pid;
+    config = obj.config;
+    count = obj.count;
+    maxCount = obj.maxCount;
+    checkNormality = obj.checkNormality;
+    windowName = obj.windowName;
+    return *this;
+}
 
 Scanner::Scanner(TrayItemManager *manager) {
     m_manager = manager;
     m_timer = new QTimer();
-    // Check every second if a window has been created.
-    m_timer->setInterval(1000);
+    // Check every 1/4 second if a window has been created.
+    m_timer->setInterval(250);
     connect(m_timer, SIGNAL(timeout()), this, SLOT(check()));
 }
 
@@ -43,15 +77,23 @@ Scanner::~Scanner() {
     delete m_timer;
 }
 
-void Scanner::enqueue(const QString &command, const QStringList &arguments, TrayItemArgs settings, int maxTime, bool checkNormality, const QRegularExpression &windowName) {
+void Scanner::enqueueSearch(const QRegularExpression &windowName, uint maxTime, bool checkNormality, const TrayItemConfig &config) {
+    enqueue(QString(), QStringList(), windowName, config, maxTime, checkNormality);
+}
+
+void Scanner::enqueueLaunch(const QString &command, const QStringList &arguments, const QRegularExpression &windowName, uint maxTime, bool checkNormality, const TrayItemConfig &config) {
+    enqueue(command, arguments, windowName, config, maxTime, checkNormality);
+}
+
+void Scanner::enqueue(const QString &command, const QStringList &arguments, const QRegularExpression &windowName, const TrayItemConfig &config, uint maxTime, bool checkNormality) {
     qint64 pid = 0;
     bool started = true;
 
-    if (maxTime <= 0) {
+    if (maxTime == 0) {
         maxTime = 1;
     }
 
-    ProcessId processId = {command, 0, settings, 0, maxTime, checkNormality, windowName};
+    ProcessId processId(command, 0, config, 0, maxTime, checkNormality, windowName);
     if (!command.isEmpty()) {
         // Launch the requested application.
         started = QProcess::startDetached(command, arguments, "", &pid);
@@ -96,7 +138,7 @@ void Scanner::check() {
         }
 
         if (w != None) {
-            emit windowFound(w, id.settings);
+            emit windowFound(w, id.config);
             pi.remove();
         } else {
             if (id.count >= id.maxCount) {
