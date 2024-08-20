@@ -26,6 +26,7 @@
 #include "constants.h"
 #include "trayitemoptions.h"
 #include "trayitemmanager.h"
+#include "scanner.h"
 
 #include <getopt.h>
 #include <stdio.h>

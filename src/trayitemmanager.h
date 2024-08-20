@@ -22,7 +22,6 @@
 #define	_TRAYITEMMANAGER_H
 
 #include "trayitem.h"
-#include "scanner.h"
 #include "command.h"
 
 #include <QtCore/QAbstractNativeEventFilter>

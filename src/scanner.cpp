@@ -26,7 +26,7 @@
 #include <signal.h>
 
 #include "scanner.h"
-#include "xlibutil.h"
+#include "trayitemmanager.h"
 
 #include <X11/Xlib.h>
 

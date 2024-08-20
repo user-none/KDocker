@@ -21,7 +21,7 @@
 #define	_SCANNER_H
 
 #include "command.h"
-#include "trayitemmanager.h"
+#include "trayitemoptions.h"
 
 #include <QList>
 #include <QObject>
@@ -31,6 +31,8 @@
 #include <QElapsedTimer>
 
 #include <sys/types.h>
+
+#include "xlibutil.h"
 
 class TrayItemManager;
 
