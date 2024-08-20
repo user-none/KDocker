@@ -93,6 +93,8 @@ static void sendDbusCommand(const Command &command, const TrayItemOptions &confi
         case Command::Type::Focused:
             iface.call(QDBus::NoBlock, "dockFocused", QVariant::fromValue(config));
             break;
+        default:
+            qFatal("COMMAND ERROR!!!!");
     }
 }
 

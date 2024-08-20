@@ -38,8 +38,8 @@ class TrayItemOptions {
         TrayItemOptions(const TrayItemOptions &other);
         TrayItemOptions& operator=(const TrayItemOptions &other);
 
-        friend QDBusArgument &operator<<(QDBusArgument &argument, const TrayItemOptions &config);
-        friend const QDBusArgument &operator>>(const QDBusArgument &argument, TrayItemOptions &config);
+        friend QDBusArgument &operator<<(QDBusArgument &argument, const TrayItemOptions &options);
+        friend const QDBusArgument &operator>>(const QDBusArgument &argument, TrayItemOptions &options);
 
         QString getIconPath() const;
         QString getAttentionIconPath() const;

@@ -63,6 +63,8 @@ public:
     void doSkipPager();
     void doSticky();
 
+    QString appName();
+
 public slots:
     void closeWindow();
     void setCustomIcon(QString path);

@@ -399,6 +399,10 @@ void TrayItem::doSticky() {
     set_NET_WM_STATE("_NET_WM_STATE_STICKY", m_settings.getSticky());
 }
 
+QString TrayItem::appName() {
+    return m_dockedAppName;
+}
+
 void TrayItem::setCustomIcon(QString path) {
     m_customIcon = true;
 

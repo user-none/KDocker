@@ -27,10 +27,13 @@
 
 #include <QtCore/QAbstractNativeEventFilter>
 #include <QList>
+#include <QHash>
 #include <QObject>
 #include <QStringList>
 
 #include <sys/types.h>
+
+#include "adaptor.h"
 
 class Scanner;
 
@@ -46,14 +49,18 @@ public:
     virtual bool nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result) override;
 
 public slots:
-    void dockWindowTitle(const QString &searchPattern, uint timeout, bool checkNormality, const TrayItemOptions &config);
-    void dockLaunchApp(const QString &app, const QStringList &appArguments, const QString &searchPattern, uint timeout, bool checkNormality, const TrayItemOptions &config);
-    void dockWindowId(int wid, const TrayItemOptions &config);
-    void dockPid(int pid, bool checkNormality, const TrayItemOptions &config);
-    void dockSelectWindow(bool checkNormality, const TrayItemOptions &config);
-    void dockFocused(const TrayItemOptions &config);
+    // Defaults are needed for overloading from DBus.
+    // There are simplified versions of each of these exposed as well as
+    // the full ones. The defaults allow us to have one function for each overload.
+    void dockWindowTitle(const QString &searchPattern, uint timeout = 4, bool checkNormality = true, const TrayItemOptions &options = TrayItemOptions());
+    void dockLaunchApp(const QString &app, const QStringList &appArguments, const QString &searchPattern, uint timeout = 4, bool checkNormality = true, const TrayItemOptions &options = TrayItemOptions());
+    void dockWindowId(int wid, const TrayItemOptions &options = TrayItemOptions());
+    void dockPid(int pid, bool checkNormality = true, const TrayItemOptions &options = TrayItemOptions());
+    void dockSelectWindow(bool checkNormality = true, const TrayItemOptions &options = TrayItemOptions());
+    void dockFocused(const TrayItemOptions &options = TrayItemOptions());
 
     void undockAll();
+
     void quit();
     void daemonize();
 

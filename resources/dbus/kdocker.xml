@@ -7,6 +7,18 @@
             <arg name="searchPattern" direction="in" type="s">
                 <doc:doc><doc:summary>Window title search pattern</doc:summary></doc:doc>
             </arg>
+            <doc:doc>
+                <doc:description>
+                    <doc:para>
+                        Dock by searching for a window with a title matching the given pattern
+                    </doc:para>
+                </doc:description>
+            </doc:doc>
+        </method>
+        <method name="dockWindowTitle">
+            <arg name="searchPattern" direction="in" type="s">
+                <doc:doc><doc:summary>Window title search pattern</doc:summary></doc:doc>
+            </arg>
             <arg name="timeout" direction="in" type="u">
                 <doc:doc><doc:summary>Time in seconds to search for a window with a matching title</doc:summary></doc:doc>
             </arg>
@@ -17,6 +29,27 @@
                 <doc:doc><doc:summary></doc:summary></doc:doc>
             </arg>
             <annotation name="org.qtproject.QtDBus.QtTypeName.In3" value="TrayItemOptions"/>
+            <doc:doc>
+                <doc:description>
+                    <doc:para>
+                        Dock by searching for a window with a title matching the given pattern
+                    </doc:para>
+                    <doc:para>
+                        Accepts extended options for fine tuning window behavior
+                    </doc:para>
+                </doc:description>
+            </doc:doc>
+        </method>
+        <method name="dockLaunchApp">
+            <arg name="app" direction="in" type="s">
+                <doc:doc><doc:summary>Application to launch</doc:summary></doc:doc>
+            </arg>
+            <arg name="args" direction="in" type="as">
+                <doc:doc><doc:summary>Application command line arguments</doc:summary></doc:doc>
+            </arg>
+            <arg name="searchPattern" direction="in" type="s">
+                <doc:doc><doc:summary>Window title search pattern</doc:summary></doc:doc>
+            </arg>
             <doc:doc>
                 <doc:description>
                     <doc:para>
@@ -50,6 +83,21 @@
                     <doc:para>
                         Dock by searching for a window with a title matching the given pattern
                     </doc:para>
+                    <doc:para>
+                        Accepts extended options for fine tuning window behavior
+                    </doc:para>
+                </doc:description>
+            </doc:doc>
+        </method>
+        <method name="dockWindowId">
+            <arg name="windowId" direction="in" type="u">
+                <doc:doc><doc:summary>X11 Window id</doc:summary></doc:doc>
+            </arg>
+            <doc:doc>
+                <doc:description>
+                    <doc:para>
+                        Dock window by window id
+                    </doc:para>
                 </doc:description>
             </doc:doc>
         </method>
@@ -65,6 +113,21 @@
                 <doc:description>
                     <doc:para>
                         Dock window by window id
+                    </doc:para>
+                    <doc:para>
+                        Accepts extended options for fine tuning window behavior
+                    </doc:para>
+                </doc:description>
+            </doc:doc>
+        </method>
+        <method name="dockPid">
+            <arg name="pid" direction="in" type="u">
+                <doc:doc><doc:summary>Process id</doc:summary></doc:doc>
+            </arg>
+            <doc:doc>
+                <doc:description>
+                    <doc:para>
+                        Dock window by process id
                     </doc:para>
                 </doc:description>
             </doc:doc>
@@ -85,6 +148,18 @@
                     <doc:para>
                         Dock window by process id
                     </doc:para>
+                    <doc:para>
+                        Accepts extended options for fine tuning window behavior
+                    </doc:para>
+                </doc:description>
+            </doc:doc>
+        </method>
+        <method name="dockSelectWindow">
+            <doc:doc>
+                <doc:description>
+                    <doc:para>
+                        Select the window to dock
+                    </doc:para>
                 </doc:description>
             </doc:doc>
         </method>
@@ -100,6 +175,18 @@
                     <doc:para>
                         Select the window to dock
                     </doc:para>
+                    <doc:para>
+                        Accepts extended options for fine tuning window behavior
+                    </doc:para>
+                </doc:description>
+            </doc:doc>
+        </method>
+        <method name="dockFocused">
+            <doc:doc>
+                <doc:description>
+                    <doc:para>
+                        Dock the currently focused window
+                    </doc:para>
                 </doc:description>
             </doc:doc>
         </method>
@@ -111,6 +198,9 @@
                 <doc:description>
                     <doc:para>
                         Dock the currently focused window
+                    </doc:para>
+                    <doc:para>
+                        Accepts extended options for fine tuning window behavior
                     </doc:para>
                 </doc:description>
             </doc:doc>

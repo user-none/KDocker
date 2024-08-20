@@ -20,16 +20,16 @@
 
 #include "trayitemoptions.h"
 
-static const char *DKEY_ICONP    = "icon";
-static const char *DKEY_AICOP    = "attention-icon";
-static const char *DKEY_ICONFFOC = "iconify-focus-lost";
-static const char *DKEY_ICONFMIN = "iconify-minimized";
-static const char *DKEY_ICONFOBS = "iconify-obscured";
-static const char *DKEY_NOTIFYT  = "notify-time";
-static const char *DKEY_QUIET    = "quiet";
-static const char *DKEY_SKPAG    = "skip-pager";
-static const char *DKEY_STICKY   = "sticky";
-static const char *DKEY_SKTASK   = "skip-taskbar";
+static const QString DKEY_ICONP    = "icon";
+static const QString DKEY_AICOP    = "attention-icon";
+static const QString DKEY_ICONFFOC = "iconify-focus-lost";
+static const QString DKEY_ICONFMIN = "iconify-minimized";
+static const QString DKEY_ICONFOBS = "iconify-obscured";
+static const QString DKEY_NOTIFYT  = "notify-time";
+static const QString DKEY_QUIET    = "quiet";
+static const QString DKEY_SKPAG    = "skip-pager";
+static const QString DKEY_STICKY   = "sticky";
+static const QString DKEY_SKTASK   = "skip-taskbar";
 
 TrayItemOptions::TrayItemOptions() :
         m_iconifyFocusLost(TrayItemOptions::TriState::Unset),
@@ -76,66 +76,66 @@ TrayItemOptions& TrayItemOptions::operator=(const TrayItemOptions &other) {
     return *this;
 }
 
-QDBusArgument &operator<<(QDBusArgument &argument, const TrayItemOptions &config) {
+QDBusArgument &operator<<(QDBusArgument &argument, const TrayItemOptions &options) {
     argument.beginMap(QMetaType::fromType<QString>(), QMetaType::fromType<QString>());
 
-    if (!config.m_iconPath.isEmpty()) {
+    if (!options.m_iconPath.isEmpty()) {
         argument.beginMapEntry();
-        argument << DKEY_ICONP << config.m_iconPath;
+        argument << DKEY_ICONP << options.m_iconPath;
         argument.endMapEntry();
     }
 
-    if (!config.m_attentionIconPath.isEmpty()) {
+    if (!options.m_attentionIconPath.isEmpty()) {
         argument.beginMapEntry();
-        argument << DKEY_AICOP << config.m_attentionIconPath;
+        argument << DKEY_AICOP << options.m_attentionIconPath;
         argument.endMapEntry();
     }
 
-    if (config.m_iconifyFocusLost != TrayItemOptions::TriState::Unset) {
+    if (options.m_iconifyFocusLost != TrayItemOptions::TriState::Unset) {
         argument.beginMapEntry();
-        argument << DKEY_ICONFFOC << ((config.m_iconifyFocusLost == TrayItemOptions::TriState::SetTrue) ? "true" : "false");
+        argument << DKEY_ICONFFOC << QVariant(options.m_iconifyFocusLost == TrayItemOptions::TriState::SetTrue).toString();
         argument.endMapEntry();
     }
 
-    if (config.m_iconifyMinimized != TrayItemOptions::TriState::Unset) {
+    if (options.m_iconifyMinimized != TrayItemOptions::TriState::Unset) {
         argument.beginMapEntry();
-        argument << DKEY_ICONFMIN << ((config.m_iconifyMinimized == TrayItemOptions::TriState::SetTrue) ? "true" : "false");
+        argument << DKEY_ICONFMIN << QVariant(options.m_iconifyMinimized == TrayItemOptions::TriState::SetTrue).toString();
         argument.endMapEntry();
     }
 
-    if (config.m_iconifyObscured != TrayItemOptions::TriState::Unset) {
+    if (options.m_iconifyObscured != TrayItemOptions::TriState::Unset) {
         argument.beginMapEntry();
-        argument << DKEY_ICONFOBS << ((config.m_iconifyObscured == TrayItemOptions::TriState::SetTrue) ? "true" : "false");
+        argument << DKEY_ICONFOBS << QVariant(options.m_iconifyObscured == TrayItemOptions::TriState::SetTrue).toString();
         argument.endMapEntry();
     }
 
-    if (config.m_notifyTime > -1) {
+    if (options.m_notifyTime > -1) {
         argument.beginMapEntry();
-        argument << DKEY_NOTIFYT << QString::number(config.m_notifyTime / 1000);
+        argument << DKEY_NOTIFYT << QString::number(options.m_notifyTime / 1000);
         argument.endMapEntry();
     }
 
-    if (config.m_quiet != TrayItemOptions::TriState::Unset) {
+    if (options.m_quiet != TrayItemOptions::TriState::Unset) {
         argument.beginMapEntry();
-        argument << DKEY_QUIET << ((config.m_quiet == TrayItemOptions::TriState::SetTrue) ? "true" : "false");
+        argument << DKEY_QUIET << QVariant(options.m_quiet == TrayItemOptions::TriState::SetTrue).toString();
         argument.endMapEntry();
     }
 
-    if (config.m_skipPager != TrayItemOptions::TriState::Unset) {
+    if (options.m_skipPager != TrayItemOptions::TriState::Unset) {
         argument.beginMapEntry();
-        argument << DKEY_SKPAG << ((config.m_skipPager == TrayItemOptions::TriState::SetTrue) ? "true" : "false");
+        argument << DKEY_SKPAG << QVariant(options.m_skipPager == TrayItemOptions::TriState::SetTrue).toString();
         argument.endMapEntry();
     }
 
-    if (config.m_skipTaskbar != TrayItemOptions::TriState::Unset) {
+    if (options.m_skipTaskbar != TrayItemOptions::TriState::Unset) {
         argument.beginMapEntry();
-        argument << DKEY_SKTASK << ((config.m_skipTaskbar == TrayItemOptions::TriState::SetTrue) ? "true" : "false");
+        argument << DKEY_SKTASK << QVariant(options.m_skipTaskbar == TrayItemOptions::TriState::SetTrue).toString();
         argument.endMapEntry();
     }
 
-    if (config.m_sticky != TrayItemOptions::TriState::Unset) {
+    if (options.m_sticky != TrayItemOptions::TriState::Unset) {
         argument.beginMapEntry();
-        argument << DKEY_STICKY << ((config.m_sticky == TrayItemOptions::TriState::SetTrue) ? "true" : "false");
+        argument << DKEY_STICKY << QVariant(options.m_sticky == TrayItemOptions::TriState::SetTrue).toString();
         argument.endMapEntry();
     }
 
@@ -143,7 +143,7 @@ QDBusArgument &operator<<(QDBusArgument &argument, const TrayItemOptions &config
     return argument;
 }
 
-const QDBusArgument &operator>>(const QDBusArgument &argument, TrayItemOptions &config) {
+const QDBusArgument &operator>>(const QDBusArgument &argument, TrayItemOptions &options) {
     argument.beginMap();
 
     while (!argument.atEnd()) {
@@ -155,26 +155,26 @@ const QDBusArgument &operator>>(const QDBusArgument &argument, TrayItemOptions &
         argument.endMapEntry();
 
         if (QString::compare(key, DKEY_ICONP, Qt::CaseInsensitive) == 0) {
-            config.m_iconPath = val;
+            options.m_iconPath = val;
         } else if (QString::compare(key, DKEY_AICOP, Qt::CaseInsensitive) == 0) {
-            config.m_attentionIconPath = val;
+            options.m_attentionIconPath = val;
         } else if (QString::compare(key, DKEY_ICONFFOC, Qt::CaseInsensitive) == 0) {
-            config.m_iconifyFocusLost = QVariant(val).toBool() ? TrayItemOptions::TriState::SetTrue : TrayItemOptions::TriState::SetFalse;
+            options.m_iconifyFocusLost = QVariant(val).toBool() ? TrayItemOptions::TriState::SetTrue : TrayItemOptions::TriState::SetFalse;
         } else if (QString::compare(key, DKEY_ICONFMIN, Qt::CaseInsensitive) == 0) {
-            config.m_iconifyMinimized = QVariant(val).toBool() ? TrayItemOptions::TriState::SetTrue : TrayItemOptions::TriState::SetFalse;
+            options.m_iconifyMinimized = QVariant(val).toBool() ? TrayItemOptions::TriState::SetTrue : TrayItemOptions::TriState::SetFalse;
         } else if (QString::compare(key, DKEY_ICONFOBS, Qt::CaseInsensitive) == 0) {
-            config.m_iconifyObscured = QVariant(val).toBool() ? TrayItemOptions::TriState::SetTrue : TrayItemOptions::TriState::SetFalse;
+            options.m_iconifyObscured = QVariant(val).toBool() ? TrayItemOptions::TriState::SetTrue : TrayItemOptions::TriState::SetFalse;
         } else if (QString::compare(key, DKEY_NOTIFYT, Qt::CaseInsensitive) == 0) {
             bool ok;
-            config.m_notifyTime = val.toInt(&ok) * 1000;
+            options.m_notifyTime = val.toInt(&ok) * 1000;
         } else if (QString::compare(key, DKEY_QUIET, Qt::CaseInsensitive) == 0) {
-            config.m_quiet = QVariant(val).toBool() ? TrayItemOptions::TriState::SetTrue : TrayItemOptions::TriState::SetFalse;
+            options.m_quiet = QVariant(val).toBool() ? TrayItemOptions::TriState::SetTrue : TrayItemOptions::TriState::SetFalse;
         } else if (QString::compare(key, DKEY_SKPAG, Qt::CaseInsensitive) == 0) {
-            config.m_skipPager = QVariant(val).toBool() ? TrayItemOptions::TriState::SetTrue : TrayItemOptions::TriState::SetFalse;
+            options.m_skipPager = QVariant(val).toBool() ? TrayItemOptions::TriState::SetTrue : TrayItemOptions::TriState::SetFalse;
         } else if (QString::compare(key, DKEY_STICKY, Qt::CaseInsensitive) == 0) {
-            config.m_sticky = QVariant(val).toBool() ? TrayItemOptions::TriState::SetTrue : TrayItemOptions::TriState::SetFalse;
+            options.m_sticky = QVariant(val).toBool() ? TrayItemOptions::TriState::SetTrue : TrayItemOptions::TriState::SetFalse;
         } else if (QString::compare(key, DKEY_SKTASK, Qt::CaseInsensitive) == 0) {
-            config.m_skipTaskbar = QVariant(val).toBool() ? TrayItemOptions::TriState::SetTrue : TrayItemOptions::TriState::SetFalse;
+            options.m_skipTaskbar = QVariant(val).toBool() ? TrayItemOptions::TriState::SetTrue : TrayItemOptions::TriState::SetFalse;
         }
     }
 

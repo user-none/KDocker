@@ -66,7 +66,7 @@ set(SOURCES
 )
 
 # Generate the dbus adaptor 
-qt_add_dbus_adaptor(SOURCES resources/dbus/kdocker.xml trayitemoptions.h "" kdocker_adaptor)
+qt_add_dbus_adaptor(SOURCES resources/dbus/kdocker.xml adaptor.h "" kdocker_adaptor)
 
 # Add resources
 qt_add_resources(SOURCES resources/resources.qrc)
