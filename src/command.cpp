@@ -37,7 +37,7 @@ QString Command::getSearchPattern() const {
     return m_searchPattern;
 }
 
-uint Command::getWindowId() const {
+uint32_t Command::getWindowId() const {
     return m_windowId;
 }
 
@@ -57,7 +57,7 @@ bool Command::getCheckNormality() const {
     return m_checkNormality;
 }
 
-uint Command::getTimeout() const {
+uint32_t Command::getTimeout() const {
     return m_timeout;
 }
 
@@ -69,7 +69,7 @@ void Command::setSearchPattern(const QString &pattern) {
     m_searchPattern = pattern;
 }
 
-void Command::setWindowId(uint wid) {
+void Command::setWindowId(uint32_t wid) {
     m_windowId = wid;
 }
 
@@ -85,7 +85,7 @@ void Command::setLaunchAppArguments(const QStringList &args) {
     m_launchAppArguments = args;
 }
 
-void Command::setTimeout(uint v) {
+void Command::setTimeout(uint32_t v) {
     m_timeout = v;
 }
 

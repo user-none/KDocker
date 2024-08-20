@@ -46,30 +46,30 @@ class Command {
 
         Command::Type getType() const;
         QString getSearchPattern() const;
-        uint getWindowId() const;
+        uint32_t getWindowId() const;
         pid_t getPid() const;
         QString getLaunchApp() const;
         QStringList getLaunchAppArguments() const;
-        uint getTimeout() const;
+        uint32_t getTimeout() const;
         bool getCheckNormality() const;
 
         void setType(Command::Type type);
         void setSearchPattern(const QString &pattern);
-        void setWindowId(uint wid);
+        void setWindowId(uint32_t wid);
         void setPid(pid_t pid);
         void setLaunchApp(const QString &app);
         void setLaunchAppArguments(const QStringList &args);
-        void setTimeout(uint v);
+        void setTimeout(uint32_t v);
         void setCheckNormality(bool v);
 
     private:
         Command::Type m_type;
         QString m_searchPattern;
-        uint m_windowId;
-        uint m_pid;
+        uint32_t m_windowId;
+        uint32_t m_pid;
         QString m_launchApp;
         QStringList m_launchAppArguments;
-        uint m_timeout;
+        uint32_t m_timeout;
         bool m_checkNormality;
 };
 

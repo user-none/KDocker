@@ -28,6 +28,6 @@
 // Needed for TrayItemManager::listWindows.
 // The QMetaObject system can't pass a two item template to Q_ARG or Q_RETURN_ARG
 // so it needs to be typedef'ed to compile.
-typedef QMap<uint, QString> WindowNameMap;
+typedef QMap<uint32_t, QString> WindowNameMap;
 
 #endif // _ADAPTOR

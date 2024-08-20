@@ -96,7 +96,7 @@ bool CommandLineArgs::validateParserArgs(const QCommandLineParser &parser) {
     // Verify the window id is a valid number
     if (parser.isSet("window-id")) {
         bool ok;
-        uint id = QString(parser.value("window-id")).toUInt(&ok, 0);
+        uint32_t id = QString(parser.value("window-id")).toUInt(&ok, 0);
         if (!ok || id == 0) {
             qCritical() << "Failed to parse window id";
             return false;
@@ -161,7 +161,7 @@ void CommandLineArgs::buildCommand(const QCommandLineParser &parser, Command &co
     // Timeout can be used by search pattern and launch
     if (parser.isSet("timeout")) {
         bool ok;
-        uint timeout = QString(parser.value("timeout")).toUInt(&ok, 0);
+        uint32_t timeout = QString(parser.value("timeout")).toUInt(&ok, 0);
         if (!ok || timeout == 0) {
             timeout = 1;
         }
