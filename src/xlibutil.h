@@ -28,8 +28,6 @@
 #include <QTimer>
 #include <QEventLoop>
 
-#include <sys/types.h>
-
 #include <X11/Xutil.h>
 #include <X11/Xlib.h>
 #include <X11/Xmu/WinUtil.h>

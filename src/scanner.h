@@ -30,8 +30,6 @@
 #include <QTimer>
 #include <QElapsedTimer>
 
-#include <sys/types.h>
-
 #include "xlibutil.h"
 
 class TrayItemManager;

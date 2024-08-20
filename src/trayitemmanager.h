@@ -31,8 +31,6 @@
 #include <QObject>
 #include <QStringList>
 
-#include <sys/types.h>
-
 class Scanner;
 
 class TrayItemManager : public QObject, public QAbstractNativeEventFilter {
