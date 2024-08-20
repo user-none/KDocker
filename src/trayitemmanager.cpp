@@ -45,13 +45,13 @@ int ignoreXErrors(Display *, XErrorEvent *) {
 TrayItemManager::TrayItemManager() {
     m_daemon = false;
     m_scanner = new Scanner(this);
-    connect(m_scanner, SIGNAL(windowFound(Window, TrayItemOptions)), this, SLOT(dockWindow(Window, TrayItemOptions)));
-    connect(m_scanner, SIGNAL(stopping()), this, SLOT(checkCount()));
+    connect(m_scanner, &Scanner::windowFound, this, &TrayItemManager::dockWindow);
+    connect(m_scanner, &Scanner::stopping, this, &TrayItemManager::checkCount);
     m_grabInfo.qtimer = new QTimer;
     m_grabInfo.qloop  = new QEventLoop;
     m_grabInfo.isGrabbing = false;
-    connect(m_grabInfo.qtimer, SIGNAL(timeout()), m_grabInfo.qloop, SLOT(quit()));
-    connect(this, SIGNAL(quitMouseGrab()),        m_grabInfo.qloop, SLOT(quit()));
+    connect(m_grabInfo.qtimer, &QTimer::timeout, m_grabInfo.qloop, &QEventLoop::quit);
+    connect(this, &TrayItemManager::quitMouseGrab, m_grabInfo.qloop, &QEventLoop::quit);
 
     // This will prevent x errors from being written to the console.
     // The isValidWindowId function in util.cpp will generate errors if the
@@ -258,11 +258,11 @@ void TrayItemManager::dockWindow(Window window, const TrayItemOptions &settings)
 
     TrayItem *ti = new TrayItem(window, settings);
 
-    connect(ti, SIGNAL(selectAnother()), this, SLOT(selectAndIconify()));
-    connect(ti, SIGNAL(dead(TrayItem*)), this, SLOT(remove(TrayItem*)));
-    connect(ti, SIGNAL(undock(TrayItem*)), this, SLOT(undock(TrayItem*)));
-    connect(ti, SIGNAL(undockAll()), this, SLOT(undockAll()));
-    connect(ti, SIGNAL(about()), this, SLOT(about()));
+    connect(ti, &TrayItem::selectAnother, this, &TrayItemManager::selectAndIconify);
+    connect(ti, &TrayItem::dead, this, &TrayItemManager::remove);
+    connect(ti, &TrayItem::undock, this, &TrayItemManager::undock);
+    connect(ti, &TrayItem::undockAll, this, &TrayItemManager::undockAll);
+    connect(ti, &TrayItem::about, this, &TrayItemManager::about);
 
     ti->showWindow();
 

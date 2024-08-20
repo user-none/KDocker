@@ -31,7 +31,7 @@ Application::Application(int &argc, char **argv) : QApplication(argc, argv) {
        qFatal("Couldn't create signal handling socketpair");
 
     m_closeSignalSocketNotifier = new QSocketNotifier(m_closeSignalFd[1], QSocketNotifier::Read, this);
-    connect(m_closeSignalSocketNotifier, SIGNAL(activated(QSocketDescriptor)), this, SLOT(handleCloseSignal()));
+    connect(m_closeSignalSocketNotifier, &QSocketNotifier::activated, this, &Application::handleCloseSignal);
 }
 
 void Application::setTrayItemManagerInstance(TrayItemManager *trayitemmanager) {

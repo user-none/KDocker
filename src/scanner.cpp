@@ -70,7 +70,7 @@ Scanner::Scanner(TrayItemManager *manager) {
     m_timer = new QTimer();
     // Check every 1/4 second if a window has been created.
     m_timer->setInterval(250);
-    connect(m_timer, SIGNAL(timeout()), this, SLOT(check()));
+    connect(m_timer, &QTimer::timeout, this, &Scanner::check);
 }
 
 Scanner::~Scanner() {
