@@ -727,11 +727,11 @@ void TrayItem::createContextMenu() {
     m_optionsMenu = new QMenu(tr("Options"), m_contextMenu);
     m_optionsMenu-> setIcon(QIcon(":/images/options.png"));
 
-    m_actionSetIcon = new QAction(tr("Set icon..."), m_optionsMenu);
+    m_actionSetIcon = new QAction(QIcon(":/images/seticon.png"), tr("Set icon..."), m_optionsMenu);
     connect(m_actionSetIcon, SIGNAL(triggered(bool)), this, SLOT(selectCustomIcon(bool)));
     m_optionsMenu->addAction(m_actionSetIcon);
 
-    m_actionSetAttentionIcon = new QAction(tr("Set attention icon..."), m_optionsMenu);
+    m_actionSetAttentionIcon = new QAction(QIcon(":/images/setaicon.png"), tr("Set attention icon..."), m_optionsMenu);
     connect(m_actionSetAttentionIcon, SIGNAL(triggered(bool)), this, SLOT(selectAttentionIcon(bool)));
     m_optionsMenu->addAction(m_actionSetAttentionIcon);
 
@@ -788,7 +788,7 @@ void TrayItem::createContextMenu() {
     // Save settings menu
     m_optionsMenu->addSeparator();
     m_defaultsMenu = new QMenu(tr("Save settings"), m_optionsMenu);
-    m_defaultsMenu-> setIcon(QIcon(":/images/config.png"));
+    m_defaultsMenu-> setIcon(QIcon(":/images/savesettings.png"));
 
     m_actionSaveSettingsApp = new QAction(tr("%1 only").arg(m_dockedAppName), m_defaultsMenu);
     connect(m_actionSaveSettingsApp, SIGNAL(triggered()), this, SLOT(saveSettingsApp()));
@@ -802,12 +802,12 @@ void TrayItem::createContextMenu() {
     // ---
 
     m_contextMenu->addAction(QIcon(":/images/another.png"), tr("Dock Another"), this, SIGNAL(selectAnother()));
-    m_contextMenu->addAction(tr("Undock All"), this, SIGNAL(undockAll()));
+    m_contextMenu->addAction(QIcon(":/images/undockall.png"), tr("Undock All"), this, SIGNAL(undockAll()));
     m_contextMenu->addSeparator();
     m_actionToggle = new QAction(tr("Toggle"), m_contextMenu);
     connect(m_actionToggle, SIGNAL(triggered()), this, SLOT(toggleWindow()));
     m_contextMenu->addAction(m_actionToggle);
-    m_contextMenu->addAction(tr("Undock"), this, SLOT(doUndock()));
+    m_contextMenu->addAction(QIcon(":/images/undock.png"), tr("Undock"), this, SLOT(doUndock()));
     m_contextMenu->addAction(QIcon(":/images/close.png"), tr("Close"), this, SLOT(closeWindow()));
 
     setContextMenu(m_contextMenu);

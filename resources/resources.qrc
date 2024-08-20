@@ -3,11 +3,15 @@
         <file>images/about.png</file>
         <file>images/another.png</file>
         <file>images/close.png</file>
-        <file>images/config.png</file>
         <file>images/iconify.png</file>
         <file>images/kdocker.png</file>
         <file>images/options.png</file>
         <file>images/question.png</file>
         <file>images/restore.png</file>
+        <file>images/savesettings.png</file>
+        <file>images/seticon.png</file>
+        <file>images/setaicon.png</file>
+        <file>images/undock.png</file>
+        <file>images/undockall.png</file>
     </qresource>
 </RCC>
