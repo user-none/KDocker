@@ -5,12 +5,9 @@
   <project_license>GPL-2.0</project_license>
   <name>KDocker</name>
   <summary>Run command and dock window</summary>
-  <summary xml:lang="it">Esegui comando e aggancia la finestra</summary>
   <description>
     <p>KDocker will help you dock most applications to the system tray. Just point and click!</p>
-    <p xml:lang="x-eg">Example para 1</p>
     <p>All you need to do is start KDocker and select an application using the mouse and the application gets docked into the system tray.</p>
-    <p xml:lang="x-eg">Example para 2</p>
   </description>
   <icon type="cached">kdocker.png</icon>
   <icon type="remote" width="128" height="128">https://raw.githubusercontent.com/user-none/KDocker/master/resources/images/kdocker.png</icon>
