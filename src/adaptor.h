@@ -21,9 +21,13 @@
 #ifndef _ADAPTOR
 #define	_ADAPTOR
 
-#include <QMap>
+// this file is included by the auto generated dbus adaptor .h file.
+// All types that are referenced in the dbus xml need to be included
+// here for the auto generated code.
 
 #include "trayitemoptions.h"
+
+#include <QMap>
 
 // Needed for TrayItemManager::listWindows.
 // The QMetaObject system can't pass a two item template to Q_ARG or Q_RETURN_ARG

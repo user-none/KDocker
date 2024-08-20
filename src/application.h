@@ -20,10 +20,10 @@
 #ifndef _APPLICATION_H
 #define	_APPLICATION_H
 
+#include "trayitemmanager.h"
+
 #include <QApplication>
 #include <QSocketNotifier>
-
-#include "trayitemmanager.h"
 
 
 class Application : public QApplication {

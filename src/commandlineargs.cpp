@@ -18,11 +18,11 @@
  */
 
 
+#include "commandlineargs.h"
+
 #include <QRegularExpression>
 #include <QString>
 #include <QStringList>
-
-#include "commandlineargs.h"
 
 bool CommandLineArgs::processArgs(const QStringList &arguments, Command &command, TrayItemOptions &config, bool &daemon) {
     QCommandLineParser parser;

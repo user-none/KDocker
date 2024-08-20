@@ -21,10 +21,10 @@
 #ifndef _COMMANDLINEARGS_H
 #define	_COMMANDLINEARGS_H
 
-#include <QCommandLineParser>
-
 #include "command.h"
 #include "trayitemoptions.h"
+
+#include <QCommandLineParser>
 
 class CommandLineArgs {
     public:

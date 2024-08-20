@@ -20,11 +20,14 @@
 
 #include "kdocker_adaptor.h"
 #include "adaptor.h"
+#include "application.h"
+#include "constants.h"
+#include "trayitemmanager.h"
+#include "commandlineargs.h"
 
 #include <QCoreApplication>
 #include <QLocale>
 #include <QObject>
-
 #include <QDBusMetaType>
 #include <QDBusConnection>
 #include <QDBusInterface>
@@ -32,11 +35,6 @@
 #include <QDBusError>
 
 #include <signal.h>
-
-#include "application.h"
-#include "constants.h"
-#include "trayitemmanager.h"
-#include "commandlineargs.h"
 
 
 static void sighandler([[maybe_unused]] int sig) {

@@ -21,9 +21,7 @@
 #ifndef _COMMAND_H
 #define	_COMMAND_H
 
-//#include <QDBusMetaType>
 #include <QDBusArgument>
-#include <QMetaType>
 #include <QString>
 #include <QStringList>
 

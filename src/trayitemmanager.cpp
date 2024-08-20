@@ -28,9 +28,6 @@
 #include "trayitemmanager.h"
 #include "scanner.h"
 
-#include <getopt.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <sys/types.h>
 
 #include <X11/Xlib.h>

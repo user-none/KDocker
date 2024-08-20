@@ -23,6 +23,7 @@
 
 #include "trayitem.h"
 #include "command.h"
+#include "adaptor.h"
 
 #include <QtCore/QAbstractNativeEventFilter>
 #include <QList>
@@ -31,8 +32,6 @@
 #include <QStringList>
 
 #include <sys/types.h>
-
-#include "adaptor.h"
 
 class Scanner;
 
