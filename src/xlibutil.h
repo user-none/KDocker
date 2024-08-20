@@ -28,12 +28,10 @@
 #include <QTimer>
 #include <QEventLoop>
 
-#include <X11/Xutil.h>
-#include <X11/Xlib.h>
-#include <X11/Xmu/WinUtil.h>
-
-
-#undef Bool
+typedef uint64_t Atom;
+typedef uint64_t Window;
+struct _XDisplay;
+typedef struct _XDisplay Display;
 
 typedef struct GrabInfo {
 

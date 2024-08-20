@@ -18,6 +18,8 @@
  * USA.
  */
 
+#include "xlibutil.h"
+
 #include <QGuiApplication>
 
 #include <stdio.h>
@@ -26,9 +28,14 @@
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/cursorfont.h>
+#include <X11/Xutil.h>
+#include <X11/Xmu/WinUtil.h>
 
-#include "xlibutil.h"
-
+#if 0
+#undef None
+#undef Unsorted
+#undef Bool
+#endif
 
 #define BIT0  (1 << 0)
 #define BIT1  (1 << 1)
@@ -57,7 +64,7 @@ bool XLibUtil::isNormalWindow(Display *display, Window w) {
     unsigned long left;
     Atom *data = NULL;
     unsigned long nitems;
-    Window transient_for = None;
+    Window transient_for = 0;
 
     static Atom wmState      = XInternAtom(display, "WM_STATE", false);
     static Atom windowState  = XInternAtom(display, "_NET_WM_STATE", false);
@@ -105,7 +112,7 @@ bool XLibUtil::isNormalWindow(Display *display, Window w) {
         XFree(data);
         return (i == nitems);
     } else {
-        return (transient_for == None);
+        return (transient_for == 0);
     }
 }
 
@@ -130,7 +137,7 @@ pid_t XLibUtil::pid(Display *display, Window w) {
 }
 
 Window XLibUtil::pidToWid(Display *display, Window window, bool checkNormality, pid_t epid, QList<Window> dockedWindows) {
-    Window w = None;
+    Window w = 0;
     Window root;
     Window parent;
     Window *child;
@@ -150,7 +157,7 @@ Window XLibUtil::pidToWid(Display *display, Window window, bool checkNormality, 
                 }
             }
             w = pidToWid(display, child[i], checkNormality, epid);
-            if (w != None) {
+            if (w != 0) {
                 break;
             }
         }
@@ -210,7 +217,7 @@ bool XLibUtil::analyzeWindow(Display *display, Window w, const QRegularExpressio
  * that matches the ename.
  */
 Window XLibUtil::findWindow(Display *display, Window window, bool checkNormality, const QRegularExpression &ename, QList<Window> dockedWindows) {
-    Window w = None;
+    Window w = 0;
     Window root;
     Window parent;
     Window *child;
@@ -229,7 +236,7 @@ Window XLibUtil::findWindow(Display *display, Window window, bool checkNormality
                 }
             }
             w = findWindow(display, child[i], checkNormality, ename);
-            if (w != None) {
+            if (w != 0) {
                 break;
             }
         }
@@ -257,7 +264,7 @@ void XLibUtil::sendMessage(Display* display, Window to, Window w, const char *ty
  */
 Window XLibUtil::activeWindow(Display * display) {
     Atom active_window_atom = XInternAtom(display, "_NET_ACTIVE_WINDOW", true);
-    Atom type = None;
+    Atom type = 0;
     int format;
     unsigned long nitems, after;
     unsigned char *data = NULL;
@@ -266,8 +273,8 @@ Window XLibUtil::activeWindow(Display * display) {
 
     int r = XGetWindowProperty(display, root, active_window_atom, 0, 1, false, AnyPropertyType, &type, &format, &nitems, &after, &data);
 
-    Window w = None;
-    if ((r == Success) && data && (*reinterpret_cast<Window *> (data) != None)) {
+    Window w = 0;
+    if ((r == Success) && data && (*reinterpret_cast<Window *> (data) != 0)) {
         w = *(Window *) data;
     } else {
         int revert;
@@ -285,13 +292,13 @@ Window XLibUtil::selectWindow(Display *display, GrabInfo &grabInfo, QString &err
     int screen  = DefaultScreen(display);
     Window root = RootWindow(display, screen);
     Cursor cursor = XCreateFontCursor(display, XC_draped_box);
-    if (cursor == None) {
+    if (cursor == 0) {
         error = tr("Failed to create XC_draped_box");
-        return None;
+        return 0;
     }
-    if (XGrabPointer(display, root, false, ButtonPressMask | ButtonReleaseMask, GrabModeSync, GrabModeAsync, None, cursor, CurrentTime) != GrabSuccess) {
+    if (XGrabPointer(display, root, false, ButtonPressMask | ButtonReleaseMask, GrabModeSync, GrabModeAsync, 0, cursor, CurrentTime) != GrabSuccess) {
         error = tr("Failed to grab mouse");
-        return None;
+        return 0;
     }
     //
     //  X11 treats Scroll_Lock & Num_Lock as 'modifiers'; each exact combination has to be grabbed
@@ -325,7 +332,7 @@ Window XLibUtil::selectWindow(Display *display, GrabInfo &grabInfo, QString &err
     XFreeCursor(display, cursor);
 
     if (grabInfo.button != Button1 || !grabInfo.window || !grabInfo.qtimer-> isActive()) {
-        return None;
+        return 0;
     }
 
     return XmuClientWindow(display, grabInfo.window);
@@ -339,9 +346,9 @@ void XLibUtil::subscribe(Display *display, Window w, long mask) {
     Window root = RootWindow(display, DefaultScreen(display));
     XWindowAttributes attr;
 
-    XGetWindowAttributes(display, w == None ? root : w, &attr);
+    XGetWindowAttributes(display, w == 0 ? root : w, &attr);
 
-    XSelectInput(display, w == None ? root : w, attr.your_event_mask | mask);
+    XSelectInput(display, w == 0 ? root : w, attr.your_event_mask | mask);
     XSync(display, false);
 }
 

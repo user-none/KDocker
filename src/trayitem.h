@@ -21,9 +21,8 @@
 #ifndef _TRAYITEM_H
 #define	_TRAYITEM_H
 
-// Qt 5.14 introduced QActionGroup::ExclusionPolicy::None, but <X.h> defines a 'None' macro.
-#pragma push_macro("None")
-#undef None
+#include "trayitemoptions.h"
+#include "xlibutil.h"
 
 #include <QAction>
 #include <QEvent>
@@ -33,14 +32,12 @@
 #include <QSystemTrayIcon>
 #include <QSettings>
 
+#include <X11/Xutil.h>
 #include <xcb/xproto.h>
 
-#include "trayitemoptions.h"
-#include "xlibutil.h"
-
-#ifndef None
-#pragma pop_macro("None")
-#endif
+#undef None
+#undef Unsorted
+#undef Bool
 
 class TrayItem : public QSystemTrayIcon {
     Q_OBJECT

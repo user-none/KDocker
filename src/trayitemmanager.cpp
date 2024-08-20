@@ -18,19 +18,18 @@
  * USA.
  */
 
+#include "constants.h"
+#include "trayitemoptions.h"
+#include "trayitemmanager.h"
+#include "scanner.h"
+#include "xlibutil.h"
+
 #include <QCoreApplication>
 #include <QByteArray>
 #include <QMessageBox>
 #include <QTextStream>
 
-#include "constants.h"
-#include "trayitemoptions.h"
-#include "trayitemmanager.h"
-#include "scanner.h"
-
-#include <X11/Xlib.h>
 #include <xcb/xproto.h>
-#include "xlibutil.h"
 
 #define  ESC_key  9
 

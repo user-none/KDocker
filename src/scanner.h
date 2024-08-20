@@ -22,6 +22,7 @@
 
 #include "command.h"
 #include "trayitemoptions.h"
+#include "xlibutil.h"
 
 #include <QList>
 #include <QObject>
@@ -29,8 +30,6 @@
 #include <QString>
 #include <QTimer>
 #include <QElapsedTimer>
-
-#include "xlibutil.h"
 
 class TrayItemManager;
 

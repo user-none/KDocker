@@ -17,6 +17,9 @@
  * USA.
  */
 
+#include "scanner.h"
+#include "trayitemmanager.h"
+
 #include <QCoreApplication>
 #include <QMessageBox>
 #include <QProcess>
@@ -24,10 +27,6 @@
 
 #include <signal.h>
 
-#include "scanner.h"
-#include "trayitemmanager.h"
-
-#include <X11/Xlib.h>
 
 ProcessId::ProcessId(const QString &command, pid_t pid, const TrayItemOptions &config, uint64_t timeout, bool checkNormality, const QRegularExpression &searchPattern) :
     command(command),
@@ -115,7 +114,7 @@ void Scanner::checkPid() {
     for (size_t i = m_processesPid.count(); i-->0; ) {
         ProcessId process = m_processesPid[i];
         Window w = XLibUtil::pidToWid(XLibUtil::display(), XLibUtil::appRootWindow(), process.checkNormality, process.pid);
-        if (w != None) {
+        if (w != 0) {
             emit windowFound(w, process.config);
             m_processesPid.remove(i);
         } else if (process.etimer.hasExpired(process.timeout)) {
@@ -130,7 +129,7 @@ void Scanner::checkTitle() {
     for (size_t i = m_processesTitle.count(); i-->0; ) {
         ProcessId process = m_processesTitle[i];
         Window w = XLibUtil::findWindow(XLibUtil::display(), XLibUtil::appRootWindow(), process.checkNormality, process.searchPattern, m_manager->dockedWindows());
-        if (w != None) {
+        if (w != 0) {
             emit windowFound(w, process.config);
             m_processesTitle.remove(i);
         } else if (process.etimer.hasExpired(process.timeout)) {

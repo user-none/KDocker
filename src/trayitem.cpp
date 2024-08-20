@@ -18,6 +18,8 @@
  * USA.
  */
 
+#include "trayitem.h"
+
 #include <QFileDialog>
 #include <QImageReader>
 #include <QPixmap>
@@ -28,8 +30,6 @@
 
 #include <X11/Xatom.h>
 
-#include "trayitem.h"
-#include "xlibutil.h"
 
 TrayItem::TrayItem(Window window, const TrayItemOptions &args) {
     m_wantsAttention = false;
@@ -46,7 +46,7 @@ TrayItem::TrayItem(Window window, const TrayItemOptions &args) {
     XLibUtil::subscribe(display, m_window, StructureNotifyMask | PropertyChangeMask | VisibilityChangeMask | FocusChangeMask);
 
     // Store the desktop on which the window is being shown.
-    XLibUtil::getCardinalProperty(display, m_window, XInternAtom(display, "_NET_WM_DESKTOP", True), &m_desktop);
+    XLibUtil::getCardinalProperty(display, m_window, XInternAtom(display, "_NET_WM_DESKTOP", true), &m_desktop);
 
     readDockedAppName();
 
@@ -367,7 +367,7 @@ void TrayItem::iconifyWindow() {
      * 2. Withdraw the window to remove it from the taskbar.
      */
     XIconifyWindow(display, m_window, screen); // good for effects too
-    XSync(display, False);
+    XSync(display, false);
     XWithdrawWindow(display, m_window, screen);
 
     updateToggleAction();
@@ -572,10 +572,10 @@ void TrayItem::propertyChangeEvent(Atom property) {
     }
 
     Display *display = XLibUtil::display();
-    static Atom WM_NAME         = XInternAtom(display, "WM_NAME", True);
-    static Atom WM_ICON         = XInternAtom(display, "WM_ICON", True);
-    static Atom WM_STATE        = XInternAtom(display, "WM_STATE", True);
-    static Atom _NET_WM_DESKTOP = XInternAtom(display, "_NET_WM_DESKTOP", True);
+    static Atom WM_NAME         = XInternAtom(display, "WM_NAME", true);
+    static Atom WM_ICON         = XInternAtom(display, "WM_ICON", true);
+    static Atom WM_STATE        = XInternAtom(display, "WM_STATE", true);
+    static Atom _NET_WM_DESKTOP = XInternAtom(display, "_NET_WM_DESKTOP", true);
 
     if (property == WM_NAME) {
         updateTitle();
@@ -584,11 +584,11 @@ void TrayItem::propertyChangeEvent(Atom property) {
     } else if (property == _NET_WM_DESKTOP) {
         XLibUtil::getCardinalProperty(display, m_window, _NET_WM_DESKTOP, &m_desktop);
     } else if (property == WM_STATE) {
-        Atom type = None;
+        Atom type = 0;
         int format;
         unsigned long nitems, after;
         unsigned char *data = 0;
-        int r = XGetWindowProperty(display, m_window, WM_STATE, 0, 1, False, AnyPropertyType, &type, &format, &nitems, &after, &data);
+        int r = XGetWindowProperty(display, m_window, WM_STATE, 0, 1, false, AnyPropertyType, &type, &format, &nitems, &after, &data);
         if ((r == Success) && data && (*reinterpret_cast<long *> (data) == IconicState)) {
             // KDE 5.14 started issuing this event when the user changes virtual desktops so
             // a minimizeEvent() should not be executed unless the window is on the currently
@@ -626,10 +626,10 @@ void TrayItem::set_NET_WM_STATE(const char *type, bool set) {
         return;
     }
 
-    // set, true = add the state to the window. False, remove the state from
+    // set, true = add the state to the window. false, remove the state from
     // the window.
     Display *display = XLibUtil::display();
-    Atom atom = XInternAtom(display, type, False);
+    Atom atom = XInternAtom(display, type, false);
 
     qint64 l[2] = {set ? 1 : 0, static_cast<qint64>(atom)};
     XLibUtil::sendMessage(display, XLibUtil::appRootWindow(), m_window, "_NET_WM_STATE", 32, SubstructureNotifyMask, l, sizeof (l));
@@ -864,7 +864,7 @@ QIcon TrayItem::createIcon(Window window) {
     XWMHints* wm_hints = XGetWMHints(display, window);
     if (wm_hints != nullptr) {
         if (!(wm_hints->flags & IconMaskHint)) {
-            wm_hints->icon_mask = None;
+            wm_hints->icon_mask = 0;
         }
 
         if ((wm_hints->flags & IconPixmapHint) && (wm_hints->icon_pixmap)) {
@@ -882,13 +882,13 @@ QIcon TrayItem::createIcon(Window window) {
 
     // Fallback to _NET_WM_ICON if WM_HINTS icon is not available
     if (appIcon.isNull()) {
-        Atom netWmIcon = XInternAtom(display, "_NET_WM_ICON", False);
+        Atom netWmIcon = XInternAtom(display, "_NET_WM_ICON", false);
         Atom actualType;
         int actualFormat;
         unsigned long nItems, bytesAfter;
         unsigned char* data = nullptr;
 
-        if (XGetWindowProperty(display, window, netWmIcon, 0, LONG_MAX, False, XA_CARDINAL,
+        if (XGetWindowProperty(display, window, netWmIcon, 0, LONG_MAX, false, XA_CARDINAL,
                                &actualType, &actualFormat, &nItems, &bytesAfter, &data) == Success && data) {
             unsigned long* iconData = reinterpret_cast<unsigned long*>(data);
             unsigned long dataLength = nItems;
@@ -939,15 +939,15 @@ bool TrayItem::isBadWindow() {
 // displayed. Returns true if it is, otherwise false
 bool TrayItem::isOnCurrentDesktop() {
     Display *display = XLibUtil::display();
-    Atom type = None;
+    Atom type = 0;
     int format;
     unsigned long nitems, after;
     unsigned char *data = 0;
 
-    static Atom _NET_CURRENT_DESKTOP = XInternAtom(display, "_NET_CURRENT_DESKTOP", True);
+    static Atom _NET_CURRENT_DESKTOP = XInternAtom(display, "_NET_CURRENT_DESKTOP", true);
 
     long currentDesktop;
-    int r = XGetWindowProperty(display, DefaultRootWindow(display), _NET_CURRENT_DESKTOP, 0, 4, False,
+    int r = XGetWindowProperty(display, DefaultRootWindow(display), _NET_CURRENT_DESKTOP, 0, 4, false,
                            AnyPropertyType, &type, &format,     
                            &nitems, &after, &data);
     if (r == Success && data) 
