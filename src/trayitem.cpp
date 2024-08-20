@@ -18,10 +18,8 @@
  * USA.
  */
 
-#include <QApplication>
 #include <QFileDialog>
 #include <QImageReader>
-#include <QMessageBox>
 #include <QPixmap>
 #include <QElapsedTimer>
 #include <QWheelEvent>
@@ -32,6 +30,10 @@
 
 #include "trayitem.h"
 #include "xlibutil.h"
+
+#ifndef None
+#define None 0L
+#endif
 
 TrayItem::TrayItem(Window window, const TrayItemOptions &args) {
     m_wantsAttention = false;

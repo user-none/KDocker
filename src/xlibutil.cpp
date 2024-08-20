@@ -18,7 +18,6 @@
  * USA.
  */
 
-#include <QMetaType>
 #include <QGuiApplication>
 
 #include <stdio.h>

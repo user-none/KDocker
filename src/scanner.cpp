@@ -19,7 +19,6 @@
 
 #include <QCoreApplication>
 #include <QMessageBox>
-#include <QMutableListIterator>
 #include <QProcess>
 #include <QStringList>
 

@@ -29,7 +29,6 @@
 #include <QEvent>
 #include <QIcon>
 #include <QMenu>
-#include <QObject>
 #include <QString>
 #include <QSystemTrayIcon>
 #include <QSettings>
