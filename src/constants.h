@@ -32,6 +32,7 @@ public:
     static const QString ORG_NAME;
     static const QString DOM_NAME;
     static const QString APP_VERSION;
+    static const QString WEBSITE;
 
     static const QString DBUS_NAME;
     static const QString DBUS_PATH;
