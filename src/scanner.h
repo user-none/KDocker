@@ -36,7 +36,7 @@ class TrayItemManager;
 
 class ProcessId {
     public:
-        ProcessId(const QString &command, pid_t pid, const TrayItemOptions &config, uint timeout, bool checkNormality, const QRegularExpression &searchPattern);
+        ProcessId(const QString &command, pid_t pid, const TrayItemOptions &config, uint64_t timeout, bool checkNormality, const QRegularExpression &searchPattern);
         ProcessId(const ProcessId &obj);
         ProcessId& operator=(const ProcessId &obj);
 
@@ -44,7 +44,7 @@ class ProcessId {
         pid_t pid;
         TrayItemOptions config;
         QElapsedTimer etimer;
-        uint timeout;
+        uint64_t timeout;
         bool checkNormality;
         QRegularExpression searchPattern;
 };
@@ -57,8 +57,8 @@ class Scanner : public QObject {
 public:
     Scanner(TrayItemManager *manager);
     ~Scanner();
-    void enqueueSearch(const QRegularExpression &searchPattern, uint maxTime, bool checkNormality, const TrayItemOptions &config);
-    void enqueueLaunch(const QString &command, const QStringList &arguments, const QRegularExpression &searchPattern, uint maxTime, bool checkNormality, const TrayItemOptions &config);
+    void enqueueSearch(const QRegularExpression &searchPattern, uint32_t maxTime, bool checkNormality, const TrayItemOptions &config);
+    void enqueueLaunch(const QString &command, const QStringList &arguments, const QRegularExpression &searchPattern, uint32_t maxTime, bool checkNormality, const TrayItemOptions &config);
     bool isRunning();
 
 private slots:
@@ -71,7 +71,7 @@ signals:
     void stopping();
 
 private:
-    void enqueue(const QString &command, const QStringList &arguments, const QRegularExpression &searchPattern, const TrayItemOptions &config, uint maxTime, bool checkNormality);
+    void enqueue(const QString &command, const QStringList &arguments, const QRegularExpression &searchPattern, const TrayItemOptions &config, uint32_t maxTime, bool checkNormality);
 
     TrayItemManager *m_manager;
     QTimer *m_timer;

@@ -30,7 +30,7 @@
 
 #include <X11/Xlib.h>
 
-ProcessId::ProcessId(const QString &command, pid_t pid, const TrayItemOptions &config, uint timeout, bool checkNormality, const QRegularExpression &searchPattern) :
+ProcessId::ProcessId(const QString &command, pid_t pid, const TrayItemOptions &config, uint64_t timeout, bool checkNormality, const QRegularExpression &searchPattern) :
     command(command),
     pid(pid),
     config(config),
@@ -77,20 +77,18 @@ Scanner::~Scanner() {
     delete m_timer;
 }
 
-void Scanner::enqueueSearch(const QRegularExpression &searchPattern, uint maxTime, bool checkNormality, const TrayItemOptions &config) {
+void Scanner::enqueueSearch(const QRegularExpression &searchPattern, uint32_t maxTime, bool checkNormality, const TrayItemOptions &config) {
     if (maxTime == 0)
         maxTime = 1;
-    maxTime *= 1000;
 
-    ProcessId processId(QString(), 0, config, maxTime, checkNormality, searchPattern);
+    ProcessId processId(QString(), 0, config, maxTime*1000, checkNormality, searchPattern);
     m_processesTitle.append(processId);
     m_timer->start();
 }
 
-void Scanner::enqueueLaunch(const QString &command, const QStringList &arguments, const QRegularExpression &searchPattern, uint maxTime, bool checkNormality, const TrayItemOptions &config) {
+void Scanner::enqueueLaunch(const QString &command, const QStringList &arguments, const QRegularExpression &searchPattern, uint32_t maxTime, bool checkNormality, const TrayItemOptions &config) {
     if (maxTime == 0)
         maxTime = 1;
-    maxTime *= 1000;
 
     // Launch the requested application.
     qint64 pid;
@@ -99,7 +97,7 @@ void Scanner::enqueueLaunch(const QString &command, const QStringList &arguments
         return;
     }
 
-    ProcessId processId(command, 0, config, maxTime, checkNormality, searchPattern);
+    ProcessId processId(command, 0, config, maxTime*1000, checkNormality, searchPattern);
     if (!searchPattern.pattern().isEmpty()) {
         m_processesTitle.append(processId);
     } else {
