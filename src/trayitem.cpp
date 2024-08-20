@@ -31,10 +31,6 @@
 #include "trayitem.h"
 #include "xlibutil.h"
 
-#ifndef None
-#define None 0L
-#endif
-
 TrayItem::TrayItem(Window window, const TrayItemOptions &args) {
     m_wantsAttention = false;
     m_iconified = false;
