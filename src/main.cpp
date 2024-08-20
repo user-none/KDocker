@@ -19,6 +19,7 @@
  */
 
 #include "kdocker_adaptor.h"
+#include "adaptor.h"
 
 #include <QCoreApplication>
 #include <QLocale>
@@ -99,8 +100,10 @@ static void sendDbusCommand(const Command &command, const TrayItemOptions &confi
 }
 
 static void registerTypes() {
+    qRegisterMetaType<WindowNameMap>("WindowNameMap");
     qRegisterMetaType<TrayItemOptions>("TrayItemOptions");
     qDBusRegisterMetaType<TrayItemOptions>();
+    qDBusRegisterMetaType<WindowNameMap>();
 }
 
 int main(int argc, char *argv[]) {

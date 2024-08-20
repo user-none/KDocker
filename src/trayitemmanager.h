@@ -59,6 +59,11 @@ public slots:
     void dockSelectWindow(bool checkNormality = true, const TrayItemOptions &options = TrayItemOptions());
     void dockFocused(const TrayItemOptions &options = TrayItemOptions());
 
+    WindowNameMap listWindows();
+    bool closeWindow(uint windowId);
+    bool hideWindow(uint windowId);
+    bool showWindow(uint windowId);
+    bool undockWindow(uint windowId);
     void undockAll();
 
     void quit();

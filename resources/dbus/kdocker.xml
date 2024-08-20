@@ -207,6 +207,83 @@
         </method>
 
         <!-- Docked window managmeent -->
+        <method name="listWindows">
+            <arg name="windows" direction="out" type="a{us}">
+                <doc:doc><doc:summary>Dictionary of, "window id" = "application name"</doc:summary></doc:doc>
+            </arg>
+            <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="WindowNameMap"/>
+            <doc:doc>
+                <doc:description>
+                    <doc:para>
+                        List of currently docked windows.
+                    </doc:para>
+                    <doc:para>
+                        Window id can be used with actions that accept a window
+                        id to operate on a specific docked window.
+                    </doc:para>
+                </doc:description>
+            </doc:doc>
+        </method>
+        <method name="closeWindow">
+            <arg name="windowId" direction="in" type="u">
+                <doc:doc><doc:summary>X11 Window id</doc:summary></doc:doc>
+            </arg>
+            <arg name="found" direction="out" type="b">
+                <doc:doc><doc:summary>True if window was found and action performed. False if window was not found.</doc:summary></doc:doc>
+            </arg>
+            <doc:doc>
+                <doc:description>
+                    <doc:para>
+                        close window
+                    </doc:para>
+                </doc:description>
+            </doc:doc>
+        </method>
+        <method name="undockWindow">
+            <arg name="windowId" direction="in" type="u">
+                <doc:doc><doc:summary>X11 Window id</doc:summary></doc:doc>
+            </arg>
+            <arg name="found" direction="out" type="b">
+                <doc:doc><doc:summary>True if window was found and action performed. False if window was not found.</doc:summary></doc:doc>
+            </arg>
+            <doc:doc>
+                <doc:description>
+                    <doc:para>
+                        undock window
+                    </doc:para>
+                </doc:description>
+            </doc:doc>
+        </method>
+        <method name="showWindow">
+            <arg name="windowId" direction="in" type="u">
+                <doc:doc><doc:summary>X11 Window id</doc:summary></doc:doc>
+            </arg>
+            <arg name="found" direction="out" type="b">
+                <doc:doc><doc:summary>True if window was found and action performed. False if window was not found.</doc:summary></doc:doc>
+            </arg>
+            <doc:doc>
+                <doc:description>
+                    <doc:para>
+                        show (restore) the window
+                    </doc:para>
+                </doc:description>
+            </doc:doc>
+        </method>
+        <method name="hideWindow">
+            <arg name="windowId" direction="in" type="u">
+                <doc:doc><doc:summary>X11 Window id</doc:summary></doc:doc>
+            </arg>
+            <arg name="found" direction="out" type="b">
+                <doc:doc><doc:summary>True if window was found and action performed. False if window was not found.</doc:summary></doc:doc>
+            </arg>
+            <doc:doc>
+                <doc:description>
+                    <doc:para>
+                        hide (iconfiy) the window
+                    </doc:para>
+                </doc:description>
+            </doc:doc>
+        </method>
         <method name="undockAll">
             <doc:doc>
                 <doc:description>

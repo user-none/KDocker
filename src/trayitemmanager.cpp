@@ -189,6 +189,66 @@ void TrayItemManager::dockFocused(const TrayItemOptions &options) {
     dockWindow(window, options);
 }
 
+WindowNameMap TrayItemManager::listWindows() {
+    WindowNameMap items;
+
+    QListIterator<TrayItem *> ti(m_trayItems);
+    while (ti.hasNext()) {
+        TrayItem *trayItem = ti.next();
+        items.insert(trayItem->dockedWindow(), trayItem->appName());
+    }
+
+    return items;
+}
+
+bool TrayItemManager::closeWindow(uint windowId) {
+    QListIterator<TrayItem *> ti(m_trayItems);
+    while (ti.hasNext()) {
+        TrayItem *trayItem = ti.next();
+        if (trayItem->dockedWindow() == static_cast<Window>(windowId)) {
+            trayItem->closeWindow();
+            return true;
+        }
+    }
+    return false;
+}
+
+bool TrayItemManager::hideWindow(uint windowId) {
+    QListIterator<TrayItem *> ti(m_trayItems);
+    while (ti.hasNext()) {
+        TrayItem *trayItem = ti.next();
+        if (trayItem->dockedWindow() == static_cast<Window>(windowId)) {
+            trayItem->iconifyWindow();
+            return true;
+        }
+    }
+    return false;
+}
+
+bool TrayItemManager::showWindow(uint windowId) {
+    QListIterator<TrayItem *> ti(m_trayItems);
+    while (ti.hasNext()) {
+        TrayItem *trayItem = ti.next();
+        if (trayItem->dockedWindow() == static_cast<Window>(windowId)) {
+            trayItem->restoreWindow();
+            return true;
+        }
+    }
+    return false;
+}
+
+bool TrayItemManager::undockWindow(uint windowId) {
+    QListIterator<TrayItem *> ti(m_trayItems);
+    while (ti.hasNext()) {
+        TrayItem *trayItem = ti.next();
+        if (trayItem->dockedWindow() == static_cast<Window>(windowId)) {
+            undock(trayItem);
+            return true;
+        }
+    }
+    return false;
+}
+
 void TrayItemManager::dockWindow(Window window, const TrayItemOptions &settings) {
     if (isWindowDocked(window)) {
         QMessageBox::information(0, qApp->applicationName(), tr("This window is already docked.\nClick on system tray icon to toggle docking."));
