@@ -47,7 +47,7 @@ class Command {
         Command::Type getType() const;
         QString getSearchPattern() const;
         uint getWindowId() const;
-        uint getPid() const;
+        pid_t getPid() const;
         QString getLaunchApp() const;
         QStringList getLaunchAppArguments() const;
         uint getTimeout() const;
@@ -56,7 +56,7 @@ class Command {
         void setType(Command::Type type);
         void setSearchPattern(const QString &pattern);
         void setWindowId(uint wid);
-        void setPid(uint pid);
+        void setPid(pid_t pid);
         void setLaunchApp(const QString &app);
         void setLaunchAppArguments(const QStringList &args);
         void setTimeout(uint v);

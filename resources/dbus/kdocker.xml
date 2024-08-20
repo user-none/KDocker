@@ -121,7 +121,7 @@
             </doc:doc>
         </method>
         <method name="dockPid">
-            <arg name="pid" direction="in" type="u">
+            <arg name="pid" direction="in" type="i">
                 <doc:doc><doc:summary>Process id</doc:summary></doc:doc>
             </arg>
             <doc:doc>
@@ -133,7 +133,7 @@
             </doc:doc>
         </method>
         <method name="dockPid">
-            <arg name="pid" direction="in" type="u">
+            <arg name="pid" direction="in" type="i">
                 <doc:doc><doc:summary>Process id</doc:summary></doc:doc>
             </arg>
             <arg name="checkNormality" direction="in" type="b">

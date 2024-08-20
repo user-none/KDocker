@@ -161,7 +161,7 @@ void TrayItemManager::dockWindowId(int wid, const TrayItemOptions &options) {
     dockWindow(window, options);
 }
 
-void TrayItemManager::dockPid(int pid, bool checkNormality, const TrayItemOptions &options) {
+void TrayItemManager::dockPid(pid_t pid, bool checkNormality, const TrayItemOptions &options) {
     Window window = XLibUtil::pidToWid(XLibUtil::display(), XLibUtil::appRootWindow(), checkNormality, pid, dockedWindows());
     if (!XLibUtil::isValidWindowId(XLibUtil::display(), window)) {
         QMessageBox::critical(0, qApp->applicationName(), tr("Invalid window id"));

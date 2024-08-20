@@ -41,7 +41,7 @@ uint Command::getWindowId() const {
     return m_windowId;
 }
 
-uint Command::getPid() const {
+pid_t Command::getPid() const {
     return m_pid;
 }
 
@@ -73,7 +73,7 @@ void Command::setWindowId(uint wid) {
     m_windowId = wid;
 }
 
-void Command::setPid(uint pid) {
+void Command::setPid(pid_t pid) {
     m_pid = pid;
 }
 

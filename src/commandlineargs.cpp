@@ -106,8 +106,8 @@ bool CommandLineArgs::validateParserArgs(const QCommandLineParser &parser) {
     // Verify the pid is a valid number
     if (parser.isSet("pid")) {
         bool ok;
-        uint id = QString(parser.value("pid")).toUInt(&ok, 0);
-        if (!ok || id == 0) {
+        pid_t id = QString(parser.value("pid")).toInt(&ok, 0);
+        if (!ok || id <= 0) {
             qCritical() << "Failed to parse pid";
             return false;
         }
@@ -183,7 +183,7 @@ void CommandLineArgs::buildCommand(const QCommandLineParser &parser, Command &co
     } else if (parser.isSet("pid")) {
         bool ok;
         command.setType(Command::Type::Pid);
-        command.setPid(QString(parser.value("pid")).toUInt(&ok, 0));
+        command.setPid(QString(parser.value("pid")).toInt(&ok, 0));
     } else if (parser.positionalArguments().size() > 0) {
         command.setType(Command::Type::Launch);
         command.setLaunchApp(parser.positionalArguments().at(0));
