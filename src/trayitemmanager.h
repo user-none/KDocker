@@ -52,18 +52,18 @@ public slots:
     // Defaults are needed for overloading from DBus.
     // There are simplified versions of each of these exposed as well as
     // the full ones. The defaults allow us to have one function for each overload.
-    void dockWindowTitle(const QString &searchPattern, uint32_t timeout = 4, bool checkNormality = true, const TrayItemOptions &options = TrayItemOptions());
-    void dockLaunchApp(const QString &app, const QStringList &appArguments, const QString &searchPattern, uint32_t timeout = 4, bool checkNormality = true, const TrayItemOptions &options = TrayItemOptions());
+    void dockWindowTitle(const QString &searchPattern, uint timeout = 4, bool checkNormality = true, const TrayItemOptions &options = TrayItemOptions());
+    void dockLaunchApp(const QString &app, const QStringList &appArguments, const QString &searchPattern, uint timeout = 4, bool checkNormality = true, const TrayItemOptions &options = TrayItemOptions());
     void dockWindowId(int wid, const TrayItemOptions &options = TrayItemOptions());
     void dockPid(pid_t pid, bool checkNormality = true, const TrayItemOptions &options = TrayItemOptions());
     void dockSelectWindow(bool checkNormality = true, const TrayItemOptions &options = TrayItemOptions());
     void dockFocused(const TrayItemOptions &options = TrayItemOptions());
 
     WindowNameMap listWindows();
-    bool closeWindow(uint32_t windowId);
-    bool hideWindow(uint32_t windowId);
-    bool showWindow(uint32_t windowId);
-    bool undockWindow(uint32_t windowId);
+    bool closeWindow(uint windowId);
+    bool hideWindow(uint windowId);
+    bool showWindow(uint windowId);
+    bool undockWindow(uint windowId);
     void undockAll();
 
     void quit();
