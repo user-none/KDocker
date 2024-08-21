@@ -88,4 +88,4 @@ public:
     static void sendMessageCloseWindow(Window w);
 };
 
-#endif /* _XLIBUTIL_H */
+#endif // _XLIBUTIL_H

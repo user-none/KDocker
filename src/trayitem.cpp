@@ -102,12 +102,11 @@ TrayItem::~TrayItem()
 
 bool TrayItem::readSetting(TrayItemOptions::TriState argSetting, QString key, bool kdockerDefault)
 {
-    /* Precedence:
-     * 1) Command line overrides         (argSetting, if positive)
-     * 2) User app-specific defaults     (QSettings: "<m_dockedAppName>/<key>")
-     * 3) User global defaults           (QSettings: "_GLOBAL_DEFAULTS/<key>")
-     * 4) KDocker defaults               (#define DEFAULT_keyname)
-     */
+    // Precedence:
+    // 1) Command line overrides         (argSetting, if positive)
+    // 2) User app-specific defaults     (QSettings: "<m_dockedAppName>/<key>")
+    // 3) User global defaults           (QSettings: "_GLOBAL_DEFAULTS/<key>")
+    // 4) KDocker defaults               (#define DEFAULT_keyname)
     if (argSetting != TrayItemOptions::TriState::Unset) {
         return (argSetting == TrayItemOptions::TriState::SetTrue ? true : false);
     }
@@ -225,7 +224,8 @@ void TrayItem::saveSettingsApp()
 }
 
 void TrayItem::saveSettings()
-{ /*  "/home/<user>/.config/com.kdocker/KDocker.conf"    //  <==  m_config.fileName();  */
+{
+    // "/home/<user>/.config/com.kdocker/KDocker.conf" <==  m_config.fileName();
     // Group is set by caller
     m_config.setValue("BalloonTimeout", m_settings.getNotifyTime());
     m_config.setValue("Sticky", m_settings.getSticky());
@@ -356,7 +356,7 @@ void TrayItem::iconifyWindow()
 
     m_iconified = true;
 
-    /* Get screen number */
+    // Get screen number
     XLibUtil::getWMSizeHints(m_window, m_sizeHint);
     XLibUtil::iconifyWindow(m_window);
     updateToggleAction();
@@ -632,9 +632,7 @@ void TrayItem::readDockedAppName()
     m_dockedAppName = XLibUtil::getAppName(m_window);
 }
 
-/*
- * Update the title in the tooltip.
- */
+// Update the title in the tooltip.
 void TrayItem::updateTitle()
 {
     if (isBadWindow())

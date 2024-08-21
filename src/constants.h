@@ -38,4 +38,4 @@ public:
     static const QString DBUS_PATH;
 };
 
-#endif /* _CONSTANTS_H */
+#endif // _CONSTANTS_H

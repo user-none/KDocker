@@ -45,4 +45,4 @@ private:
     QSocketNotifier *m_closeSignalSocketNotifier;
 };
 
-#endif /* _APPLICATION_H */
+#endif // _APPLICATION_H

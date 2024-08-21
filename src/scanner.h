@@ -84,4 +84,4 @@ private:
     QList<ProcessId> m_processesTitle;
 };
 
-#endif /* _SCANNER_H */
+#endif // _SCANNER_H

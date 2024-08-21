@@ -93,4 +93,4 @@ private:
     bool m_daemon;
 };
 
-#endif /* _TRAYITEMMANAGER_H */
+#endif // _TRAYITEMMANAGER_H

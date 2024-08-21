@@ -154,4 +154,4 @@ private:
     QAction *m_actionSaveSettingsGlobal;
 };
 
-#endif /* _TRAYITEM_H */
+#endif // _TRAYITEM_H
