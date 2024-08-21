@@ -23,6 +23,7 @@
 
 #include "adaptor.h"
 #include "command.h"
+#include "grabinfo.h"
 #include "trayitem.h"
 
 #include <QHash>

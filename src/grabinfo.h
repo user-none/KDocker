@@ -26,6 +26,35 @@
 #include <QEventLoop>
 #include <QTimer>
 
+// This is used in a very bad and strange design that really needs to be replaced.
+//
+// TrayItemManager::userSelectWindow passes a GrabInfo object to XLibUtil::selectWindow.
+// XLibUtil::selectWindow calls GrabInfo::exec which is blocking. Blocking happens by
+// running an event loop that does nothing but block execution (m_qloop). Exection resumes
+// when one of the following happens:
+//
+// 1. A timeout timer (m_qtimer) that starts when exec is called times out.
+// 2. The native event filter receives an event of key press ESC (our cancel key).
+// 3. The native event filter receives a button press event (mouse click).
+//
+// Number 1 just stops the event loop and resumes execution of
+// XLibUtil::selectWindow. No window will have been stored in GrabInfo so no
+// window is returned.
+//
+// Number 2 tells the GrabInfo object to stop the event loop and resumes
+// execution of XLibUtil::selectWindow. No window will have been stored in
+// GrabInfo so no window is returned.
+//
+// Number 3 will set the button click and the selected window (if there was
+// one) in GrabInfo. Then it will tell the GrabInfo object to stop the event
+// loop and resumes execution of XLibUtil::selectWindow. The button will
+// be verified to a left mouse click, the window will be verified and if this
+// all passes validation, the selected window will be docked.
+//
+// Essentially, we're going to use an object to broker data while also using it to
+// block in a function while waiting for events that change the broker object
+// and tell it when to stop blocking.
+
 class GrabInfo : public QObject
 {
     Q_OBJECT
