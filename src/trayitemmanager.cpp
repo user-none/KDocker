@@ -39,11 +39,7 @@ TrayItemManager::TrayItemManager()
     m_scanner = new Scanner(this);
     connect(m_scanner, &Scanner::windowFound, this, &TrayItemManager::dockWindow);
     connect(m_scanner, &Scanner::stopping, this, &TrayItemManager::checkCount);
-    m_grabInfo.qtimer = new QTimer;
-    m_grabInfo.qloop = new QEventLoop;
-    m_grabInfo.isGrabbing = false;
-    connect(m_grabInfo.qtimer, &QTimer::timeout, m_grabInfo.qloop, &QEventLoop::quit);
-    connect(this, &TrayItemManager::quitMouseGrab, m_grabInfo.qloop, &QEventLoop::quit);
+    connect(this, &TrayItemManager::quitMouseGrab, &m_grabInfo, &GrabInfo::stop);
 
     qApp->installNativeEventFilter(this);
 }
@@ -55,8 +51,6 @@ TrayItemManager::~TrayItemManager()
         undock(t);
         delete t;
     }
-    delete m_grabInfo.qtimer;
-    delete m_grabInfo.qloop;
     delete m_scanner;
     qApp->removeNativeEventFilter(this);
 }
@@ -92,24 +86,24 @@ bool TrayItemManager::nativeEventFilter([[maybe_unused]] const QByteArray &event
             break;
 
         case XCB_BUTTON_PRESS:
-            if (m_grabInfo.isGrabbing) {
-                m_grabInfo.isGrabbing = false; // Cancel immediately
+            if (m_grabInfo.isGrabbing()) {
+                m_grabInfo.stopGrabbing();
 
-                m_grabInfo.button = static_cast<xcb_button_press_event_t *>(message)->detail;
-                m_grabInfo.window = static_cast<xcb_button_press_event_t *>(message)->child;
+                m_grabInfo.setButton(static_cast<xcb_button_press_event_t *>(message)->detail);
+                m_grabInfo.setWindow(static_cast<xcb_button_press_event_t *>(message)->child);
 
                 emit quitMouseGrab(); // Interrupt QTimer waiting for grab
-                return true;          // Event has been handled - don't propagate
+                return true;       // Event has been handled - don't propagate
             }
             break;
 
         case XCB_KEY_RELEASE:
-            if (m_grabInfo.isGrabbing) {
+            if (m_grabInfo.isGrabbing()) {
                 if (static_cast<xcb_key_release_event_t *>(message)->detail == ESC_key) {
-                    m_grabInfo.isGrabbing = false;
+                    m_grabInfo.stopGrabbing();
 
                     emit quitMouseGrab(); // Interrupt QTimer waiting for grab
-                    return true;          // Event has been handled - don't propagate
+                    return true;       // Event has been handled - don't propagate
                 }
             }
             break;

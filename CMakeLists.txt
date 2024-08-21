@@ -57,6 +57,7 @@ set(SOURCES
     src/command.cpp
     src/commandlineargs.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/constants.cpp
+    src/grabinfo.cpp
     src/main.cpp
     src/scanner.cpp
     src/trayitem.cpp

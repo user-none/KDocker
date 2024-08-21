@@ -17,16 +17,45 @@
  * USA.
  */
 
-#ifndef _XLIBTYPES
-#define _XLIBTYPES
+#ifndef _GRABINFO_H
+#define _GRABINFO_H
 
-#include <cstdint>
+#include "xlibtypes.h"
 
-// Due to isolation of X11 headers (see xlibutil.h for why),
-// we need to define some types from X11 we're using outside
-// of the helper class.
+#include <QObject>
+#include <QEventLoop>
+#include <QTimer>
 
-typedef uint64_t Atom;
-typedef uint64_t Window;
+class GrabInfo : public QObject
+{
+    Q_OBJECT
 
-#endif // _XLIBTYPES
+public:
+    GrabInfo();
+
+    void exec();
+
+    bool isGrabbing();
+    bool isActive();
+    Window getWindow();
+    unsigned int getButton();
+
+    void setWindow(Window w);
+    void setButton(unsigned int button);
+
+    void stopGrabbing();
+
+public slots:
+    void stop();
+
+private:
+    QTimer m_qtimer;
+    QEventLoop m_qloop;
+
+    Window m_window;
+    unsigned int m_button;
+    bool m_isGrabbing;
+
+};
+
+#endif // _GRABINFO_H

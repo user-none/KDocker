@@ -49,7 +49,6 @@
 // we don't have to keep calling a string lookup function. Atoms
 // are unsigned longs and never change their value.
 
-
 static int ignoreXErrors([[maybe_unused]] Display *, [[maybe_unused]] XErrorEvent *)
 {
     return 0;
@@ -455,28 +454,19 @@ Window XLibUtil::selectWindow(GrabInfo &grabInfo, QString &error)
     }
     XSelectInput(display, root, KeyPressMask);
     XAllowEvents(display, SyncPointer, CurrentTime);
-
-    grabInfo.window = 0;
-    grabInfo.button = 0;
-    grabInfo.qtimer->setSingleShot(true);
-    // grabInfo.qtimer-> start(20000);   // 20 second timeout
-    grabInfo.qtimer->start(5000); // 5 second timeout
-
     XSync(display, false);
 
-    grabInfo.isGrabbing = true; // Enable XCB_BUTTON_PRESS code in event filter
-    grabInfo.qloop->exec();     // block until button pressed or timeout
+    grabInfo.exec(); // Block waiting for a selection, cancel, or timeout.
 
     XUngrabPointer(display, CurrentTime);
     XUngrabKey(display, keyEsc, AnyModifier, root);
     XSelectInput(display, root, NoEventMask);
     XFreeCursor(display, cursor);
 
-    if (grabInfo.button != Button1 || !grabInfo.window || !grabInfo.qtimer->isActive()) {
+    if (grabInfo.getButton() != Button1 || !grabInfo.getWindow() || !grabInfo.isActive())
         return 0;
-    }
 
-    return XmuClientWindow(display, grabInfo.window);
+    return XmuClientWindow(display, grabInfo.getWindow());
 }
 
 void XLibUtil::subscribe(Window w)

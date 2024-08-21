@@ -21,13 +21,13 @@
 #ifndef _XLIBUTIL_H
 #define _XLIBUTIL_H
 
-#include <QEventLoop>
+#include "grabinfo.h"
+
 #include <QList>
 #include <QObject>
 #include <QPixmap>
 #include <QRegularExpression>
 #include <QString>
-#include <QTimer>
 
 #include <xlibtypes.h>
 
@@ -56,17 +56,6 @@ typedef void XLibUtilSizeHints;
 //
 // If any X11 functions need to be added, they should be added here and the
 // X11 headers included in the cpp file in order to avoid the above issues.
-
-typedef struct GrabInfo
-{
-    QTimer *qtimer;
-    QEventLoop *qloop;
-
-    Window window;
-    unsigned int button;
-    bool isGrabbing;
-
-} GrabInfo;
 
 class XLibUtil : public QObject
 {
