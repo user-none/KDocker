@@ -40,8 +40,6 @@ TrayItem::TrayItem(Window window, const TrayItemOptions &args) {
     m_dockedAppName = "";
     m_window = window;
 
-    Display *display = XLibUtil::display();
-
     // Allows events from m_window to be forwarded to the x11EventFilter.
     XLibUtil::subscribe(m_window, StructureNotifyMask | PropertyChangeMask | VisibilityChangeMask | FocusChangeMask);
 
@@ -551,11 +549,10 @@ void TrayItem::propertyChangeEvent(Atom property) {
         return;
     }
 
-    Display *display = XLibUtil::display();
-    static Atom WM_NAME         = XInternAtom(display, "WM_NAME", true);
-    static Atom WM_ICON         = XInternAtom(display, "WM_ICON", true);
-    static Atom WM_STATE        = XInternAtom(display, "WM_STATE", true);
-    static Atom _NET_WM_DESKTOP = XInternAtom(display, "_NET_WM_DESKTOP", true);
+    static Atom WM_NAME         = XLibUtil::getAtom("WM_NAME");
+    static Atom WM_ICON         = XLibUtil::getAtom("WM_ICON");
+    static Atom WM_STATE        = XLibUtil::getAtom("WM_STATE");
+    static Atom _NET_WM_DESKTOP = XLibUtil::getAtom("_NET_WM_DESKTOP");
 
     if (property == WM_NAME) {
         updateTitle();
@@ -564,20 +561,12 @@ void TrayItem::propertyChangeEvent(Atom property) {
     } else if (property == _NET_WM_DESKTOP) {
         m_desktop = XLibUtil::getWindowDesktop(m_window);
     } else if (property == WM_STATE) {
-        Atom type = 0;
-        int format;
-        unsigned long nitems, after;
-        unsigned char *data = 0;
-        int r = XGetWindowProperty(display, m_window, WM_STATE, 0, 1, false, AnyPropertyType, &type, &format, &nitems, &after, &data);
-        if ((r == Success) && data && (*reinterpret_cast<long *> (data) == IconicState)) {
-            // KDE 5.14 started issuing this event when the user changes virtual desktops so
-            // a minimizeEvent() should not be executed unless the window is on the currently
-            // visible desktop
-            if (isOnCurrentDesktop()) {
-                minimizeEvent();
-            }
+        // KDE 5.14 started issuing this event when the user changes virtual desktops so
+        // a minimizeEvent() should not be executed unless the window is on the currently
+        // visible desktop
+        if (XLibUtil::isWindowIconic(m_window) && isOnCurrentDesktop()) {
+            minimizeEvent();
         }
-        XFree(data);
     }
 }
 
@@ -613,22 +602,7 @@ void TrayItem::readDockedAppName() {
         return;
     }
 
-    Display *display = XLibUtil::display();
-    XClassHint ch;
-    if (XGetClassHint(display, m_window, &ch)) {
-        if (ch.res_class) {
-            m_dockedAppName = QString(ch.res_class);
-        } else if (ch.res_name) {
-            m_dockedAppName = QString(ch.res_name);
-        }
-
-        if (ch.res_class) {
-            XFree(ch.res_class);
-        }
-        if (ch.res_name) {
-            XFree(ch.res_name);
-        }
-    }
+    m_dockedAppName = XLibUtil::getAppName(m_window);
 }
 
 /*
@@ -639,15 +613,7 @@ void TrayItem::updateTitle() {
         return;
     }
 
-    Display *display = XLibUtil::display();
-    char *windowName = 0;
-    QString title;
-
-    XFetchName(display, m_window, &windowName);
-    title = windowName;
-    if (windowName) {
-        XFree(windowName);
-    }
+    QString title = XLibUtil::getWindowTitle(m_window);
 
     setToolTip(QString("%1 [%2]").arg(title).arg(m_dockedAppName));
     if (m_settings.getNotifyTime() > 0) {

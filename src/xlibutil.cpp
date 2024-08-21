@@ -479,6 +479,23 @@ void XLibUtil::iconifyWindow(Window w) {
     XWithdrawWindow(display, w, screen);
 }
 
+bool XLibUtil::isWindowIconic(Window w) {
+    bool iconic = false;
+    Atom type = 0;
+    int format;
+    unsigned long nitems, after;
+    unsigned char *data = 0;
+    Display *display = XLibUtil::display();
+    static Atom WM_STATE = XInternAtom(display, "WM_STATE", true);
+
+    int r = XGetWindowProperty(display, w, WM_STATE, 0, 1, false, AnyPropertyType, &type, &format, &nitems, &after, &data);
+    if ((r == Success) && data && (*reinterpret_cast<long *> (data) == IconicState))
+        iconic = true;
+    XFree(data);
+
+    return iconic;
+}
+
 void XLibUtil::mapWindow(Window w) {
     XMapWindow(XLibUtil::display(), w);
 }
@@ -599,6 +616,45 @@ QPixmap XLibUtil::createIcon(Window window) {
     }
 
     return appIcon;
+}
+
+QString XLibUtil::getAppName(Window w) {
+    XClassHint ch;
+    QString name;
+
+    if (XGetClassHint(XLibUtil::display(), w, &ch)) {
+        if (ch.res_class) {
+            name = QString(ch.res_class);
+        } else if (ch.res_name) {
+            name = QString(ch.res_name);
+        }
+
+        if (ch.res_class) {
+            XFree(ch.res_class);
+        }
+        if (ch.res_name) {
+            XFree(ch.res_name);
+        }
+    }
+
+    return name;
+}
+
+QString XLibUtil::getWindowTitle(Window w) {
+    char *windowName = 0;
+    QString title;
+
+    XFetchName(XLibUtil::display(), w, &windowName);
+    title = windowName;
+
+    if (windowName)
+        XFree(windowName);
+
+    return title;
+}
+
+Atom XLibUtil::getAtom(const char *name) {
+    return XInternAtom(XLibUtil::display(), name, true);
 }
 
 Display *XLibUtil::display() {

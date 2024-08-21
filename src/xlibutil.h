@@ -63,12 +63,17 @@ public:
     static Window appRootWindow();
 
     static void iconifyWindow(Window w);
+    static bool isWindowIconic(Window w);
 
     static void mapWindow(Window w);
     static void mapRaised(Window w);
     static void flush();
 
     static QPixmap createIcon(Window window);
+    static QString getAppName(Window w);
+    static QString getWindowTitle(Window w);
+
+    static Atom getAtom(const char *name);
 
     static void sendMessageWMState(Window w, const char *type, bool set);
     static void sendMessageCurrentDesktop(long desktop, Window w);
