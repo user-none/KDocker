@@ -139,25 +139,27 @@ void TrayItemManager::dockLaunchApp(const QString &app, const QStringList &appAr
     checkCount();
 }
 
-void TrayItemManager::dockWindowId(uint windowId, const TrayItemOptions &options)
+bool TrayItemManager::dockWindowId(uint windowId, const TrayItemOptions &options)
 {
     if (!XLibUtil::isValidWindowId(windowId)) {
         QMessageBox::critical(0, qApp->applicationName(), tr("Invalid window id"));
         checkCount();
-        return;
+        return false;
     }
     dockWindow(windowId, options);
+    return true;
 }
 
-void TrayItemManager::dockPid(pid_t pid, bool checkNormality, const TrayItemOptions &options)
+bool TrayItemManager::dockPid(pid_t pid, bool checkNormality, const TrayItemOptions &options)
 {
     windowid_t window = XLibUtil::pidToWid(checkNormality, pid, dockedWindows());
     if (!XLibUtil::isValidWindowId(window)) {
-        QMessageBox::critical(0, qApp->applicationName(), tr("Invalid window id"));
+        QMessageBox::critical(0, qApp->applicationName(), tr("Invalid pid"));
         checkCount();
-        return;
+        return false;
     }
     dockWindow(window, options);
+    return true;
 }
 
 void TrayItemManager::dockSelectWindow(bool checkNormality, const TrayItemOptions &options)

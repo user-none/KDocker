@@ -93,6 +93,9 @@
             <arg name="windowId" direction="in" type="u">
                 <doc:doc><doc:summary>X11 Window id</doc:summary></doc:doc>
             </arg>
+            <arg name="found" direction="out" type="b">
+                <doc:doc><doc:summary>True if window was found and action performed. False if window was not found.</doc:summary></doc:doc>
+            </arg>
             <doc:doc>
                 <doc:description>
                     <doc:para>
@@ -107,6 +110,9 @@
             </arg>
             <arg name="windowConfig" direction="in" type="a{ss}">
                 <doc:doc><doc:summary></doc:summary></doc:doc>
+            </arg>
+            <arg name="found" direction="out" type="b">
+                <doc:doc><doc:summary>True if window was found and action performed. False if window was not found.</doc:summary></doc:doc>
             </arg>
             <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="TrayItemOptions"/>
             <doc:doc>
@@ -123,6 +129,9 @@
         <method name="dockPid">
             <arg name="pid" direction="in" type="i">
                 <doc:doc><doc:summary>Process id</doc:summary></doc:doc>
+            </arg>
+            <arg name="found" direction="out" type="b">
+                <doc:doc><doc:summary>True if window was found and action performed. False if window was not found.</doc:summary></doc:doc>
             </arg>
             <doc:doc>
                 <doc:description>
@@ -141,6 +150,9 @@
             </arg>
             <arg name="windowConfig" direction="in" type="a{ss}">
                 <doc:doc><doc:summary></doc:summary></doc:doc>
+            </arg>
+            <arg name="found" direction="out" type="b">
+                <doc:doc><doc:summary>True if window was found and action performed. False if window was not found.</doc:summary></doc:doc>
             </arg>
             <annotation name="org.qtproject.QtDBus.QtTypeName.In2" value="TrayItemOptions"/>
             <doc:doc>
