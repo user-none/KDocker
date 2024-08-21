@@ -128,12 +128,12 @@ bool TrayItemManager::nativeEventFilter([[maybe_unused]] const QByteArray &event
     return false;
 }
 
-void TrayItemManager::dockWindowTitle(const QString &searchPattern, uint32_t timeout, bool checkNormality, const TrayItemOptions &options) {
+void TrayItemManager::dockWindowTitle(const QString &searchPattern, uint timeout, bool checkNormality, const TrayItemOptions &options) {
     m_scanner->enqueueSearch(QRegularExpression(searchPattern), timeout, checkNormality, options);
     checkCount();
 }
 
-void TrayItemManager::dockLaunchApp(const QString &app, const QStringList &appArguments, const QString &searchPattern, uint32_t timeout, bool checkNormality, const TrayItemOptions &options) {
+void TrayItemManager::dockLaunchApp(const QString &app, const QStringList &appArguments, const QString &searchPattern, uint timeout, bool checkNormality, const TrayItemOptions &options) {
     m_scanner->enqueueLaunch(app, appArguments, QRegularExpression(searchPattern), timeout, checkNormality, options);
     checkCount();
 }
@@ -188,7 +188,7 @@ WindowNameMap TrayItemManager::listWindows() {
     return items;
 }
 
-bool TrayItemManager::closeWindow(uint32_t windowId) {
+bool TrayItemManager::closeWindow(uint windowId) {
     QListIterator<TrayItem *> ti(m_trayItems);
     while (ti.hasNext()) {
         TrayItem *trayItem = ti.next();
@@ -200,7 +200,7 @@ bool TrayItemManager::closeWindow(uint32_t windowId) {
     return false;
 }
 
-bool TrayItemManager::hideWindow(uint32_t windowId) {
+bool TrayItemManager::hideWindow(uint windowId) {
     QListIterator<TrayItem *> ti(m_trayItems);
     while (ti.hasNext()) {
         TrayItem *trayItem = ti.next();
@@ -212,7 +212,7 @@ bool TrayItemManager::hideWindow(uint32_t windowId) {
     return false;
 }
 
-bool TrayItemManager::showWindow(uint32_t windowId) {
+bool TrayItemManager::showWindow(uint windowId) {
     QListIterator<TrayItem *> ti(m_trayItems);
     while (ti.hasNext()) {
         TrayItem *trayItem = ti.next();
@@ -224,7 +224,7 @@ bool TrayItemManager::showWindow(uint32_t windowId) {
     return false;
 }
 
-bool TrayItemManager::undockWindow(uint32_t windowId) {
+bool TrayItemManager::undockWindow(uint windowId) {
     QListIterator<TrayItem *> ti(m_trayItems);
     while (ti.hasNext()) {
         TrayItem *trayItem = ti.next();
