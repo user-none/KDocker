@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2009 John Schember <john@nachtimwald.com>
+ *  Copyright (C) 2024 John Schember <john@nachtimwald.com>
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,32 +17,11 @@
  * USA.
  */
 
-#ifndef _APPLICATION_H
-#define _APPLICATION_H
+#ifndef _XLIBTYPES
+#define _XLIBTYPES
 
-#include "trayitemmanager.h"
+typedef uint64_t Atom;
+typedef uint64_t Window;
+typedef void XLibUtilSizeHints;
 
-#include <QApplication>
-#include <QSocketNotifier>
-
-class Application : public QApplication
-{
-    Q_OBJECT
-
-public:
-    Application(int &argc, char **argv);
-
-    void setTrayItemManagerInstance(TrayItemManager *trayItemManager);
-    void notifyCloseSignal();
-
-public slots:
-    void handleCloseSignal();
-
-private:
-    TrayItemManager *m_trayItemManager;
-
-    static int m_closeSignalFd[2];
-    QSocketNotifier *m_closeSignalSocketNotifier;
-};
-
-#endif /* _APPLICATION_H */
+#endif // _XLIBTYPES

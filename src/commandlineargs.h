@@ -17,23 +17,23 @@
  * USA.
  */
 
-
 #ifndef _COMMANDLINEARGS_H
-#define	_COMMANDLINEARGS_H
-
-#include <QCommandLineParser>
+#define _COMMANDLINEARGS_H
 
 #include "command.h"
 #include "trayitemoptions.h"
 
-class CommandLineArgs {
-    public:
-        static bool processArgs(const QStringList &arguments, Command &command, TrayItemOptions &config, bool &daemon);
+#include <QCommandLineParser>
 
-    private:
-        static bool validateParserArgs(const QCommandLineParser &parser);
-        static void buildConfig(const QCommandLineParser &parser, TrayItemOptions &config);
-        static void buildCommand(const QCommandLineParser &parser, Command &command);
+class CommandLineArgs
+{
+public:
+    static bool processArgs(const QStringList &arguments, Command &command, TrayItemOptions &config, bool &daemon);
+
+private:
+    static bool validateParserArgs(const QCommandLineParser &parser);
+    static void buildConfig(const QCommandLineParser &parser, TrayItemOptions &config);
+    static void buildCommand(const QCommandLineParser &parser, Command &command);
 };
 
 #endif // _COMMANDLINEARGS_H

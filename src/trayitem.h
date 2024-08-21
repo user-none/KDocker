@@ -19,31 +19,23 @@
  */
 
 #ifndef _TRAYITEM_H
-#define	_TRAYITEM_H
+#define _TRAYITEM_H
 
-// Qt 5.14 introduced QActionGroup::ExclusionPolicy::None, but <X.h> defines a 'None' macro.
-#pragma push_macro("None")
-#undef None
+#include "trayitemoptions.h"
+#include "xlibutil.h"
 
 #include <QAction>
 #include <QEvent>
 #include <QIcon>
 #include <QMenu>
-#include <QObject>
+#include <QSettings>
 #include <QString>
 #include <QSystemTrayIcon>
-#include <QSettings>
 
 #include <xcb/xproto.h>
 
-#include "trayitemoptions.h"
-#include "xlibutil.h"
-
-#ifndef None
-#pragma pop_macro("None")
-#endif
-
-class TrayItem : public QSystemTrayIcon {
+class TrayItem : public QSystemTrayIcon
+{
     Q_OBJECT
 
 public:
@@ -90,9 +82,9 @@ private slots:
 
 signals:
     void selectAnother();
-    void dead(TrayItem*);
+    void dead(TrayItem *);
     void undockAll();
-    void undock(TrayItem*);
+    void undock(TrayItem *);
     void about();
 
 protected:
@@ -100,10 +92,10 @@ protected:
 
 private:
     //   readSetting overloaded function
-    bool    readSetting(TrayItemOptions::TriState argSetting, QString key, bool kdockerDefault);
-    int     readSetting(int    argSetting, QString key, int    kdockerDefault);
+    bool readSetting(TrayItemOptions::TriState argSetting, QString key, bool kdockerDefault);
+    int readSetting(int argSetting, QString key, int kdockerDefault);
     QString readSetting(const QString &argSetting, QString key, const QString &kdockerDefault);
-    int  nonZeroBalloonTimeout();
+    int nonZeroBalloonTimeout();
     TrayItemOptions readConfigGlobals();
     void saveSettings();
 
@@ -121,7 +113,6 @@ private:
     void updateToggleAction();
 
     void createContextMenu();
-    QIcon createIcon(Window window);
     QString selectIcon(QString title);
 
     bool isBadWindow();
@@ -139,7 +130,7 @@ private:
     TrayItemOptions m_settings;
 
     // SizeHint of m_window
-    XSizeHints m_sizeHint;
+    XLibUtilSizeHints *m_sizeHint;
     // The window that is associated with the tray icon.
     Window m_window;
     long m_desktop;
@@ -163,5 +154,4 @@ private:
     QAction *m_actionSaveSettingsGlobal;
 };
 
-#endif	/* _TRAYITEM_H */
-
+#endif /* _TRAYITEM_H */

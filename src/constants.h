@@ -18,13 +18,13 @@
  */
 
 #ifndef _CONSTANTS_H
-#define	_CONSTANTS_H
+#define _CONSTANTS_H
 
 #include <QObject>
 #include <QString>
 
-
-class Constants : QObject {
+class Constants : QObject
+{
     Q_OBJECT
 
 public:
@@ -38,4 +38,4 @@ public:
     static const QString DBUS_PATH;
 };
 
-#endif	/* _CONSTANTS_H */
+#endif /* _CONSTANTS_H */
