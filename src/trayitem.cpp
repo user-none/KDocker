@@ -20,15 +20,16 @@
 
 #include "trayitem.h"
 
+#include <QElapsedTimer>
 #include <QFileDialog>
+#include <QIcon>
+#include <QImage>
 #include <QImageReader>
 #include <QPixmap>
-#include <QElapsedTimer>
 #include <QWheelEvent>
-#include <QImage>
-#include <QIcon>
 
-TrayItem::TrayItem(Window window, const TrayItemOptions &args) {
+TrayItem::TrayItem(Window window, const TrayItemOptions &args)
+{
     m_wantsAttention = false;
     m_iconified = false;
     m_is_restoring = false;
@@ -47,16 +48,22 @@ TrayItem::TrayItem(Window window, const TrayItemOptions &args) {
 
     readDockedAppName();
 
-    m_settings.setIconPath(          readSetting(args.getIconPath(),               "CustomIcon",       TrayItemOptions::defaultIconPath()));
-    m_settings.setAttentionIconPath( readSetting(args.getAttentionIconPath(),      "AttentionIcon",    TrayItemOptions::defaultAttentionIconPath()));
-    m_settings.setNotifyTime(        readSetting(args.getNotifyTime(),             "BalloonTimeout",   TrayItemOptions::defaultNotifyTime()));
-    m_settings.setSticky(            readSetting(args.getStickyState(),            "Sticky",           TrayItemOptions::defaultSticky()));
-    m_settings.setSkipPager(         readSetting(args.getSkipPagerState(),         "SkipPager",        TrayItemOptions::defaultSkipPager()));
-    m_settings.setSkipTaskbar(       readSetting(args.getSkipTaskbarState(),       "SkipTaskbar",      TrayItemOptions::defaultSkipTaskbar()));
-    m_settings.setIconifyMinimized(  readSetting(args.getIconifyMinimizedState(),  "IconifyMinimized", TrayItemOptions::defaultIconifyMinimized()));
-    m_settings.setIconifyObscured(   readSetting(args.getIconifyObscuredState(),   "IconifyObscured",  TrayItemOptions::defaultIconifyObscured()));
-    m_settings.setIconifyFocusLost(  readSetting(args.getIconifyFocusLostState(),  "IconifyFocusLost", TrayItemOptions::defaultIconifyFocusLost()));
-    m_settings.setLockToDesktop(     readSetting(args.getLockToDesktopState(),     "LockToDesktop",    TrayItemOptions::defaultLockToDesktop()));
+    m_settings.setIconPath(readSetting(args.getIconPath(), "CustomIcon", TrayItemOptions::defaultIconPath()));
+    m_settings.setAttentionIconPath(
+        readSetting(args.getAttentionIconPath(), "AttentionIcon", TrayItemOptions::defaultAttentionIconPath()));
+    m_settings.setNotifyTime(readSetting(args.getNotifyTime(), "BalloonTimeout", TrayItemOptions::defaultNotifyTime()));
+    m_settings.setSticky(readSetting(args.getStickyState(), "Sticky", TrayItemOptions::defaultSticky()));
+    m_settings.setSkipPager(readSetting(args.getSkipPagerState(), "SkipPager", TrayItemOptions::defaultSkipPager()));
+    m_settings.setSkipTaskbar(
+        readSetting(args.getSkipTaskbarState(), "SkipTaskbar", TrayItemOptions::defaultSkipTaskbar()));
+    m_settings.setIconifyMinimized(
+        readSetting(args.getIconifyMinimizedState(), "IconifyMinimized", TrayItemOptions::defaultIconifyMinimized()));
+    m_settings.setIconifyObscured(
+        readSetting(args.getIconifyObscuredState(), "IconifyObscured", TrayItemOptions::defaultIconifyObscured()));
+    m_settings.setIconifyFocusLost(
+        readSetting(args.getIconifyFocusLostState(), "IconifyFocusLost", TrayItemOptions::defaultIconifyFocusLost()));
+    m_settings.setLockToDesktop(
+        readSetting(args.getLockToDesktopState(), "LockToDesktop", TrayItemOptions::defaultLockToDesktop()));
 
     updateTitle();
     updateIcon();
@@ -82,7 +89,8 @@ TrayItem::TrayItem(Window window, const TrayItemOptions &args) {
     connect(this, &TrayItem::activated, this, &TrayItem::trayActivated);
 }
 
-TrayItem::~TrayItem() {
+TrayItem::~TrayItem()
+{
     // No further interest in events from undocked window.
     XLibUtil::unSubscribe(m_window);
     // Only the main menu needs to be deleted. The rest of the menus and actions
@@ -92,7 +100,8 @@ TrayItem::~TrayItem() {
     XLibUtil::deleteSizeHints(m_sizeHint);
 }
 
-bool TrayItem::readSetting(TrayItemOptions::TriState argSetting, QString key, bool kdockerDefault) {
+bool TrayItem::readSetting(TrayItemOptions::TriState argSetting, QString key, bool kdockerDefault)
+{
     /* Precedence:
      * 1) Command line overrides         (argSetting, if positive)
      * 2) User app-specific defaults     (QSettings: "<m_dockedAppName>/<key>")
@@ -102,30 +111,33 @@ bool TrayItem::readSetting(TrayItemOptions::TriState argSetting, QString key, bo
     if (argSetting != TrayItemOptions::TriState::Unset) {
         return (argSetting == TrayItemOptions::TriState::SetTrue ? true : false);
     }
-    key.prepend("%1/");   // Add formatting to local QString copy
-    return m_config.value(key.arg(m_dockedAppName),
-            m_config.value(key.arg("_GLOBAL_DEFAULTS"), kdockerDefault)).toBool();
+    key.prepend("%1/"); // Add formatting to local QString copy
+    return m_config.value(key.arg(m_dockedAppName), m_config.value(key.arg("_GLOBAL_DEFAULTS"), kdockerDefault))
+        .toBool();
 }
 
-int TrayItem::readSetting(int argSetting, QString key, int kdockerDefault) {
+int TrayItem::readSetting(int argSetting, QString key, int kdockerDefault)
+{
     if (argSetting >= 0) {
         return argSetting;
     }
     key.prepend("%1/");
-    return m_config.value(key.arg(m_dockedAppName),
-            m_config.value(key.arg("_GLOBAL_DEFAULTS"), kdockerDefault)).toInt();
+    return m_config.value(key.arg(m_dockedAppName), m_config.value(key.arg("_GLOBAL_DEFAULTS"), kdockerDefault))
+        .toInt();
 }
 
-QString TrayItem::readSetting(const QString &argSetting, QString key, const QString &kdockerDefault) {
+QString TrayItem::readSetting(const QString &argSetting, QString key, const QString &kdockerDefault)
+{
     if (!argSetting.isEmpty()) {
         return argSetting;
     }
     key.prepend("%1/");
-    return m_config.value(key.arg(m_dockedAppName),
-            m_config.value(key.arg("_GLOBAL_DEFAULTS"), kdockerDefault)).toString();
+    return m_config.value(key.arg(m_dockedAppName), m_config.value(key.arg("_GLOBAL_DEFAULTS"), kdockerDefault))
+        .toString();
 }
 
-int TrayItem::nonZeroBalloonTimeout() {
+int TrayItem::nonZeroBalloonTimeout()
+{
     QString fmt = "%1/BalloonTimeout";
     int bto = m_config.value(fmt.arg(m_dockedAppName), 0).toInt();
     if (!bto) {
@@ -134,20 +146,21 @@ int TrayItem::nonZeroBalloonTimeout() {
     return bto ? bto : TrayItemOptions::defaultNotifyTime();
 }
 
-TrayItemOptions TrayItem::readConfigGlobals() {
+TrayItemOptions TrayItem::readConfigGlobals()
+{
     TrayItemOptions config;
 
     m_config.beginGroup("_GLOBAL_DEFAULTS");
-      config.setIconPath(          m_config.value("CustomIcon",       config.getIconPath()).toString());
-      config.setAttentionIconPath( m_config.value("AttentionIcon",    config.getAttentionIconPath()).toString());
-      config.setNotifyTime(        m_config.value("BalloonTimeout",   config.getNotifyTime()).toInt());
-      config.setSticky(            m_config.value("Sticky",           config.getSticky()).toBool());
-      config.setSkipPager(         m_config.value("SkipPager",        config.getSkipPager()).toBool());
-      config.setSkipTaskbar(       m_config.value("SkipTaskbar",      config.getSkipTaskbar()).toBool());
-      config.setIconifyMinimized(  m_config.value("IconifyMinimized", config.getIconifyMinimized()).toBool());
-      config.setIconifyObscured(   m_config.value("IconifyObscured",  config.getIconifyObscured()).toBool());
-      config.setIconifyFocusLost(  m_config.value("IconifyFocusLost", config.getIconifyFocusLost()).toBool());
-      config.setLockToDesktop(     m_config.value("LockToDesktop",    config.getLockToDesktop()).toBool());
+    config.setIconPath(m_config.value("CustomIcon", config.getIconPath()).toString());
+    config.setAttentionIconPath(m_config.value("AttentionIcon", config.getAttentionIconPath()).toString());
+    config.setNotifyTime(m_config.value("BalloonTimeout", config.getNotifyTime()).toInt());
+    config.setSticky(m_config.value("Sticky", config.getSticky()).toBool());
+    config.setSkipPager(m_config.value("SkipPager", config.getSkipPager()).toBool());
+    config.setSkipTaskbar(m_config.value("SkipTaskbar", config.getSkipTaskbar()).toBool());
+    config.setIconifyMinimized(m_config.value("IconifyMinimized", config.getIconifyMinimized()).toBool());
+    config.setIconifyObscured(m_config.value("IconifyObscured", config.getIconifyObscured()).toBool());
+    config.setIconifyFocusLost(m_config.value("IconifyFocusLost", config.getIconifyFocusLost()).toBool());
+    config.setLockToDesktop(m_config.value("LockToDesktop", config.getLockToDesktop()).toBool());
     m_config.endGroup();
 
     return config;
@@ -156,7 +169,7 @@ TrayItemOptions TrayItem::readConfigGlobals() {
 void TrayItem::saveSettingsGlobal()
 {
     m_config.beginGroup("_GLOBAL_DEFAULTS");
-      saveSettings();
+    saveSettings();
     m_config.endGroup();
 }
 
@@ -165,112 +178,115 @@ void TrayItem::saveSettingsApp()
     TrayItemOptions globals = readConfigGlobals();
 
     m_config.beginGroup(m_dockedAppName);
-      QVariant keyval;
+    QVariant keyval;
 
-      if (!m_settings.getIconPath().isEmpty()) {
-          m_config.setValue("CustomIcon", m_settings.getIconPath());
-      }
-      if (!m_settings.getAttentionIconPath().isEmpty()) {
-          m_config.setValue("AttentionIcon", m_settings.getAttentionIconPath());
-      }
-      saveSettings();
+    if (!m_settings.getIconPath().isEmpty()) {
+        m_config.setValue("CustomIcon", m_settings.getIconPath());
+    }
+    if (!m_settings.getAttentionIconPath().isEmpty()) {
+        m_config.setValue("AttentionIcon", m_settings.getAttentionIconPath());
+    }
+    saveSettings();
 
-      // Remove app-specific settings if they match their default values
+    // Remove app-specific settings if they match their default values
 
-      keyval = m_config.value("BalloonTimeout");
-      if (keyval.isValid() && (keyval.toInt()  == globals.getNotifyTime())) {
-          m_config.remove("BalloonTimeout");
-      }
-      keyval = m_config.value("Sticky");
-      if (keyval.isValid() && keyval.toBool() == globals.getSticky()) {
-          m_config.remove("Sticky");
-      }
-      keyval = m_config.value("SkipPager");
-      if (keyval.isValid() && keyval.toBool() == globals.getSkipPager()) {
-          m_config.remove("SkipPager");
-      }
-      keyval = m_config.value("SkipTaskbar");
-      if (keyval.isValid() && keyval.toBool() == globals.getSkipTaskbar()) {
-          m_config.remove("SkipTaskbar");
-      }
-      keyval = m_config.value("IconifyMinimized");
-      if (keyval.isValid() && keyval.toBool() == globals.getIconifyMinimized()) {
-          m_config.remove("IconifyMinimized");
-      }
-      keyval = m_config.value("IconifyObscured");
-      if (keyval.isValid() && keyval.toBool() == globals.getIconifyObscured()) {
-          m_config.remove("IconifyObscured");
-      }
-      keyval = m_config.value("IconifyFocusLost");
-      if (keyval.isValid() && keyval.toBool() == globals.getIconifyFocusLost()) {
-          m_config.remove("IconifyFocusLost");
-      }
-      keyval = m_config.value("LockToDesktop");
-      if (keyval.isValid() && keyval.toBool() == globals.getLockToDesktop()) {
-          m_config.remove("LockToDesktop");
-      }
+    keyval = m_config.value("BalloonTimeout");
+    if (keyval.isValid() && (keyval.toInt() == globals.getNotifyTime())) {
+        m_config.remove("BalloonTimeout");
+    }
+    keyval = m_config.value("Sticky");
+    if (keyval.isValid() && keyval.toBool() == globals.getSticky()) {
+        m_config.remove("Sticky");
+    }
+    keyval = m_config.value("SkipPager");
+    if (keyval.isValid() && keyval.toBool() == globals.getSkipPager()) {
+        m_config.remove("SkipPager");
+    }
+    keyval = m_config.value("SkipTaskbar");
+    if (keyval.isValid() && keyval.toBool() == globals.getSkipTaskbar()) {
+        m_config.remove("SkipTaskbar");
+    }
+    keyval = m_config.value("IconifyMinimized");
+    if (keyval.isValid() && keyval.toBool() == globals.getIconifyMinimized()) {
+        m_config.remove("IconifyMinimized");
+    }
+    keyval = m_config.value("IconifyObscured");
+    if (keyval.isValid() && keyval.toBool() == globals.getIconifyObscured()) {
+        m_config.remove("IconifyObscured");
+    }
+    keyval = m_config.value("IconifyFocusLost");
+    if (keyval.isValid() && keyval.toBool() == globals.getIconifyFocusLost()) {
+        m_config.remove("IconifyFocusLost");
+    }
+    keyval = m_config.value("LockToDesktop");
+    if (keyval.isValid() && keyval.toBool() == globals.getLockToDesktop()) {
+        m_config.remove("LockToDesktop");
+    }
     m_config.endGroup();
 }
 
-void TrayItem::saveSettings() {    /*  "/home/<user>/.config/com.kdocker/KDocker.conf"    //  <==  m_config.fileName();  */
+void TrayItem::saveSettings()
+{ /*  "/home/<user>/.config/com.kdocker/KDocker.conf"    //  <==  m_config.fileName();  */
     // Group is set by caller
-    m_config.setValue("BalloonTimeout",   m_settings.getNotifyTime());
-    m_config.setValue("Sticky",           m_settings.getSticky());
-    m_config.setValue("SkipPager",        m_settings.getSkipPager());
-    m_config.setValue("SkipTaskbar",      m_settings.getSkipTaskbar());
+    m_config.setValue("BalloonTimeout", m_settings.getNotifyTime());
+    m_config.setValue("Sticky", m_settings.getSticky());
+    m_config.setValue("SkipPager", m_settings.getSkipPager());
+    m_config.setValue("SkipTaskbar", m_settings.getSkipTaskbar());
     m_config.setValue("IconifyMinimized", m_settings.getIconifyMinimized());
-    m_config.setValue("IconifyObscured",  m_settings.getIconifyObscured());
+    m_config.setValue("IconifyObscured", m_settings.getIconifyObscured());
     m_config.setValue("IconifyFocusLost", m_settings.getIconifyFocusLost());
-    m_config.setValue("LockToDesktop",    m_settings.getLockToDesktop());
+    m_config.setValue("LockToDesktop", m_settings.getLockToDesktop());
 }
 
-bool TrayItem::xcbEventFilter(xcb_generic_event_t *event, xcb_window_t dockedWindow) {
+bool TrayItem::xcbEventFilter(xcb_generic_event_t *event, xcb_window_t dockedWindow)
+{
     if (!isBadWindow() && static_cast<Window>(dockedWindow) == m_window) {
-        switch (event-> response_type & ~0x80) {
-            case XCB_FOCUS_OUT:
-                focusLostEvent();
-                break;
+        switch (event->response_type & ~0x80) {
+        case XCB_FOCUS_OUT:
+            focusLostEvent();
+            break;
 
-            case XCB_DESTROY_NOTIFY:
-                destroyEvent();
-                // return true;
-                break;
+        case XCB_DESTROY_NOTIFY:
+            destroyEvent();
+            // return true;
+            break;
 
-            case XCB_UNMAP_NOTIFY:
-                // In KDE 5.14 they started issuing an unmap event when the user
-                // changes virtual desktops so we need to check that the window
-                // is on the current desktop before saying that it has been iconized
-                if (isOnCurrentDesktop()) {
-                    m_iconified = true;
-                    updateToggleAction();
-                }
-                break;
-
-            case XCB_MAP_NOTIFY:
-                m_iconified = false;
+        case XCB_UNMAP_NOTIFY:
+            // In KDE 5.14 they started issuing an unmap event when the user
+            // changes virtual desktops so we need to check that the window
+            // is on the current desktop before saying that it has been iconized
+            if (isOnCurrentDesktop()) {
+                m_iconified = true;
                 updateToggleAction();
-                break;
+            }
+            break;
 
-            case XCB_VISIBILITY_NOTIFY:
-                if (reinterpret_cast<xcb_visibility_notify_event_t *>(event)-> state == XCB_VISIBILITY_FULLY_OBSCURED) {
-                    obscureEvent();
-                }
-                break;
+        case XCB_MAP_NOTIFY:
+            m_iconified = false;
+            updateToggleAction();
+            break;
 
-            case XCB_PROPERTY_NOTIFY:
-                propertyChangeEvent(static_cast<Atom>(reinterpret_cast<xcb_property_notify_event_t *>(event)-> atom));
-                break;
+        case XCB_VISIBILITY_NOTIFY:
+            if (reinterpret_cast<xcb_visibility_notify_event_t *>(event)->state == XCB_VISIBILITY_FULLY_OBSCURED) {
+                obscureEvent();
+            }
+            break;
+
+        case XCB_PROPERTY_NOTIFY:
+            propertyChangeEvent(static_cast<Atom>(reinterpret_cast<xcb_property_notify_event_t *>(event)->atom));
+            break;
         }
     }
     return false;
 }
 
-
-Window TrayItem::dockedWindow() {
+Window TrayItem::dockedWindow()
+{
     return m_window;
 }
 
-void TrayItem::showWindow() {
+void TrayItem::showWindow()
+{
 
     show();
 
@@ -283,7 +299,8 @@ void TrayItem::showWindow() {
     }
 }
 
-void TrayItem::restoreWindow() {
+void TrayItem::restoreWindow()
+{
     if (isBadWindow()) {
         return;
     }
@@ -334,7 +351,8 @@ void TrayItem::restoreWindow() {
     m_is_restoring = false;
 }
 
-void TrayItem::iconifyWindow() {
+void TrayItem::iconifyWindow()
+{
     if (isBadWindow() || m_is_restoring) {
         return;
     }
@@ -347,7 +365,8 @@ void TrayItem::iconifyWindow() {
     updateToggleAction();
 }
 
-void TrayItem::closeWindow() {    
+void TrayItem::closeWindow()
+{
     if (isBadWindow()) {
         return;
     }
@@ -355,23 +374,28 @@ void TrayItem::closeWindow() {
     XLibUtil::sendMessageCloseWindow(m_window);
 }
 
-void TrayItem::doSkipTaskbar() {
+void TrayItem::doSkipTaskbar()
+{
     set_NET_WM_STATE("_NET_WM_STATE_SKIP_TASKBAR", m_settings.getSkipTaskbar());
 }
 
-void TrayItem::doSkipPager() {
+void TrayItem::doSkipPager()
+{
     set_NET_WM_STATE("_NET_WM_STATE_SKIP_PAGER", m_settings.getSkipPager());
 }
 
-void TrayItem::doSticky() {
+void TrayItem::doSticky()
+{
     set_NET_WM_STATE("_NET_WM_STATE_STICKY", m_settings.getSticky());
 }
 
-QString TrayItem::appName() {
+QString TrayItem::appName()
+{
     return m_dockedAppName;
 }
 
-void TrayItem::setCustomIcon(QString path) {
+void TrayItem::setCustomIcon(QString path)
+{
     m_customIcon = true;
 
     QPixmap customIcon;
@@ -388,7 +412,8 @@ void TrayItem::setCustomIcon(QString path) {
     }
 }
 
-void TrayItem::setAttentionIcon(QString path) {
+void TrayItem::setAttentionIcon(QString path)
+{
     QPixmap icon;
     if (icon.load(path)) {
         m_settings.setAttentionIconPath(path);
@@ -403,11 +428,12 @@ void TrayItem::setAttentionIcon(QString path) {
     }
 }
 
-QString TrayItem::selectIcon(QString title) {
+QString TrayItem::selectIcon(QString title)
+{
     QStringList types;
     QString supportedTypes;
 
-    Q_FOREACH(QByteArray type, QImageReader::supportedImageFormats()) {
+    Q_FOREACH (QByteArray type, QImageReader::supportedImageFormats()) {
         types << QString(type);
     }
     if (types.isEmpty()) {
@@ -419,60 +445,70 @@ QString TrayItem::selectIcon(QString title) {
     return QFileDialog::getOpenFileName(0, title, QDir::homePath(), supportedTypes);
 }
 
-void TrayItem::selectCustomIcon([[maybe_unused]] bool value) {
+void TrayItem::selectCustomIcon([[maybe_unused]] bool value)
+{
     QString path = selectIcon(tr("Select Icon"));
     if (!path.isEmpty()) {
         setCustomIcon(path);
     }
 }
 
-void TrayItem::selectAttentionIcon([[maybe_unused]] bool value) {
+void TrayItem::selectAttentionIcon([[maybe_unused]] bool value)
+{
     QString path = selectIcon(tr("Select Attention Icon"));
     if (!path.isEmpty()) {
         setAttentionIcon(path);
     }
 }
 
-void TrayItem::setSkipTaskbar(bool value) {
+void TrayItem::setSkipTaskbar(bool value)
+{
     m_settings.setSkipTaskbar(value);
     m_actionSkipTaskbar->setChecked(value);
     doSkipTaskbar();
 }
 
-void TrayItem::setSkipPager(bool value) {
+void TrayItem::setSkipPager(bool value)
+{
     m_settings.setSkipPager(value);
     m_actionSkipPager->setChecked(value);
     doSkipPager();
 }
 
-void TrayItem::setSticky(bool value) {
+void TrayItem::setSticky(bool value)
+{
     m_settings.setSticky(value);
     m_actionSticky->setChecked(value);
     doSticky();
 }
 
-void TrayItem::setIconifyMinimized(bool value) {
+void TrayItem::setIconifyMinimized(bool value)
+{
     m_settings.setIconifyMinimized(value);
     m_actionIconifyMinimized->setChecked(value);
 }
 
-void TrayItem::setIconifyObscured(bool value) {
+void TrayItem::setIconifyObscured(bool value)
+{
     m_settings.setIconifyObscured(value);
     m_actionIconifyObscured->setChecked(value);
 }
 
-void TrayItem::setIconifyFocusLost(bool value) {
+void TrayItem::setIconifyFocusLost(bool value)
+{
     m_settings.setIconifyFocusLost(value);
     m_actionIconifyFocusLost->setChecked(value);
     focusLostEvent();
 }
 
-void TrayItem::setLockToDesktop(bool value) {
+void TrayItem::setLockToDesktop(bool value)
+{
     m_settings.setLockToDesktop(value);
     m_actionLockToDesktop->setChecked(value);
 }
 
-void TrayItem::setBalloonTimeout(int value) {
+void TrayItem::setBalloonTimeout(int value)
+{
     if (value < 0) {
         value = 0;
     }
@@ -480,7 +516,8 @@ void TrayItem::setBalloonTimeout(int value) {
     m_actionBalloonTitleChanges->setChecked(value ? true : false);
 }
 
-void TrayItem::setBalloonTimeout(bool value) {
+void TrayItem::setBalloonTimeout(bool value)
+{
     if (!value) {
         setBalloonTimeout(-1);
     } else {
@@ -488,7 +525,8 @@ void TrayItem::setBalloonTimeout(bool value) {
     }
 }
 
-void TrayItem::toggleWindow() {
+void TrayItem::toggleWindow()
+{
     if (m_iconified || m_window != XLibUtil::activeWindow()) {
         if (!m_iconified) {
             // Iconify on original desktop in case restoring to another
@@ -500,15 +538,17 @@ void TrayItem::toggleWindow() {
     }
 }
 
-void TrayItem::trayActivated(QSystemTrayIcon::ActivationReason reason) {
+void TrayItem::trayActivated(QSystemTrayIcon::ActivationReason reason)
+{
     if (reason == QSystemTrayIcon::Trigger) {
         toggleWindow();
     }
 }
 
-bool TrayItem::event(QEvent *e) {
+bool TrayItem::event(QEvent *e)
+{
     if (e->type() == QEvent::Wheel) {
-        QWheelEvent *we = static_cast<QWheelEvent*>(e);
+        QWheelEvent *we = static_cast<QWheelEvent *>(e);
         QPoint delta = we->angleDelta();
         if (!delta.isNull() && delta.y() != 0) {
             if (delta.y() > 0) {
@@ -522,29 +562,33 @@ bool TrayItem::event(QEvent *e) {
     return QSystemTrayIcon::event(e);
 }
 
-void TrayItem::doUndock() {
+void TrayItem::doUndock()
+{
     emit undock(this);
 }
 
-void TrayItem::minimizeEvent() {
+void TrayItem::minimizeEvent()
+{
     if (m_settings.getIconifyMinimized()) {
         iconifyWindow();
     }
 }
 
-void TrayItem::destroyEvent() {
+void TrayItem::destroyEvent()
+{
     m_window = 0;
     emit dead(this);
 }
 
-void TrayItem::propertyChangeEvent(Atom property) {
+void TrayItem::propertyChangeEvent(Atom property)
+{
     if (isBadWindow()) {
         return;
     }
 
-    static Atom WM_NAME         = XLibUtil::getAtom("WM_NAME");
-    static Atom WM_ICON         = XLibUtil::getAtom("WM_ICON");
-    static Atom WM_STATE        = XLibUtil::getAtom("WM_STATE");
+    static Atom WM_NAME = XLibUtil::getAtom("WM_NAME");
+    static Atom WM_ICON = XLibUtil::getAtom("WM_ICON");
+    static Atom WM_STATE = XLibUtil::getAtom("WM_STATE");
     static Atom _NET_WM_DESKTOP = XLibUtil::getAtom("_NET_WM_DESKTOP");
 
     if (property == WM_NAME) {
@@ -563,13 +607,15 @@ void TrayItem::propertyChangeEvent(Atom property) {
     }
 }
 
-void TrayItem::obscureEvent() {
+void TrayItem::obscureEvent()
+{
     if (m_settings.getIconifyObscured()) {
         iconifyWindow();
     }
 }
 
-void TrayItem::focusLostEvent() {
+void TrayItem::focusLostEvent()
+{
     // Wait half a second before checking to ensure the window is properly
     // focused when being restored.
     QElapsedTimer t;
@@ -583,14 +629,16 @@ void TrayItem::focusLostEvent() {
     }
 }
 
-void TrayItem::set_NET_WM_STATE(const char *type, bool set) {    
+void TrayItem::set_NET_WM_STATE(const char *type, bool set)
+{
     if (isBadWindow()) {
         return;
     }
     XLibUtil::sendMessageWMState(m_window, type, set);
 }
 
-void TrayItem::readDockedAppName() {
+void TrayItem::readDockedAppName()
+{
     if (isBadWindow()) {
         return;
     }
@@ -601,7 +649,8 @@ void TrayItem::readDockedAppName() {
 /*
  * Update the title in the tooltip.
  */
-void TrayItem::updateTitle() {
+void TrayItem::updateTitle()
+{
     if (isBadWindow()) {
         return;
     }
@@ -619,7 +668,8 @@ void TrayItem::updateTitle() {
     }
 }
 
-void TrayItem::updateIcon() {
+void TrayItem::updateIcon()
+{
     if (isBadWindow() || m_customIcon) {
         return;
     }
@@ -633,7 +683,8 @@ void TrayItem::updateIcon() {
         setIcon(m_defaultIcon);
 }
 
-void TrayItem::updateToggleAction() {
+void TrayItem::updateToggleAction()
+{
     QString text;
     QIcon icon;
 
@@ -649,15 +700,17 @@ void TrayItem::updateToggleAction() {
     m_actionToggle->setText(text);
 }
 
-void TrayItem::createContextMenu() {
+void TrayItem::createContextMenu()
+{
     m_contextMenu = new QMenu();
 
-    m_contextMenu->addAction(QIcon(":/images/about.png"), tr("About %1").arg(qApp->applicationName()), this, &TrayItem::about);
+    m_contextMenu->addAction(QIcon(":/images/about.png"), tr("About %1").arg(qApp->applicationName()), this,
+                             &TrayItem::about);
     m_contextMenu->addSeparator();
 
     // Options menu
     m_optionsMenu = new QMenu(tr("Options"), m_contextMenu);
-    m_optionsMenu-> setIcon(QIcon(":/images/options.png"));
+    m_optionsMenu->setIcon(QIcon(":/images/options.png"));
 
     m_actionSetIcon = new QAction(QIcon(":/images/seticon.png"), tr("Set icon..."), m_optionsMenu);
     connect(m_actionSetIcon, &QAction::triggered, this, &TrayItem::selectCustomIcon);
@@ -720,7 +773,7 @@ void TrayItem::createContextMenu() {
     // Save settings menu
     m_optionsMenu->addSeparator();
     m_defaultsMenu = new QMenu(tr("Save settings"), m_optionsMenu);
-    m_defaultsMenu-> setIcon(QIcon(":/images/savesettings.png"));
+    m_defaultsMenu->setIcon(QIcon(":/images/savesettings.png"));
 
     m_actionSaveSettingsApp = new QAction(tr("%1 only").arg(m_dockedAppName), m_defaultsMenu);
     connect(m_actionSaveSettingsApp, &QAction::triggered, this, &TrayItem::saveSettingsApp);
@@ -745,7 +798,8 @@ void TrayItem::createContextMenu() {
     setContextMenu(m_contextMenu);
 }
 
-bool TrayItem::isBadWindow() {
+bool TrayItem::isBadWindow()
+{
     if (!XLibUtil::isValidWindowId(m_window)) {
         destroyEvent();
         return true;
@@ -753,9 +807,10 @@ bool TrayItem::isBadWindow() {
     return false;
 }
 
-// Checks to see if the virtual desktop the window is on is currently 
+// Checks to see if the virtual desktop the window is on is currently
 // displayed. Returns true if it is, otherwise false
-bool TrayItem::isOnCurrentDesktop() {
+bool TrayItem::isOnCurrentDesktop()
+{
     long currentDesktop = XLibUtil::getCurrentDesktop();
     if (currentDesktop == -1)
         return true;

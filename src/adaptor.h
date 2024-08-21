@@ -17,9 +17,8 @@
  * USA.
  */
 
-
 #ifndef _ADAPTOR
-#define	_ADAPTOR
+#define _ADAPTOR
 
 // this file is included by the auto generated dbus adaptor .h file.
 // All types that are referenced in the dbus xml need to be included

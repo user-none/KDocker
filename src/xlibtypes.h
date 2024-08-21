@@ -17,9 +17,8 @@
  * USA.
  */
 
-
 #ifndef _XLIBTYPES
-#define	_XLIBTYPES
+#define _XLIBTYPES
 
 typedef uint64_t Atom;
 typedef uint64_t Window;

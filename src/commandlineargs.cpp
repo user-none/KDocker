@@ -17,25 +17,26 @@
  * USA.
  */
 
-
 #include "commandlineargs.h"
 
 #include <QRegularExpression>
 #include <QString>
 #include <QStringList>
 
-bool CommandLineArgs::processArgs(const QStringList &arguments, Command &command, TrayItemOptions &config, bool &daemon) {
+bool CommandLineArgs::processArgs(const QStringList &arguments, Command &command, TrayItemOptions &config, bool &daemon)
+{
     QCommandLineParser parser;
 
-    parser.setApplicationDescription("" \
-            "Dock almost anything\n\n" \
-            "Kdocker can dock a window in a few different ways\n" \
-            "1. By specifying an application to launch (app argument)\n" \
-            "2. Specifying a regular expression to find a window based on its title (-n)\n" \
-            "3. Specifying a window id (-w)\n" \
-            "4. Specifying a pid (-x)\n" \
-            "5. Not specifying any of the above. KDocker will have you select the window to dock. Negated by the -z option\n\n" \
-            "The -n option is compatible with application launching. Useful if the application spawns another process (E.g. a launcher)");
+    parser.setApplicationDescription(
+        ""
+        "Dock almost anything\n\n"
+        "Kdocker can dock a window in a few different ways\n"
+        "1. By specifying an application to launch (app argument)\n"
+        "2. Specifying a regular expression to find a window based on its title (-n)\n"
+        "3. Specifying a window id (-w)\n"
+        "4. Specifying a pid (-x)\n"
+        "5. Not specifying any of the above. KDocker will have you select the window to dock. Negated by the -z option\n\n"
+        "The -n option is compatible with application launching. Useful if the application spawns another process (E.g. a launcher)");
     parser.addHelpOption();
     parser.addVersionOption();
 
@@ -43,25 +44,30 @@ bool CommandLineArgs::processArgs(const QStringList &arguments, Command &command
     parser.setOptionsAfterPositionalArgumentsMode(QCommandLineParser::ParseAsPositionalArguments);
 
     parser.addOptions({
-        { { "b", "blind" }, "Suppress the warning dialog when docking non-normal windows (blind mode)" },
-        { { "d", "timeout" }, "Maximum time in seconds to allow for a command to start and open a window", "sec", "5" },
-        { { "f", "dock-focused" }, "Dock the window that has focus (active window)" },
+        {{"b", "blind"}, "Suppress the warning dialog when docking non-normal windows (blind mode)"},
+        {{"d", "timeout"}, "Maximum time in seconds to allow for a command to start and open a window", "sec", "5"},
+        {{"f", "dock-focused"}, "Dock the window that has focus (active window)"},
         // Don't use h or help because they're already handled by the parser object.
-        { { "i", "icon" }, "Custom icon path", "file" },
-        { { "I", "attention-icon" }, "Custom attention icon path. This icon is set if the title  of the application window changes while it is iconified", "file" },
-        { { "l", "iconify-focus-lost" }, "Iconify when focus lost" },
-        { "m", "Don't iconfiy when minimized" },
-        { { "n", "search-pattern" }, "Match window based on its title using a PCRE regular expression", "search-pattern" },
-        { { "o", "iconify-obscured" }, "Iconify when obscured by other windows" },
-        { { "p", "notify-time" }, "Maximum time in seconds to display a notification when window title changes", "sec", "4" },
-        { { "q", "quiet" }, "Disable notifying window title changes" },
-        { { "r", "skip-pager" }, "Remove this application from the pager" },
-        { { "s", "sticky" }, "Make the window sticky (appears on all desktops)" },
-        { { "t", "skip-taskbar" }, "Remove this application from the taskbar" },
+        {{"i", "icon"}, "Custom icon path", "file"},
+        {{"I", "attention-icon"},
+         "Custom attention icon path. This icon is set if the title  of the application window changes while it is iconified",
+         "file"},
+        {{"l", "iconify-focus-lost"}, "Iconify when focus lost"},
+        {"m", "Don't iconfiy when minimized"},
+        {{"n", "search-pattern"}, "Match window based on its title using a PCRE regular expression", "search-pattern"},
+        {{"o", "iconify-obscured"}, "Iconify when obscured by other windows"},
+        {{"p", "notify-time"},
+         "Maximum time in seconds to display a notification when window title changes",
+         "sec",
+         "4"},
+        {{"q", "quiet"}, "Disable notifying window title changes"},
+        {{"r", "skip-pager"}, "Remove this application from the pager"},
+        {{"s", "sticky"}, "Make the window sticky (appears on all desktops)"},
+        {{"t", "skip-taskbar"}, "Remove this application from the taskbar"},
         // Don't use v or version because they're already handled by the parser object.
-        { { "w", "window-id" }, "Window id of the application to dock. Hex number formatted (0x###...)", "window-id" },
-        { { "x", "pid" }, "Process id of the application to dock. Decimal number (###...)", "pid" },
-        { { "z", "daemon" }, "Run in the background and don't exit if no windows are docked" },
+        {{"w", "window-id"}, "Window id of the application to dock. Hex number formatted (0x###...)", "window-id"},
+        {{"x", "pid"}, "Process id of the application to dock. Decimal number (###...)", "pid"},
+        {{"z", "daemon"}, "Run in the background and don't exit if no windows are docked"},
     });
 
     parser.process(arguments);
@@ -79,7 +85,8 @@ bool CommandLineArgs::processArgs(const QStringList &arguments, Command &command
     return true;
 }
 
-bool CommandLineArgs::validateParserArgs(const QCommandLineParser &parser) {
+bool CommandLineArgs::validateParserArgs(const QCommandLineParser &parser)
+{
     // Ensure only one of the target a specific window actions was specified
     int num_dock_requests = 0;
     if (parser.isSet("window-id"))
@@ -116,7 +123,8 @@ bool CommandLineArgs::validateParserArgs(const QCommandLineParser &parser) {
     return true;
 }
 
-void CommandLineArgs::buildConfig(const QCommandLineParser &parser, TrayItemOptions &config) {
+void CommandLineArgs::buildConfig(const QCommandLineParser &parser, TrayItemOptions &config)
+{
     if (parser.isSet("icon")) {
         config.setIconPath(parser.value("icon"));
     }
@@ -150,13 +158,14 @@ void CommandLineArgs::buildConfig(const QCommandLineParser &parser, TrayItemOpti
     }
 }
 
-void CommandLineArgs::buildCommand(const QCommandLineParser &parser, Command &command) {
+void CommandLineArgs::buildCommand(const QCommandLineParser &parser, Command &command)
+{
     // Title is separate from the rest because a title can be used when launching an app.
     // If launching an app the command type will be changed.
     if (parser.isSet("search-pattern")) {
         command.setType(Command::Type::Title);
         command.setSearchPattern(parser.value("search-pattern"));
-    } 
+    }
 
     // Timeout can be used by search pattern and launch
     if (parser.isSet("timeout")) {
@@ -191,7 +200,7 @@ void CommandLineArgs::buildCommand(const QCommandLineParser &parser, Command &co
     } else if (parser.isSet("dock-focused")) {
         command.setType(Command::Type::Focused);
     }
-    
+
     if (command.getType() == Command::Type::NoCommand) {
         // None of the other commands were specified leaving select window as the only option
         command.setType(Command::Type::Select);

@@ -17,62 +17,63 @@
  * USA.
  */
 
-
 #ifndef _COMMAND_H
-#define	_COMMAND_H
+#define _COMMAND_H
 
 #include <QDBusArgument>
 #include <QString>
 #include <QStringList>
 
-class Command {
-    public:
-        enum class Type {
-            NoCommand = 0,
-            Title,
-            WindowId,
-            Pid,
-            Launch,
-            Select,
-            Focused
-        };
+class Command
+{
+public:
+    enum class Type
+    {
+        NoCommand = 0,
+        Title,
+        WindowId,
+        Pid,
+        Launch,
+        Select,
+        Focused
+    };
 
-        Command();
+    Command();
 
-        friend QDBusArgument &operator<<(QDBusArgument &argument, const Command &command);
-        friend const QDBusArgument &operator>>(const QDBusArgument &argument, Command &command);
+    friend QDBusArgument &operator<<(QDBusArgument &argument, const Command &command);
+    friend const QDBusArgument &operator>>(const QDBusArgument &argument, Command &command);
 
-        Command::Type getType() const;
-        QString getSearchPattern() const;
-        uint32_t getWindowId() const;
-        pid_t getPid() const;
-        QString getLaunchApp() const;
-        QStringList getLaunchAppArguments() const;
-        uint32_t getTimeout() const;
-        bool getCheckNormality() const;
+    Command::Type getType() const;
+    QString getSearchPattern() const;
+    uint32_t getWindowId() const;
+    pid_t getPid() const;
+    QString getLaunchApp() const;
+    QStringList getLaunchAppArguments() const;
+    uint32_t getTimeout() const;
+    bool getCheckNormality() const;
 
-        void setType(Command::Type type);
-        void setSearchPattern(const QString &pattern);
-        void setWindowId(uint32_t wid);
-        void setPid(pid_t pid);
-        void setLaunchApp(const QString &app);
-        void setLaunchAppArguments(const QStringList &args);
-        void setTimeout(uint32_t v);
-        void setCheckNormality(bool v);
+    void setType(Command::Type type);
+    void setSearchPattern(const QString &pattern);
+    void setWindowId(uint32_t wid);
+    void setPid(pid_t pid);
+    void setLaunchApp(const QString &app);
+    void setLaunchAppArguments(const QStringList &args);
+    void setTimeout(uint32_t v);
+    void setCheckNormality(bool v);
 
-    private:
-        Command::Type m_type;
-        QString m_searchPattern;
-        uint32_t m_windowId;
-        uint32_t m_pid;
-        QString m_launchApp;
-        QStringList m_launchAppArguments;
-        uint32_t m_timeout;
-        bool m_checkNormality;
+private:
+    Command::Type m_type;
+    QString m_searchPattern;
+    uint32_t m_windowId;
+    uint32_t m_pid;
+    QString m_launchApp;
+    QStringList m_launchAppArguments;
+    uint32_t m_timeout;
+    bool m_checkNormality;
 };
 
 Q_DECLARE_METATYPE(Command::Type)
 Q_DECLARE_METATYPE(Command)
-//qDBusRegisterMetaType<Command>();
+// qDBusRegisterMetaType<Command>();
 
 #endif // _COMMAND_H

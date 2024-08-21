@@ -19,12 +19,11 @@
 
 #include "constants.h"
 
-
-const QString Constants::APP_NAME    = "KDocker";
-const QString Constants::ORG_NAME    = "com.kdocker";
-const QString Constants::DOM_NAME    = "kdocker.com";
+const QString Constants::APP_NAME = "KDocker";
+const QString Constants::ORG_NAME = "com.kdocker";
+const QString Constants::DOM_NAME = "kdocker.com";
 const QString Constants::APP_VERSION = "@VERSION@";
-const QString Constants::WEBSITE     = "https://kdocker.com";
+const QString Constants::WEBSITE = "https://kdocker.com";
 
-const QString Constants::DBUS_NAME   = "com.kdocker.KDocker";
-const QString Constants::DBUS_PATH   = "/manage";
+const QString Constants::DBUS_NAME = "com.kdocker.KDocker";
+const QString Constants::DBUS_PATH = "/manage";

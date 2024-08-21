@@ -18,30 +18,31 @@
  * USA.
  */
 
-#include "kdocker_adaptor.h"
 #include "adaptor.h"
 #include "application.h"
-#include "constants.h"
-#include "trayitemmanager.h"
 #include "commandlineargs.h"
+#include "constants.h"
+#include "kdocker_adaptor.h"
+#include "trayitemmanager.h"
 
 #include <QCoreApplication>
+#include <QDBusConnection>
+#include <QDBusError>
+#include <QDBusInterface>
+#include <QDBusMetaType>
+#include <QDBusReply>
 #include <QLocale>
 #include <QObject>
-#include <QDBusMetaType>
-#include <QDBusConnection>
-#include <QDBusInterface>
-#include <QDBusReply>
-#include <QDBusError>
 
 #include <signal.h>
 
-
-static void sighandler([[maybe_unused]] int sig) {
-    dynamic_cast<Application*> (qApp)->notifyCloseSignal();
+static void sighandler([[maybe_unused]] int sig)
+{
+    dynamic_cast<Application *>(qApp)->notifyCloseSignal();
 }
 
-static bool setupDbus(TrayItemManager *trayitemmanager) {
+static bool setupDbus(TrayItemManager *trayitemmanager)
+{
     auto connection = QDBusConnection::sessionBus();
     if (!connection.isConnected()) {
         qCritical() << "Cannot connect to the D-Bus session bus";
@@ -54,10 +55,11 @@ static bool setupDbus(TrayItemManager *trayitemmanager) {
         connection.registerObject(Constants::DBUS_PATH, trayitemmanager);
     }
 
-   return registered;
+    return registered;
 }
 
-static void sendDbusCommand(const Command &command, const TrayItemOptions &config, bool daemon) {
+static void sendDbusCommand(const Command &command, const TrayItemOptions &config, bool daemon)
+{
     QDBusInterface iface(Constants::DBUS_NAME, Constants::DBUS_PATH);
     if (!iface.isValid()) {
         qCritical() << "Could not create DBus interface for messaging other instance";
@@ -69,42 +71,48 @@ static void sendDbusCommand(const Command &command, const TrayItemOptions &confi
         iface.call(QDBus::NoBlock, "daemonize");
 
     switch (command.getType()) {
-        case Command::Type::NoCommand:
+    case Command::Type::NoCommand:
+        break;
+    case Command::Type::Title:
+        iface.call(QDBus::NoBlock, "dockWindowTitle", command.getSearchPattern(), command.getTimeout(),
+                   command.getCheckNormality(), QVariant::fromValue(config));
+        break;
+    case Command::Type::Launch:
+        iface.call(QDBus::NoBlock, "dockLaunchApp", command.getLaunchApp(), command.getLaunchAppArguments(),
+                   command.getSearchPattern(), command.getTimeout(), command.getCheckNormality(),
+                   QVariant::fromValue(config));
+        break;
+    case Command::Type::WindowId:
+        iface.call(QDBus::NoBlock, "dockWindowId", command.getWindowId(), QVariant::fromValue(config));
+        break;
+    case Command::Type::Pid:
+        iface.call(QDBus::NoBlock, "dockPid", command.getPid(), command.getCheckNormality(),
+                   QVariant::fromValue(config));
+        break;
+    case Command::Type::Select:
+        if (daemon) {
             break;
-        case Command::Type::Title:
-            iface.call(QDBus::NoBlock, "dockWindowTitle", command.getSearchPattern(), command.getTimeout(), command.getCheckNormality(), QVariant::fromValue(config));
-            break;
-        case Command::Type::Launch:
-            iface.call(QDBus::NoBlock, "dockLaunchApp", command.getLaunchApp(), command.getLaunchAppArguments(), command.getSearchPattern(), command.getTimeout(), command.getCheckNormality(), QVariant::fromValue(config));
-            break;
-        case Command::Type::WindowId:
-            iface.call(QDBus::NoBlock, "dockWindowId", command.getWindowId(), QVariant::fromValue(config));
-            break;
-        case Command::Type::Pid:
-            iface.call(QDBus::NoBlock, "dockPid", command.getPid(), command.getCheckNormality(), QVariant::fromValue(config));
-            break;
-        case Command::Type::Select:
-            if (daemon) {
-                break;
-            }
-            iface.call(QDBus::NoBlock, "dockSelectWindow", command.getCheckNormality(), QVariant::fromValue(config));
-            break;
-        case Command::Type::Focused:
-            iface.call(QDBus::NoBlock, "dockFocused", QVariant::fromValue(config));
-            break;
-        default:
-            qFatal("COMMAND ERROR!!!!");
+        }
+        iface.call(QDBus::NoBlock, "dockSelectWindow", command.getCheckNormality(), QVariant::fromValue(config));
+        break;
+    case Command::Type::Focused:
+        iface.call(QDBus::NoBlock, "dockFocused", QVariant::fromValue(config));
+        break;
+    default:
+        qFatal("COMMAND ERROR!!!!");
     }
 }
 
-static void registerTypes() {
+static void registerTypes()
+{
     qRegisterMetaType<WindowNameMap>("WindowNameMap");
     qRegisterMetaType<TrayItemOptions>("TrayItemOptions");
     qDBusRegisterMetaType<TrayItemOptions>();
     qDBusRegisterMetaType<WindowNameMap>();
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     // Register all our meta types so they're available
     registerTypes();
 

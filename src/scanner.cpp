@@ -27,19 +27,16 @@
 
 #include <signal.h>
 
-
-ProcessId::ProcessId(const QString &command, pid_t pid, const TrayItemOptions &config, uint64_t timeout, bool checkNormality, const QRegularExpression &searchPattern) :
-    command(command),
-    pid(pid),
-    config(config),
-    timeout(timeout),
-    checkNormality(checkNormality),
-    searchPattern(searchPattern)
+ProcessId::ProcessId(const QString &command, pid_t pid, const TrayItemOptions &config, uint64_t timeout,
+                     bool checkNormality, const QRegularExpression &searchPattern)
+    : command(command), pid(pid), config(config), timeout(timeout), checkNormality(checkNormality),
+      searchPattern(searchPattern)
 {
     etimer.start();
 }
 
-ProcessId::ProcessId(const ProcessId &obj) {
+ProcessId::ProcessId(const ProcessId &obj)
+{
     command = obj.command;
     pid = obj.pid;
     config = obj.config;
@@ -49,7 +46,8 @@ ProcessId::ProcessId(const ProcessId &obj) {
     searchPattern = obj.searchPattern;
 }
 
-ProcessId& ProcessId::operator=(const ProcessId &obj) {
+ProcessId &ProcessId::operator=(const ProcessId &obj)
+{
     if (this == &obj)
         return *this;
 
@@ -63,7 +61,8 @@ ProcessId& ProcessId::operator=(const ProcessId &obj) {
     return *this;
 }
 
-Scanner::Scanner(TrayItemManager *manager) {
+Scanner::Scanner(TrayItemManager *manager)
+{
     m_manager = manager;
     m_timer = new QTimer();
     // Check every 1/4 second if a window has been created.
@@ -71,20 +70,26 @@ Scanner::Scanner(TrayItemManager *manager) {
     connect(m_timer, &QTimer::timeout, this, &Scanner::check);
 }
 
-Scanner::~Scanner() {
+Scanner::~Scanner()
+{
     delete m_timer;
 }
 
-void Scanner::enqueueSearch(const QRegularExpression &searchPattern, uint32_t maxTime, bool checkNormality, const TrayItemOptions &config) {
+void Scanner::enqueueSearch(const QRegularExpression &searchPattern, uint32_t maxTime, bool checkNormality,
+                            const TrayItemOptions &config)
+{
     if (maxTime == 0)
         maxTime = 1;
 
-    ProcessId processId(QString(), 0, config, maxTime*1000, checkNormality, searchPattern);
+    ProcessId processId(QString(), 0, config, maxTime * 1000, checkNormality, searchPattern);
     m_processesTitle.append(processId);
     m_timer->start();
 }
 
-void Scanner::enqueueLaunch(const QString &command, const QStringList &arguments, const QRegularExpression &searchPattern, uint32_t maxTime, bool checkNormality, const TrayItemOptions &config) {
+void Scanner::enqueueLaunch(const QString &command, const QStringList &arguments,
+                            const QRegularExpression &searchPattern, uint32_t maxTime, bool checkNormality,
+                            const TrayItemOptions &config)
+{
     if (maxTime == 0)
         maxTime = 1;
 
@@ -95,7 +100,7 @@ void Scanner::enqueueLaunch(const QString &command, const QStringList &arguments
         return;
     }
 
-    ProcessId processId(command, 0, config, maxTime*1000, checkNormality, searchPattern);
+    ProcessId processId(command, 0, config, maxTime * 1000, checkNormality, searchPattern);
     if (!searchPattern.pattern().isEmpty()) {
         m_processesTitle.append(processId);
     } else {
@@ -105,41 +110,47 @@ void Scanner::enqueueLaunch(const QString &command, const QStringList &arguments
     m_timer->start();
 }
 
-bool Scanner::isRunning() {
+bool Scanner::isRunning()
+{
     return !m_processesPid.isEmpty() || !m_processesTitle.isEmpty();
 }
 
-void Scanner::checkPid() {
+void Scanner::checkPid()
+{
     // Counting backwards because we can remove items from the list
-    for (size_t i = m_processesPid.count(); i-->0; ) {
+    for (size_t i = m_processesPid.count(); i-- > 0;) {
         ProcessId process = m_processesPid[i];
         Window w = XLibUtil::pidToWid(process.checkNormality, process.pid);
         if (w != 0) {
             emit windowFound(w, process.config);
             m_processesPid.remove(i);
         } else if (process.etimer.hasExpired(process.timeout)) {
-            QMessageBox::information(0, qApp->applicationName(), tr("Could not a window for command '%1'").arg(process.command));
+            QMessageBox::information(0, qApp->applicationName(),
+                                     tr("Could not a window for command '%1'").arg(process.command));
             m_processesPid.remove(i);
         }
     }
 }
 
-void Scanner::checkTitle() {
+void Scanner::checkTitle()
+{
     // Counting backwards because we can remove items from the list
-    for (size_t i = m_processesTitle.count(); i-->0; ) {
+    for (size_t i = m_processesTitle.count(); i-- > 0;) {
         ProcessId process = m_processesTitle[i];
         Window w = XLibUtil::findWindow(process.checkNormality, process.searchPattern, m_manager->dockedWindows());
         if (w != 0) {
             emit windowFound(w, process.config);
             m_processesTitle.remove(i);
         } else if (process.etimer.hasExpired(process.timeout)) {
-            QMessageBox::information(0, qApp->applicationName(), tr("Could not find a window matching '%1'").arg(process.searchPattern.pattern()));
+            QMessageBox::information(0, qApp->applicationName(),
+                                     tr("Could not find a window matching '%1'").arg(process.searchPattern.pattern()));
             m_processesTitle.remove(i);
         }
     }
 }
 
-void Scanner::check() {
+void Scanner::check()
+{
     checkPid();
     checkTitle();
 

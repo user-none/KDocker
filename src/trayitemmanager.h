@@ -19,21 +19,22 @@
  */
 
 #ifndef _TRAYITEMMANAGER_H
-#define	_TRAYITEMMANAGER_H
+#define _TRAYITEMMANAGER_H
 
-#include "trayitem.h"
-#include "command.h"
 #include "adaptor.h"
+#include "command.h"
+#include "trayitem.h"
 
-#include <QtCore/QAbstractNativeEventFilter>
-#include <QList>
 #include <QHash>
+#include <QList>
 #include <QObject>
 #include <QStringList>
+#include <QtCore/QAbstractNativeEventFilter>
 
 class Scanner;
 
-class TrayItemManager : public QObject, public QAbstractNativeEventFilter {
+class TrayItemManager : public QObject, public QAbstractNativeEventFilter
+{
     Q_OBJECT
 
     // The Scanner needs to know which windows are docked.
@@ -48,8 +49,11 @@ public slots:
     // Defaults are needed for overloading from DBus.
     // There are simplified versions of each of these exposed as well as
     // the full ones. The defaults allow us to have one function for each overload.
-    void dockWindowTitle(const QString &searchPattern, uint timeout = 4, bool checkNormality = true, const TrayItemOptions &options = TrayItemOptions());
-    void dockLaunchApp(const QString &app, const QStringList &appArguments, const QString &searchPattern, uint timeout = 4, bool checkNormality = true, const TrayItemOptions &options = TrayItemOptions());
+    void dockWindowTitle(const QString &searchPattern, uint timeout = 4, bool checkNormality = true,
+                         const TrayItemOptions &options = TrayItemOptions());
+    void dockLaunchApp(const QString &app, const QStringList &appArguments, const QString &searchPattern,
+                       uint timeout = 4, bool checkNormality = true,
+                       const TrayItemOptions &options = TrayItemOptions());
     void dockWindowId(int wid, const TrayItemOptions &options = TrayItemOptions());
     void dockPid(pid_t pid, bool checkNormality = true, const TrayItemOptions &options = TrayItemOptions());
     void dockSelectWindow(bool checkNormality = true, const TrayItemOptions &options = TrayItemOptions());
@@ -84,9 +88,9 @@ private:
 
     Scanner *m_scanner;
     TrayItemOptions m_initArgs;
-    QList<TrayItem*> m_trayItems;
+    QList<TrayItem *> m_trayItems;
     GrabInfo m_grabInfo;
     bool m_daemon;
 };
 
-#endif	/* _TRAYITEMMANAGER_H */
+#endif /* _TRAYITEMMANAGER_H */

@@ -24,27 +24,31 @@
 
 int Application::m_closeSignalFd[2];
 
-Application::Application(int &argc, char **argv) : QApplication(argc, argv) {
+Application::Application(int &argc, char **argv) : QApplication(argc, argv)
+{
     m_trayItemManager = 0;
 
     // Translate UNIX signals to Qt signals (See https://doc.qt.io/qt-5/unix-signals.html)
     if (::socketpair(AF_UNIX, SOCK_STREAM, 0, m_closeSignalFd))
-       qFatal("Couldn't create signal handling socketpair");
+        qFatal("Couldn't create signal handling socketpair");
 
     m_closeSignalSocketNotifier = new QSocketNotifier(m_closeSignalFd[1], QSocketNotifier::Read, this);
     connect(m_closeSignalSocketNotifier, &QSocketNotifier::activated, this, &Application::handleCloseSignal);
 }
 
-void Application::setTrayItemManagerInstance(TrayItemManager *trayitemmanager) {
+void Application::setTrayItemManagerInstance(TrayItemManager *trayitemmanager)
+{
     m_trayItemManager = trayitemmanager;
 }
 
-void Application::notifyCloseSignal() {
+void Application::notifyCloseSignal()
+{
     char tmp = 1;
     [[maybe_unused]] ssize_t r = ::write(m_closeSignalFd[0], &tmp, sizeof(tmp));
 }
 
-void Application::handleCloseSignal() {
+void Application::handleCloseSignal()
+{
     m_closeSignalSocketNotifier->setEnabled(false);
     char tmp;
     [[maybe_unused]] ssize_t r = ::read(m_closeSignalFd[1], &tmp, sizeof(tmp));

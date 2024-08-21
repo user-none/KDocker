@@ -18,46 +18,51 @@
  */
 
 #ifndef _SCANNER_H
-#define	_SCANNER_H
+#define _SCANNER_H
 
 #include "command.h"
 #include "trayitemoptions.h"
 #include "xlibtypes.h"
 
+#include <QElapsedTimer>
 #include <QList>
 #include <QObject>
 #include <QRegularExpression>
 #include <QString>
 #include <QTimer>
-#include <QElapsedTimer>
 
 class TrayItemManager;
 
-class ProcessId {
-    public:
-        ProcessId(const QString &command, pid_t pid, const TrayItemOptions &config, uint64_t timeout, bool checkNormality, const QRegularExpression &searchPattern);
-        ProcessId(const ProcessId &obj);
-        ProcessId& operator=(const ProcessId &obj);
+class ProcessId
+{
+public:
+    ProcessId(const QString &command, pid_t pid, const TrayItemOptions &config, uint64_t timeout, bool checkNormality,
+              const QRegularExpression &searchPattern);
+    ProcessId(const ProcessId &obj);
+    ProcessId &operator=(const ProcessId &obj);
 
-        QString command;
-        pid_t pid;
-        TrayItemOptions config;
-        QElapsedTimer etimer;
-        uint64_t timeout;
-        bool checkNormality;
-        QRegularExpression searchPattern;
+    QString command;
+    pid_t pid;
+    TrayItemOptions config;
+    QElapsedTimer etimer;
+    uint64_t timeout;
+    bool checkNormality;
+    QRegularExpression searchPattern;
 };
 
 // Launches commands and looks for the window ids they create.
 
-class Scanner : public QObject {
+class Scanner : public QObject
+{
     Q_OBJECT
 
 public:
     Scanner(TrayItemManager *manager);
     ~Scanner();
-    void enqueueSearch(const QRegularExpression &searchPattern, uint32_t maxTime, bool checkNormality, const TrayItemOptions &config);
-    void enqueueLaunch(const QString &command, const QStringList &arguments, const QRegularExpression &searchPattern, uint32_t maxTime, bool checkNormality, const TrayItemOptions &config);
+    void enqueueSearch(const QRegularExpression &searchPattern, uint32_t maxTime, bool checkNormality,
+                       const TrayItemOptions &config);
+    void enqueueLaunch(const QString &command, const QStringList &arguments, const QRegularExpression &searchPattern,
+                       uint32_t maxTime, bool checkNormality, const TrayItemOptions &config);
     bool isRunning();
 
 private slots:
@@ -70,7 +75,8 @@ signals:
     void stopping();
 
 private:
-    void enqueue(const QString &command, const QStringList &arguments, const QRegularExpression &searchPattern, const TrayItemOptions &config, uint32_t maxTime, bool checkNormality);
+    void enqueue(const QString &command, const QStringList &arguments, const QRegularExpression &searchPattern,
+                 const TrayItemOptions &config, uint32_t maxTime, bool checkNormality);
 
     TrayItemManager *m_manager;
     QTimer *m_timer;
@@ -78,4 +84,4 @@ private:
     QList<ProcessId> m_processesTitle;
 };
 
-#endif	/* _SCANNER_H */
+#endif /* _SCANNER_H */

@@ -18,15 +18,15 @@
  */
 
 #ifndef _APPLICATION_H
-#define	_APPLICATION_H
+#define _APPLICATION_H
 
 #include "trayitemmanager.h"
 
 #include <QApplication>
 #include <QSocketNotifier>
 
-
-class Application : public QApplication {
+class Application : public QApplication
+{
     Q_OBJECT
 
 public:
@@ -45,4 +45,4 @@ private:
     QSocketNotifier *m_closeSignalSocketNotifier;
 };
 
-#endif	/* _APPLICATION_H */
+#endif /* _APPLICATION_H */

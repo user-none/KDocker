@@ -21,29 +21,30 @@
 #ifndef _XLIBUTIL_H
 #define _XLIBUTIL_H
 
+#include <QEventLoop>
 #include <QList>
 #include <QObject>
+#include <QPixmap>
 #include <QRegularExpression>
 #include <QString>
 #include <QTimer>
-#include <QEventLoop>
-#include <QPixmap>
 
 #include <xlibtypes.h>
 
-typedef struct GrabInfo {
+typedef struct GrabInfo
+{
 
-    QTimer     *qtimer;
+    QTimer *qtimer;
     QEventLoop *qloop;
 
-    Window       window;
+    Window window;
     unsigned int button;
-    bool         isGrabbing;
+    bool isGrabbing;
 
 } GrabInfo;
 
-
-class XLibUtil : public QObject {
+class XLibUtil : public QObject
+{
     Q_OBJECT
 
 public:
@@ -57,7 +58,8 @@ public:
     static bool isNormalWindow(Window w);
     static bool isValidWindowId(Window w);
     static Window pidToWid(bool checkNormality, pid_t epid, QList<Window> dockedWindows = QList<Window>());
-    static Window findWindow(bool checkNormality, const QRegularExpression &ename, QList<Window> dockedWindows = QList<Window>());
+    static Window findWindow(bool checkNormality, const QRegularExpression &ename,
+                             QList<Window> dockedWindows = QList<Window>());
     static Window activeWindow();
     static Window selectWindow(GrabInfo &grabInfo, QString &error);
     static void subscribe(Window w);
