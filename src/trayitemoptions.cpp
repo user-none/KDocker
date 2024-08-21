@@ -242,12 +242,12 @@ TrayItemOptions::TriState TrayItemOptions::getLockToDesktopState() const
 bool TrayItemOptions::getIconifyFocusLost() const
 {
     switch (m_iconifyFocusLost) {
-    case TrayItemOptions::TriState::Unset:
-        return defaultIconifyFocusLost();
-    case TrayItemOptions::TriState::SetTrue:
-        return true;
-    case TrayItemOptions::TriState::SetFalse:
-        return false;
+        case TrayItemOptions::TriState::Unset:
+            return defaultIconifyFocusLost();
+        case TrayItemOptions::TriState::SetTrue:
+            return true;
+        case TrayItemOptions::TriState::SetFalse:
+            return false;
     }
     return false;
 }
@@ -255,12 +255,12 @@ bool TrayItemOptions::getIconifyFocusLost() const
 bool TrayItemOptions::getIconifyMinimized() const
 {
     switch (m_iconifyMinimized) {
-    case TrayItemOptions::TriState::Unset:
-        return defaultIconifyMinimized();
-    case TrayItemOptions::TriState::SetTrue:
-        return true;
-    case TrayItemOptions::TriState::SetFalse:
-        return false;
+        case TrayItemOptions::TriState::Unset:
+            return defaultIconifyMinimized();
+        case TrayItemOptions::TriState::SetTrue:
+            return true;
+        case TrayItemOptions::TriState::SetFalse:
+            return false;
     }
     return false;
 }
@@ -268,12 +268,12 @@ bool TrayItemOptions::getIconifyMinimized() const
 bool TrayItemOptions::getIconifyObscured() const
 {
     switch (m_iconifyObscured) {
-    case TrayItemOptions::TriState::Unset:
-        return defaultIconifyObscured();
-    case TrayItemOptions::TriState::SetTrue:
-        return true;
-    case TrayItemOptions::TriState::SetFalse:
-        return false;
+        case TrayItemOptions::TriState::Unset:
+            return defaultIconifyObscured();
+        case TrayItemOptions::TriState::SetTrue:
+            return true;
+        case TrayItemOptions::TriState::SetFalse:
+            return false;
     }
     return false;
 }
@@ -286,12 +286,12 @@ int TrayItemOptions::getNotifyTime() const
 bool TrayItemOptions::getQuiet() const
 {
     switch (m_quiet) {
-    case TrayItemOptions::TriState::Unset:
-        return defaultQuiet();
-    case TrayItemOptions::TriState::SetTrue:
-        return true;
-    case TrayItemOptions::TriState::SetFalse:
-        return false;
+        case TrayItemOptions::TriState::Unset:
+            return defaultQuiet();
+        case TrayItemOptions::TriState::SetTrue:
+            return true;
+        case TrayItemOptions::TriState::SetFalse:
+            return false;
     }
     return false;
 }
@@ -299,12 +299,12 @@ bool TrayItemOptions::getQuiet() const
 bool TrayItemOptions::getSkipPager() const
 {
     switch (m_skipPager) {
-    case TrayItemOptions::TriState::Unset:
-        return defaultSkipPager();
-    case TrayItemOptions::TriState::SetTrue:
-        return true;
-    case TrayItemOptions::TriState::SetFalse:
-        return false;
+        case TrayItemOptions::TriState::Unset:
+            return defaultSkipPager();
+        case TrayItemOptions::TriState::SetTrue:
+            return true;
+        case TrayItemOptions::TriState::SetFalse:
+            return false;
     }
     return false;
 }
@@ -312,12 +312,12 @@ bool TrayItemOptions::getSkipPager() const
 bool TrayItemOptions::getSticky() const
 {
     switch (m_sticky) {
-    case TrayItemOptions::TriState::Unset:
-        return defaultSticky();
-    case TrayItemOptions::TriState::SetTrue:
-        return true;
-    case TrayItemOptions::TriState::SetFalse:
-        return false;
+        case TrayItemOptions::TriState::Unset:
+            return defaultSticky();
+        case TrayItemOptions::TriState::SetTrue:
+            return true;
+        case TrayItemOptions::TriState::SetFalse:
+            return false;
     }
     return false;
 }
@@ -325,12 +325,12 @@ bool TrayItemOptions::getSticky() const
 bool TrayItemOptions::getSkipTaskbar() const
 {
     switch (m_skipTaskbar) {
-    case TrayItemOptions::TriState::Unset:
-        return defaultSkipTaskbar();
-    case TrayItemOptions::TriState::SetTrue:
-        return true;
-    case TrayItemOptions::TriState::SetFalse:
-        return false;
+        case TrayItemOptions::TriState::Unset:
+            return defaultSkipTaskbar();
+        case TrayItemOptions::TriState::SetTrue:
+            return true;
+        case TrayItemOptions::TriState::SetFalse:
+            return false;
     }
     return false;
 }
@@ -338,12 +338,12 @@ bool TrayItemOptions::getSkipTaskbar() const
 bool TrayItemOptions::getLockToDesktop() const
 {
     switch (m_iconifyMinimized) {
-    case TrayItemOptions::TriState::Unset:
-        return defaultIconifyMinimized();
-    case TrayItemOptions::TriState::SetTrue:
-        return true;
-    case TrayItemOptions::TriState::SetFalse:
-        return false;
+        case TrayItemOptions::TriState::Unset:
+            return defaultIconifyMinimized();
+        case TrayItemOptions::TriState::SetTrue:
+            return true;
+        case TrayItemOptions::TriState::SetFalse:
+            return false;
     }
     return false;
 }

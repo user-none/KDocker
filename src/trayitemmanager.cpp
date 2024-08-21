@@ -67,52 +67,52 @@ bool TrayItemManager::nativeEventFilter([[maybe_unused]] const QByteArray &event
     static xcb_window_t dockedWindow = 0; //     zero: event ignored (default) ...
                                           // non-zero: pass to TrayItem::xcbEventFilter
     switch (static_cast<xcb_generic_event_t *>(message)->response_type & ~0x80) {
-    case XCB_FOCUS_OUT: // -> TrayItem::xcbEventFilter
-        dockedWindow = static_cast<xcb_focus_out_event_t *>(message)->event;
-        break;
+        case XCB_FOCUS_OUT: // -> TrayItem::xcbEventFilter
+            dockedWindow = static_cast<xcb_focus_out_event_t *>(message)->event;
+            break;
 
-    case XCB_DESTROY_NOTIFY: // -> TrayItem::xcbEventFilter
-        dockedWindow = static_cast<xcb_destroy_notify_event_t *>(message)->window;
-        break;
+        case XCB_DESTROY_NOTIFY: // -> TrayItem::xcbEventFilter
+            dockedWindow = static_cast<xcb_destroy_notify_event_t *>(message)->window;
+            break;
 
-    case XCB_UNMAP_NOTIFY: // -> TrayItem::xcbEventFilter
-        dockedWindow = static_cast<xcb_unmap_notify_event_t *>(message)->window;
-        break;
+        case XCB_UNMAP_NOTIFY: // -> TrayItem::xcbEventFilter
+            dockedWindow = static_cast<xcb_unmap_notify_event_t *>(message)->window;
+            break;
 
-    case XCB_MAP_NOTIFY: // -> TrayItem::xcbEventFilter
-        dockedWindow = static_cast<xcb_map_notify_event_t *>(message)->window;
-        break;
+        case XCB_MAP_NOTIFY: // -> TrayItem::xcbEventFilter
+            dockedWindow = static_cast<xcb_map_notify_event_t *>(message)->window;
+            break;
 
-    case XCB_VISIBILITY_NOTIFY: // -> TrayItem::xcbEventFilter
-        dockedWindow = static_cast<xcb_visibility_notify_event_t *>(message)->window;
-        break;
+        case XCB_VISIBILITY_NOTIFY: // -> TrayItem::xcbEventFilter
+            dockedWindow = static_cast<xcb_visibility_notify_event_t *>(message)->window;
+            break;
 
-    case XCB_PROPERTY_NOTIFY: // -> TrayItem::xcbEventFilter
-        dockedWindow = static_cast<xcb_visibility_notify_event_t *>(message)->window;
-        break;
+        case XCB_PROPERTY_NOTIFY: // -> TrayItem::xcbEventFilter
+            dockedWindow = static_cast<xcb_visibility_notify_event_t *>(message)->window;
+            break;
 
-    case XCB_BUTTON_PRESS:
-        if (m_grabInfo.isGrabbing) {
-            m_grabInfo.isGrabbing = false; // Cancel immediately
+        case XCB_BUTTON_PRESS:
+            if (m_grabInfo.isGrabbing) {
+                m_grabInfo.isGrabbing = false; // Cancel immediately
 
-            m_grabInfo.button = static_cast<xcb_button_press_event_t *>(message)->detail;
-            m_grabInfo.window = static_cast<xcb_button_press_event_t *>(message)->child;
-
-            emit quitMouseGrab(); // Interrupt QTimer waiting for grab
-            return true;          // Event has been handled - don't propagate
-        }
-        break;
-
-    case XCB_KEY_RELEASE:
-        if (m_grabInfo.isGrabbing) {
-            if (static_cast<xcb_key_release_event_t *>(message)->detail == ESC_key) {
-                m_grabInfo.isGrabbing = false;
+                m_grabInfo.button = static_cast<xcb_button_press_event_t *>(message)->detail;
+                m_grabInfo.window = static_cast<xcb_button_press_event_t *>(message)->child;
 
                 emit quitMouseGrab(); // Interrupt QTimer waiting for grab
                 return true;          // Event has been handled - don't propagate
             }
-        }
-        break;
+            break;
+
+        case XCB_KEY_RELEASE:
+            if (m_grabInfo.isGrabbing) {
+                if (static_cast<xcb_key_release_event_t *>(message)->detail == ESC_key) {
+                    m_grabInfo.isGrabbing = false;
+
+                    emit quitMouseGrab(); // Interrupt QTimer waiting for grab
+                    return true;          // Event has been handled - don't propagate
+                }
+            }
+            break;
     }
 
     if (dockedWindow) {

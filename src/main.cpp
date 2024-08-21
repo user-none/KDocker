@@ -71,35 +71,35 @@ static void sendDbusCommand(const Command &command, const TrayItemOptions &confi
         iface.call(QDBus::NoBlock, "daemonize");
 
     switch (command.getType()) {
-    case Command::Type::NoCommand:
-        break;
-    case Command::Type::Title:
-        iface.call(QDBus::NoBlock, "dockWindowTitle", command.getSearchPattern(), command.getTimeout(),
-                   command.getCheckNormality(), QVariant::fromValue(config));
-        break;
-    case Command::Type::Launch:
-        iface.call(QDBus::NoBlock, "dockLaunchApp", command.getLaunchApp(), command.getLaunchAppArguments(),
-                   command.getSearchPattern(), command.getTimeout(), command.getCheckNormality(),
-                   QVariant::fromValue(config));
-        break;
-    case Command::Type::WindowId:
-        iface.call(QDBus::NoBlock, "dockWindowId", command.getWindowId(), QVariant::fromValue(config));
-        break;
-    case Command::Type::Pid:
-        iface.call(QDBus::NoBlock, "dockPid", command.getPid(), command.getCheckNormality(),
-                   QVariant::fromValue(config));
-        break;
-    case Command::Type::Select:
-        if (daemon) {
+        case Command::Type::NoCommand:
             break;
-        }
-        iface.call(QDBus::NoBlock, "dockSelectWindow", command.getCheckNormality(), QVariant::fromValue(config));
-        break;
-    case Command::Type::Focused:
-        iface.call(QDBus::NoBlock, "dockFocused", QVariant::fromValue(config));
-        break;
-    default:
-        qFatal("COMMAND ERROR!!!!");
+        case Command::Type::Title:
+            iface.call(QDBus::NoBlock, "dockWindowTitle", command.getSearchPattern(), command.getTimeout(),
+                       command.getCheckNormality(), QVariant::fromValue(config));
+            break;
+        case Command::Type::Launch:
+            iface.call(QDBus::NoBlock, "dockLaunchApp", command.getLaunchApp(), command.getLaunchAppArguments(),
+                       command.getSearchPattern(), command.getTimeout(), command.getCheckNormality(),
+                       QVariant::fromValue(config));
+            break;
+        case Command::Type::WindowId:
+            iface.call(QDBus::NoBlock, "dockWindowId", command.getWindowId(), QVariant::fromValue(config));
+            break;
+        case Command::Type::Pid:
+            iface.call(QDBus::NoBlock, "dockPid", command.getPid(), command.getCheckNormality(),
+                       QVariant::fromValue(config));
+            break;
+        case Command::Type::Select:
+            if (daemon) {
+                break;
+            }
+            iface.call(QDBus::NoBlock, "dockSelectWindow", command.getCheckNormality(), QVariant::fromValue(config));
+            break;
+        case Command::Type::Focused:
+            iface.call(QDBus::NoBlock, "dockFocused", QVariant::fromValue(config));
+            break;
+        default:
+            qFatal("COMMAND ERROR!!!!");
     }
 }
 

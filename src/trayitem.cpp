@@ -242,39 +242,39 @@ bool TrayItem::xcbEventFilter(xcb_generic_event_t *event, xcb_window_t dockedWin
 {
     if (!isBadWindow() && static_cast<Window>(dockedWindow) == m_window) {
         switch (event->response_type & ~0x80) {
-        case XCB_FOCUS_OUT:
-            focusLostEvent();
-            break;
+            case XCB_FOCUS_OUT:
+                focusLostEvent();
+                break;
 
-        case XCB_DESTROY_NOTIFY:
-            destroyEvent();
-            // return true;
-            break;
+            case XCB_DESTROY_NOTIFY:
+                destroyEvent();
+                // return true;
+                break;
 
-        case XCB_UNMAP_NOTIFY:
-            // In KDE 5.14 they started issuing an unmap event when the user
-            // changes virtual desktops so we need to check that the window
-            // is on the current desktop before saying that it has been iconized
-            if (isOnCurrentDesktop()) {
-                m_iconified = true;
+            case XCB_UNMAP_NOTIFY:
+                // In KDE 5.14 they started issuing an unmap event when the user
+                // changes virtual desktops so we need to check that the window
+                // is on the current desktop before saying that it has been iconized
+                if (isOnCurrentDesktop()) {
+                    m_iconified = true;
+                    updateToggleAction();
+                }
+                break;
+
+            case XCB_MAP_NOTIFY:
+                m_iconified = false;
                 updateToggleAction();
-            }
-            break;
+                break;
 
-        case XCB_MAP_NOTIFY:
-            m_iconified = false;
-            updateToggleAction();
-            break;
+            case XCB_VISIBILITY_NOTIFY:
+                if (reinterpret_cast<xcb_visibility_notify_event_t *>(event)->state == XCB_VISIBILITY_FULLY_OBSCURED) {
+                    obscureEvent();
+                }
+                break;
 
-        case XCB_VISIBILITY_NOTIFY:
-            if (reinterpret_cast<xcb_visibility_notify_event_t *>(event)->state == XCB_VISIBILITY_FULLY_OBSCURED) {
-                obscureEvent();
-            }
-            break;
-
-        case XCB_PROPERTY_NOTIFY:
-            propertyChangeEvent(static_cast<Atom>(reinterpret_cast<xcb_property_notify_event_t *>(event)->atom));
-            break;
+            case XCB_PROPERTY_NOTIFY:
+                propertyChangeEvent(static_cast<Atom>(reinterpret_cast<xcb_property_notify_event_t *>(event)->atom));
+                break;
         }
     }
     return false;
