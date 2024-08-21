@@ -22,7 +22,6 @@
 
 #include "command.h"
 #include "trayitemoptions.h"
-#include "xlibtypes.h"
 
 #include <QElapsedTimer>
 #include <QList>
@@ -59,10 +58,10 @@ class Scanner : public QObject
 public:
     Scanner(TrayItemManager *manager);
     ~Scanner();
-    void enqueueSearch(const QRegularExpression &searchPattern, uint32_t maxTime, bool checkNormality,
+    void enqueueSearch(const QRegularExpression &searchPattern, quint32 maxTime, bool checkNormality,
                        const TrayItemOptions &config);
     void enqueueLaunch(const QString &command, const QStringList &arguments, const QRegularExpression &searchPattern,
-                       uint32_t maxTime, bool checkNormality, const TrayItemOptions &config);
+                       quint32 maxTime, bool checkNormality, const TrayItemOptions &config);
     bool isRunning();
 
 private slots:
@@ -71,12 +70,12 @@ private slots:
     void checkTitle();
 
 signals:
-    void windowFound(Window, const TrayItemOptions &);
+    void windowFound(windowid_t, const TrayItemOptions &);
     void stopping();
 
 private:
     void enqueue(const QString &command, const QStringList &arguments, const QRegularExpression &searchPattern,
-                 const TrayItemOptions &config, uint32_t maxTime, bool checkNormality);
+                 const TrayItemOptions &config, quint32 maxTime, bool checkNormality);
 
     TrayItemManager *m_manager;
     QTimer *m_timer;

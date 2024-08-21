@@ -20,11 +20,11 @@
 #ifndef _GRABINFO_H
 #define _GRABINFO_H
 
-#include "xlibtypes.h"
-
 #include <QObject>
 #include <QEventLoop>
 #include <QTimer>
+
+#include "xlibtypes.h"
 
 // This is used in a very bad and strange design that really needs to be replaced.
 //
@@ -66,10 +66,10 @@ public:
 
     bool isGrabbing();
     bool isActive();
-    Window getWindow();
+    windowid_t getWindow();
     unsigned int getButton();
 
-    void setWindow(Window w);
+    void setWindow(windowid_t window);
     void setButton(unsigned int button);
 
     void stopGrabbing();
@@ -81,7 +81,7 @@ private:
     QTimer m_qtimer;
     QEventLoop m_qloop;
 
-    Window m_window;
+    windowid_t m_window;
     unsigned int m_button;
     bool m_isGrabbing;
 

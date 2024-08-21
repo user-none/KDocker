@@ -22,7 +22,7 @@
 #include "constants.h"
 #include "scanner.h"
 #include "trayitemoptions.h"
-#include "xlibtypes.h"
+#include "xlibutil.h"
 
 #include <QByteArray>
 #include <QCoreApplication>
@@ -116,7 +116,7 @@ bool TrayItemManager::nativeEventFilter([[maybe_unused]] const QByteArray &event
 
         while (ti.hasNext()) {
             t = ti.next();
-            if (t->dockedWindow() == static_cast<Window>(dockedWindow)) {
+            if (t->dockedWindow() == static_cast<windowid_t>(dockedWindow)) {
                 return t->xcbEventFilter(message);
             }
         }
@@ -139,20 +139,19 @@ void TrayItemManager::dockLaunchApp(const QString &app, const QStringList &appAr
     checkCount();
 }
 
-void TrayItemManager::dockWindowId(int wid, const TrayItemOptions &options)
+void TrayItemManager::dockWindowId(uint windowId, const TrayItemOptions &options)
 {
-    Window window = wid;
-    if (!XLibUtil::isValidWindowId(window)) {
+    if (!XLibUtil::isValidWindowId(windowId)) {
         QMessageBox::critical(0, qApp->applicationName(), tr("Invalid window id"));
         checkCount();
         return;
     }
-    dockWindow(window, options);
+    dockWindow(windowId, options);
 }
 
 void TrayItemManager::dockPid(pid_t pid, bool checkNormality, const TrayItemOptions &options)
 {
-    Window window = XLibUtil::pidToWid(checkNormality, pid, dockedWindows());
+    windowid_t window = XLibUtil::pidToWid(checkNormality, pid, dockedWindows());
     if (!XLibUtil::isValidWindowId(window)) {
         QMessageBox::critical(0, qApp->applicationName(), tr("Invalid window id"));
         checkCount();
@@ -163,7 +162,7 @@ void TrayItemManager::dockPid(pid_t pid, bool checkNormality, const TrayItemOpti
 
 void TrayItemManager::dockSelectWindow(bool checkNormality, const TrayItemOptions &options)
 {
-    Window window = userSelectWindow(checkNormality);
+    windowid_t window = userSelectWindow(checkNormality);
     if (window)
         dockWindow(window, options);
     checkCount();
@@ -171,7 +170,7 @@ void TrayItemManager::dockSelectWindow(bool checkNormality, const TrayItemOption
 
 void TrayItemManager::dockFocused(const TrayItemOptions &options)
 {
-    Window window = XLibUtil::getActiveWindow();
+    windowid_t window = XLibUtil::getActiveWindow();
     if (!window) {
         QMessageBox::critical(0, qApp->applicationName(),
                               tr("Cannot dock the active window because no window has focus"));
@@ -199,7 +198,7 @@ bool TrayItemManager::closeWindow(uint windowId)
     QListIterator<TrayItem *> ti(m_trayItems);
     while (ti.hasNext()) {
         TrayItem *trayItem = ti.next();
-        if (trayItem->dockedWindow() == static_cast<Window>(windowId)) {
+        if (trayItem->dockedWindow() == static_cast<windowid_t>(windowId)) {
             trayItem->closeWindow();
             return true;
         }
@@ -212,7 +211,7 @@ bool TrayItemManager::hideWindow(uint windowId)
     QListIterator<TrayItem *> ti(m_trayItems);
     while (ti.hasNext()) {
         TrayItem *trayItem = ti.next();
-        if (trayItem->dockedWindow() == static_cast<Window>(windowId)) {
+        if (trayItem->dockedWindow() == static_cast<windowid_t>(windowId)) {
             trayItem->iconifyWindow();
             return true;
         }
@@ -225,7 +224,7 @@ bool TrayItemManager::showWindow(uint windowId)
     QListIterator<TrayItem *> ti(m_trayItems);
     while (ti.hasNext()) {
         TrayItem *trayItem = ti.next();
-        if (trayItem->dockedWindow() == static_cast<Window>(windowId)) {
+        if (trayItem->dockedWindow() == static_cast<windowid_t>(windowId)) {
             trayItem->restoreWindow();
             return true;
         }
@@ -238,7 +237,7 @@ bool TrayItemManager::undockWindow(uint windowId)
     QListIterator<TrayItem *> ti(m_trayItems);
     while (ti.hasNext()) {
         TrayItem *trayItem = ti.next();
-        if (trayItem->dockedWindow() == static_cast<Window>(windowId)) {
+        if (trayItem->dockedWindow() == static_cast<windowid_t>(windowId)) {
             undock(trayItem);
             return true;
         }
@@ -246,7 +245,7 @@ bool TrayItemManager::undockWindow(uint windowId)
     return false;
 }
 
-void TrayItemManager::dockWindow(Window window, const TrayItemOptions &settings)
+void TrayItemManager::dockWindow(windowid_t window, const TrayItemOptions &settings)
 {
     if (isWindowDocked(window)) {
         QMessageBox::information(0, qApp->applicationName(),
@@ -268,14 +267,14 @@ void TrayItemManager::dockWindow(Window window, const TrayItemOptions &settings)
     m_trayItems.append(ti);
 }
 
-Window TrayItemManager::userSelectWindow(bool checkNormality)
+windowid_t TrayItemManager::userSelectWindow(bool checkNormality)
 {
     QTextStream out(stdout);
     out << tr("Select the application/window to dock with the left mouse button.") << Qt::endl;
     out << tr("Click any other mouse button to abort.") << Qt::endl;
 
     QString error;
-    Window window = XLibUtil::selectWindow(m_grabInfo, error);
+    windowid_t window = XLibUtil::selectWindow(m_grabInfo, error);
     if (!window) {
         if (error != QString()) {
             QMessageBox::critical(0, qApp->applicationName(), error);
@@ -345,7 +344,7 @@ void TrayItemManager::daemonize()
 
 void TrayItemManager::selectAndIconify()
 {
-    Window window = userSelectWindow(true);
+    windowid_t window = userSelectWindow(true);
     if (window)
         dockWindow(window, m_initArgs);
 }
@@ -365,9 +364,9 @@ void TrayItemManager::checkCount()
         qApp->quit();
 }
 
-QList<Window> TrayItemManager::dockedWindows()
+QList<windowid_t> TrayItemManager::dockedWindows()
 {
-    QList<Window> windows;
+    QList<windowid_t> windows;
 
     QListIterator<TrayItem *> ti(m_trayItems);
     while (ti.hasNext()) {
@@ -377,7 +376,7 @@ QList<Window> TrayItemManager::dockedWindows()
     return windows;
 }
 
-bool TrayItemManager::isWindowDocked(Window window)
+bool TrayItemManager::isWindowDocked(windowid_t window)
 {
     return dockedWindows().contains(window);
 }

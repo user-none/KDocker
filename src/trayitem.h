@@ -22,7 +22,7 @@
 #define _TRAYITEM_H
 
 #include "trayitemoptions.h"
-#include "xlibutil.h"
+#include "xlibtypes.h"
 
 #include <QAction>
 #include <QEvent>
@@ -37,10 +37,10 @@ class TrayItem : public QSystemTrayIcon
     Q_OBJECT
 
 public:
-    TrayItem(Window window, const TrayItemOptions &config);
+    TrayItem(windowid_t window, const TrayItemOptions &config);
     ~TrayItem();
 
-    Window dockedWindow();
+    windowid_t dockedWindow();
 
     // Pass on all events through this interface
     bool xcbEventFilter(void *message);
@@ -99,7 +99,6 @@ private:
 
     void minimizeEvent();
     void destroyEvent();
-    void propertyChangeEvent(Atom property);
     void obscureEvent();
     void focusLostEvent();
 
@@ -128,7 +127,7 @@ private:
     // SizeHint of m_window
     XLibUtilSizeHints *m_sizeHint;
     // The window that is associated with the tray icon.
-    Window m_window;
+    windowid_t m_window;
     long m_desktop;
     QString m_dockedAppName;
 

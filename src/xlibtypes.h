@@ -20,13 +20,26 @@
 #ifndef _XLIBTYPES
 #define _XLIBTYPES
 
-#include <cstdint>
+#include <QtGlobal>
 
-// Due to isolation of X11 headers (see xlibutil.h for why),
-// we need to define some types from X11 we're using outside
-// of the helper class.
+// Types we use with XLibUtil to represent X11 types we can't / don't want
+// to expose. See details on XLibUtil class about why. These are not a
+// redefinition. Instead these are our types that can hold the X11 type's
+// data. In the case of window and atom, the value may be marshaled within XLibUtil
+// if pointers are invoked. These should only be used with XLibUtil functions and
+// not X11 functions.
 
-typedef uint64_t Atom;
-typedef uint64_t Window;
+typedef quint32 atom_t;
+
+// X11 defines `Window` as an `unsigned long` which is often 64 bit but not
+// always. However, xcb defines it as a `uint32_t`. The documentation isn't
+// fully clear but it's safe to assume windows will always be within the range
+// of an unsigned 32 bit integer.
+typedef quint32 windowid_t;
+
+// Hiding XSizeHints. X11 uses a typdef'ed anonymous struct
+// so we can't forward declare the type. Instead we'll define
+// it as void and use pointers. Not ideal but it will work.
+typedef void XLibUtilSizeHints;
 
 #endif // _XLIBTYPES

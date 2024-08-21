@@ -20,6 +20,8 @@
 #ifndef _COMMAND_H
 #define _COMMAND_H
 
+#include "xlibtypes.h"
+
 #include <QDBusArgument>
 #include <QString>
 #include <QStringList>
@@ -45,30 +47,30 @@ public:
 
     Command::Type getType() const;
     QString getSearchPattern() const;
-    uint32_t getWindowId() const;
+    windowid_t getWindowId() const;
     pid_t getPid() const;
     QString getLaunchApp() const;
     QStringList getLaunchAppArguments() const;
-    uint32_t getTimeout() const;
+    quint32 getTimeout() const;
     bool getCheckNormality() const;
 
     void setType(Command::Type type);
     void setSearchPattern(const QString &pattern);
-    void setWindowId(uint32_t wid);
+    void setWindowId(windowid_t wid);
     void setPid(pid_t pid);
     void setLaunchApp(const QString &app);
     void setLaunchAppArguments(const QStringList &args);
-    void setTimeout(uint32_t v);
+    void setTimeout(quint32 v);
     void setCheckNormality(bool v);
 
 private:
     Command::Type m_type;
     QString m_searchPattern;
-    uint32_t m_windowId;
-    uint32_t m_pid;
+    windowid_t m_windowId;
+    pid_t m_pid;
     QString m_launchApp;
     QStringList m_launchAppArguments;
-    uint32_t m_timeout;
+    quint32 m_timeout;
     bool m_checkNormality;
 };
 

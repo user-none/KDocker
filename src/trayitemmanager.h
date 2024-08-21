@@ -25,6 +25,7 @@
 #include "command.h"
 #include "grabinfo.h"
 #include "trayitem.h"
+#include "xlibtypes.h"
 
 #include <QHash>
 #include <QList>
@@ -55,7 +56,7 @@ public slots:
     void dockLaunchApp(const QString &app, const QStringList &appArguments, const QString &searchPattern,
                        uint timeout = 4, bool checkNormality = true,
                        const TrayItemOptions &options = TrayItemOptions());
-    void dockWindowId(int wid, const TrayItemOptions &options = TrayItemOptions());
+    void dockWindowId(uint windowId, const TrayItemOptions &options = TrayItemOptions());
     void dockPid(pid_t pid, bool checkNormality = true, const TrayItemOptions &options = TrayItemOptions());
     void dockSelectWindow(bool checkNormality = true, const TrayItemOptions &options = TrayItemOptions());
     void dockFocused(const TrayItemOptions &options = TrayItemOptions());
@@ -71,8 +72,8 @@ public slots:
     void daemonize();
 
 private slots:
-    void dockWindow(Window window, const TrayItemOptions &settings);
-    Window userSelectWindow(bool checkNormality = true);
+    void dockWindow(windowid_t window, const TrayItemOptions &settings);
+    windowid_t userSelectWindow(bool checkNormality = true);
     void remove(TrayItem *trayItem);
     void undock(TrayItem *trayItem);
     void selectAndIconify();
@@ -84,8 +85,8 @@ signals:
     void quitMouseGrab();
 
 private:
-    QList<Window> dockedWindows();
-    bool isWindowDocked(Window window);
+    QList<windowid_t> dockedWindows();
+    bool isWindowDocked(windowid_t window);
 
     Scanner *m_scanner;
     TrayItemOptions m_initArgs;

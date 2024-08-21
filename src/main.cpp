@@ -24,6 +24,7 @@
 #include "constants.h"
 #include "kdocker_adaptor.h"
 #include "trayitemmanager.h"
+#include "xlibutil.h"
 
 #include <QCoreApplication>
 #include <QDBusConnection>

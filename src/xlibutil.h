@@ -22,19 +22,13 @@
 #define _XLIBUTIL_H
 
 #include "grabinfo.h"
+#include "xlibtypes.h"
 
 #include <QList>
 #include <QObject>
 #include <QPixmap>
 #include <QRegularExpression>
 #include <QString>
-
-#include <xlibtypes.h>
-
-// Hiding XSizeHints. X11 uses a typdef'ed anonymous struct
-// so we can't forward declare the type. Instead we'll define
-// it as void and use pointers. Not ideal but it will work.
-typedef void XLibUtilSizeHints;
 
 // XLibUtil is a helper class that wraps all X11 functions and
 // isolates them from the reset of the application. The xcb header
@@ -74,57 +68,57 @@ public:
     static XLibUtilSizeHints *newSizeHints();
     // Helper function to deallocate the size hints type.
     static void deleteSizeHints(XLibUtilSizeHints *sh);
-    static void getWMSizeHints(Window w, XLibUtilSizeHints *sh);
-    static void setWMSizeHints(Window w, XLibUtilSizeHints *sh);
+    static void getWMSizeHints(windowid_t window, XLibUtilSizeHints *sh);
+    static void setWMSizeHints(windowid_t window, XLibUtilSizeHints *sh);
 
-    static bool isNormalWindow(Window w);
-    static bool isValidWindowId(Window w);
+    static bool isNormalWindow(windowid_t window);
+    static bool isValidWindowId(windowid_t window);
 
-    static Window pidToWid(bool checkNormality, pid_t epid, QList<Window> dockedWindows = QList<Window>());
-    static Window findWindow(bool checkNormality, const QRegularExpression &ename,
-                             QList<Window> dockedWindows = QList<Window>());
+    static windowid_t pidToWid(bool checkNormality, pid_t epid, QList<windowid_t> dockedWindows = QList<windowid_t>());
+    static windowid_t findWindow(bool checkNormality, const QRegularExpression &ename,
+                             QList<windowid_t> dockedWindows = QList<windowid_t>());
 
     // Get the currently focused window.
-    static Window getActiveWindow();
+    static windowid_t getActiveWindow();
     // Requests user to select a window by grabbing the mouse.
     // A left click will select the application.
     // Clicking any other mouse button or the Escape key will abort the selection.
-    static Window selectWindow(GrabInfo &grabInfo, QString &error);
+    static windowid_t selectWindow(GrabInfo &grabInfo, QString &error);
 
     // Have window events we care about sent to the X11 Event loop.
     // We're part of the event loop so we'll get the events.
-    static void subscribe(Window w);
+    static void subscribe(windowid_t window);
     // Stop receiving events from window.
-    static void unSubscribe(Window w);
+    static void unSubscribe(windowid_t window);
 
     // Get the desktop the window is on.
-    static long getWindowDesktop(Window w);
+    static long getWindowDesktop(windowid_t window);
     // Get the desktop the user is currently viewing.
     static long getCurrentDesktop();
 
-    static void iconifyWindow(Window w);
+    static void iconifyWindow(windowid_t window);
     // Is the window in an iconified state.
-    static bool isWindowIconic(Window w);
+    static bool isWindowIconic(windowid_t window);
     // Shows the window regardless if it's minimized or iconified.
-    static void raiseWindow(Window w);
+    static void raiseWindow(windowid_t window);
 
-    static QPixmap getWindowIcon(Window window);
-    static QString getAppName(Window w);
-    static QString getWindowTitle(Window w);
+    static QPixmap getWindowIcon(windowid_t window);
+    static QString getAppName(windowid_t window);
+    static QString getWindowTitle(windowid_t window);
 
-    static Atom getAtom(const char *name);
+    static atom_t getAtom(const char *name);
 
-    static void setWindowSkipTaskbar(Window w, bool set);
-    static void setWindowSkipPager(Window w, bool set);
-    static void setWindowSticky(Window w, bool set);
+    static void setWindowSkipTaskbar(windowid_t window, bool set);
+    static void setWindowSkipPager(windowid_t window, bool set);
+    static void setWindowSticky(windowid_t window, bool set);
 
     // Switch the desktop the user is currently viewing to another one..
     static void setCurrentDesktop(long desktop);
     // Set the desktop a given window should appear on.
-    static void setWindowDesktop(long desktop, Window w);
+    static void setWindowDesktop(long desktop, windowid_t window);
     // Give a window focus.
-    static void setActiveWindow(Window w);
-    static void closeWindow(Window w);
+    static void setActiveWindow(windowid_t window);
+    static void closeWindow(windowid_t window);
 };
 
 #endif // _XLIBUTIL_H

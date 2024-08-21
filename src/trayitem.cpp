@@ -19,6 +19,7 @@
  */
 
 #include "trayitem.h"
+#include "xlibutil.h"
 
 #include <QElapsedTimer>
 #include <QFileDialog>
@@ -30,7 +31,7 @@
 
 #include <xcb/xproto.h>
 
-TrayItem::TrayItem(Window window, const TrayItemOptions &args)
+TrayItem::TrayItem(windowid_t window, const TrayItemOptions &args)
 {
     m_wantsAttention = false;
     m_iconified = false;
@@ -277,8 +278,32 @@ bool TrayItem::xcbEventFilter(void *message)
             break;
 
         case XCB_PROPERTY_NOTIFY:
-            propertyChangeEvent(static_cast<Atom>(reinterpret_cast<xcb_property_notify_event_t *>(event)->atom));
+        {
+            if (isBadWindow())
+                break;
+
+            static atom_t WM_NAME = XLibUtil::getAtom("WM_NAME");
+            static atom_t WM_ICON = XLibUtil::getAtom("WM_ICON");
+            static atom_t WM_STATE = XLibUtil::getAtom("WM_STATE");
+            static atom_t _NET_WM_DESKTOP = XLibUtil::getAtom("_NET_WM_DESKTOP");
+
+            atom_t property = static_cast<atom_t>(reinterpret_cast<xcb_property_notify_event_t *>(event)->atom);
+            if (property == WM_NAME) {
+                updateTitle();
+            } else if (property == WM_ICON) {
+                updateIcon();
+            } else if (property == _NET_WM_DESKTOP) {
+                m_desktop = XLibUtil::getWindowDesktop(m_window);
+            } else if (property == WM_STATE) {
+                // KDE 5.14 started issuing this event when the user changes virtual desktops so
+                // a minimizeEvent() should not be executed unless the window is on the currently
+                // visible desktop
+                if (XLibUtil::isWindowIconic(m_window) && isOnCurrentDesktop()) {
+                    minimizeEvent();
+                }
+            }
             break;
+        }
 
         default:
             // Not an event we care about let someone else deal with it
@@ -289,7 +314,7 @@ bool TrayItem::xcbEventFilter(void *message)
     return true;
 }
 
-Window TrayItem::dockedWindow()
+windowid_t TrayItem::dockedWindow()
 {
     return m_window;
 }
@@ -585,32 +610,6 @@ void TrayItem::destroyEvent()
 {
     m_window = 0;
     emit dead(this);
-}
-
-void TrayItem::propertyChangeEvent(Atom property)
-{
-    if (isBadWindow())
-        return;
-
-    static Atom WM_NAME = XLibUtil::getAtom("WM_NAME");
-    static Atom WM_ICON = XLibUtil::getAtom("WM_ICON");
-    static Atom WM_STATE = XLibUtil::getAtom("WM_STATE");
-    static Atom _NET_WM_DESKTOP = XLibUtil::getAtom("_NET_WM_DESKTOP");
-
-    if (property == WM_NAME) {
-        updateTitle();
-    } else if (property == WM_ICON) {
-        updateIcon();
-    } else if (property == _NET_WM_DESKTOP) {
-        m_desktop = XLibUtil::getWindowDesktop(m_window);
-    } else if (property == WM_STATE) {
-        // KDE 5.14 started issuing this event when the user changes virtual desktops so
-        // a minimizeEvent() should not be executed unless the window is on the currently
-        // visible desktop
-        if (XLibUtil::isWindowIconic(m_window) && isOnCurrentDesktop()) {
-            minimizeEvent();
-        }
-    }
 }
 
 void TrayItem::obscureEvent()

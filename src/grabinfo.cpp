@@ -58,7 +58,7 @@ bool GrabInfo::isActive()
     return m_qtimer.isActive();
 }
 
-Window GrabInfo::getWindow()
+windowid_t GrabInfo::getWindow()
 {
     return m_window;
 }
@@ -68,9 +68,9 @@ unsigned int GrabInfo::getButton()
     return m_button;
 }
 
-void GrabInfo::setWindow(Window w)
+void GrabInfo::setWindow(windowid_t window)
 {
-    m_window = w;
+    m_window = window;
 }
 
 void GrabInfo::setButton(unsigned int button)

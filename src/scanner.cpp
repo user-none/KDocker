@@ -19,6 +19,8 @@
 
 #include "scanner.h"
 #include "trayitemmanager.h"
+#include "xlibtypes.h"
+#include "xlibutil.h"
 
 #include <QCoreApplication>
 #include <QMessageBox>
@@ -75,7 +77,7 @@ Scanner::~Scanner()
     delete m_timer;
 }
 
-void Scanner::enqueueSearch(const QRegularExpression &searchPattern, uint32_t maxTime, bool checkNormality,
+void Scanner::enqueueSearch(const QRegularExpression &searchPattern, quint32 maxTime, bool checkNormality,
                             const TrayItemOptions &config)
 {
     if (maxTime == 0)
@@ -87,7 +89,7 @@ void Scanner::enqueueSearch(const QRegularExpression &searchPattern, uint32_t ma
 }
 
 void Scanner::enqueueLaunch(const QString &command, const QStringList &arguments,
-                            const QRegularExpression &searchPattern, uint32_t maxTime, bool checkNormality,
+                            const QRegularExpression &searchPattern, quint32 maxTime, bool checkNormality,
                             const TrayItemOptions &config)
 {
     if (maxTime == 0)
@@ -120,9 +122,9 @@ void Scanner::checkPid()
     // Counting backwards because we can remove items from the list
     for (size_t i = m_processesPid.count(); i-- > 0;) {
         ProcessId process = m_processesPid[i];
-        Window w = XLibUtil::pidToWid(process.checkNormality, process.pid);
-        if (w != 0) {
-            emit windowFound(w, process.config);
+        windowid_t window = XLibUtil::pidToWid(process.checkNormality, process.pid);
+        if (window != 0) {
+            emit windowFound(window, process.config);
             m_processesPid.remove(i);
         } else if (process.etimer.hasExpired(process.timeout)) {
             QMessageBox::information(0, qApp->applicationName(),
@@ -137,9 +139,9 @@ void Scanner::checkTitle()
     // Counting backwards because we can remove items from the list
     for (size_t i = m_processesTitle.count(); i-- > 0;) {
         ProcessId process = m_processesTitle[i];
-        Window w = XLibUtil::findWindow(process.checkNormality, process.searchPattern, m_manager->dockedWindows());
-        if (w != 0) {
-            emit windowFound(w, process.config);
+        windowid_t window = XLibUtil::findWindow(process.checkNormality, process.searchPattern, m_manager->dockedWindows());
+        if (window != 0) {
+            emit windowFound(window, process.config);
             m_processesTitle.remove(i);
         } else if (process.etimer.hasExpired(process.timeout)) {
             QMessageBox::information(0, qApp->applicationName(),
