@@ -43,7 +43,7 @@ TrayItem::TrayItem(Window window, const TrayItemOptions &args) {
     Display *display = XLibUtil::display();
 
     // Allows events from m_window to be forwarded to the x11EventFilter.
-    XLibUtil::subscribe(display, m_window, StructureNotifyMask | PropertyChangeMask | VisibilityChangeMask | FocusChangeMask);
+    XLibUtil::subscribe(m_window, StructureNotifyMask | PropertyChangeMask | VisibilityChangeMask | FocusChangeMask);
 
     // Store the desktop on which the window is being shown.
     XLibUtil::getCardinalProperty(display, m_window, XInternAtom(display, "_NET_WM_DESKTOP", true), &m_desktop);
@@ -87,7 +87,7 @@ TrayItem::TrayItem(Window window, const TrayItemOptions &args) {
 
 TrayItem::~TrayItem() {
     // No further interest in events from undocked window.
-    XLibUtil::unSubscribe(XLibUtil::display(), m_window);
+    XLibUtil::unSubscribe(m_window);
     // Only the main menu needs to be deleted. The rest of the menus and actions
     // are children of this menu and Qt will delete all children.
     delete m_contextMenu;
@@ -292,11 +292,10 @@ void TrayItem::restoreWindow() {
     m_is_restoring = true;
 
     Display *display = XLibUtil::display();
-    Window root = XLibUtil::appRootWindow();
 
     if (m_iconified) {
         m_iconified = false;
-        XMapWindow(display, m_window);
+        XLibUtil::mapWindow(m_window);
         m_sizeHint.flags = USPosition;
         XSetWMNormalHints(display, m_window, &m_sizeHint);
 
@@ -307,25 +306,19 @@ void TrayItem::restoreWindow() {
             setIcon(m_defaultIcon);
         }
     }
-    XMapRaised(display, m_window);
-    XFlush(display);
+    XLibUtil::mapRaised(m_window);
+    XLibUtil::flush();
 
     // Change to the desktop that the window was last on.
-    long l_currDesk[2] = {m_desktop, CurrentTime};
-    XLibUtil::sendMessage(display, root, root, "_NET_CURRENT_DESKTOP", 32, SubstructureNotifyMask | SubstructureRedirectMask, l_currDesk, sizeof (l_currDesk));
+    XLibUtil::sendMessageCurrentDesktop(m_desktop, m_window);
 
     if (m_settings.getLockToDesktop()) {
         // Set the desktop the window wants to be on.
-        long l_wmDesk[2] = {m_desktop, 1}; // 1 == request sent from application. 2 == from pager
-        XLibUtil::sendMessage(display, root, m_window, "_NET_WM_DESKTOP", 32, SubstructureNotifyMask | SubstructureRedirectMask, l_wmDesk, sizeof (l_wmDesk));
+        XLibUtil::sendMessageWMDesktop(m_desktop, m_window);
     }
 
     // Make it the active window
-    // 1 == request sent from application. 2 == from pager.
-    // We use 2 because KWin doesn't always give the window focus with 1.
-    long l_active[2] = {2, CurrentTime};
-    XLibUtil::sendMessage(display, root, m_window, "_NET_ACTIVE_WINDOW", 32, SubstructureNotifyMask | SubstructureRedirectMask, l_active, sizeof (l_active));
-    XSetInputFocus(display, m_window, RevertToParent, CurrentTime);
+    XLibUtil::sendMessageActiveWindow(m_window);
 
     updateToggleAction();
     doSkipTaskbar();
@@ -355,21 +348,11 @@ void TrayItem::iconifyWindow() {
 
     /* Get screen number */
     Display *display = XLibUtil::display();
-    int screen = DefaultScreen(display);
     long dummy;
 
     XGetWMNormalHints(display, m_window, &m_sizeHint, &dummy);
 
-    /*
-     * A simple call to XWithdrawWindow wont do. Here is what we do:
-     * 1. Iconify. This will make the application hide all its other windows. For
-     *    example, xmms would take off the playlist and equalizer window.
-     * 2. Withdraw the window to remove it from the taskbar.
-     */
-    XIconifyWindow(display, m_window, screen); // good for effects too
-    XSync(display, false);
-    XWithdrawWindow(display, m_window, screen);
-
+    XLibUtil::iconifyWindow(m_window);
     updateToggleAction();
 }
 
@@ -378,10 +361,7 @@ void TrayItem::closeWindow() {
         return;
     }
 
-    Display *display = XLibUtil::display();
-    long l[5] = {0, 0, 0, 0, 0};
-    restoreWindow();
-    XLibUtil::sendMessage(display, XLibUtil::appRootWindow(), m_window, "_NET_CLOSE_WINDOW", 32, SubstructureNotifyMask | SubstructureRedirectMask, l, sizeof (l));
+    XLibUtil::sendMessageCloseWindow(m_window);
 }
 
 void TrayItem::doSkipTaskbar() {
@@ -518,7 +498,7 @@ void TrayItem::setBalloonTimeout(bool value) {
 }
 
 void TrayItem::toggleWindow() {
-    if (m_iconified || m_window != XLibUtil::activeWindow(XLibUtil::display())) {
+    if (m_iconified || m_window != XLibUtil::activeWindow()) {
         if (!m_iconified) {
             // Iconify on original desktop in case restoring to another
             iconifyWindow();
@@ -616,7 +596,7 @@ void TrayItem::focusLostEvent() {
         qApp->processEvents();
     }
 
-    if (m_settings.getIconifyFocusLost() && m_window != XLibUtil::activeWindow(XLibUtil::display())) {
+    if (m_settings.getIconifyFocusLost() && m_window != XLibUtil::activeWindow()) {
         iconifyWindow();
     }
 }
@@ -625,14 +605,7 @@ void TrayItem::set_NET_WM_STATE(const char *type, bool set) {
     if (isBadWindow()) {
         return;
     }
-
-    // set, true = add the state to the window. false, remove the state from
-    // the window.
-    Display *display = XLibUtil::display();
-    Atom atom = XInternAtom(display, type, false);
-
-    qint64 l[2] = {set ? 1 : 0, static_cast<qint64>(atom)};
-    XLibUtil::sendMessage(display, XLibUtil::appRootWindow(), m_window, "_NET_WM_STATE", 32, SubstructureNotifyMask, l, sizeof (l));
+    XLibUtil::sendMessageWMState(m_window, type, set);
 }
 
 void TrayItem::readDockedAppName() {
@@ -926,9 +899,7 @@ QIcon TrayItem::createIcon(Window window) {
 }
 
 bool TrayItem::isBadWindow() {
-    Display *display = XLibUtil::display();
-
-    if (!XLibUtil::isValidWindowId(display, m_window)) {
+    if (!XLibUtil::isValidWindowId(m_window)) {
         destroyEvent();
         return true;
     }

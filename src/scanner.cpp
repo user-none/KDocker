@@ -113,7 +113,7 @@ void Scanner::checkPid() {
     // Counting backwards because we can remove items from the list
     for (size_t i = m_processesPid.count(); i-->0; ) {
         ProcessId process = m_processesPid[i];
-        Window w = XLibUtil::pidToWid(XLibUtil::display(), XLibUtil::appRootWindow(), process.checkNormality, process.pid);
+        Window w = XLibUtil::pidToWid(process.checkNormality, process.pid);
         if (w != 0) {
             emit windowFound(w, process.config);
             m_processesPid.remove(i);
@@ -128,7 +128,7 @@ void Scanner::checkTitle() {
     // Counting backwards because we can remove items from the list
     for (size_t i = m_processesTitle.count(); i-->0; ) {
         ProcessId process = m_processesTitle[i];
-        Window w = XLibUtil::findWindow(XLibUtil::display(), XLibUtil::appRootWindow(), process.checkNormality, process.searchPattern, m_manager->dockedWindows());
+        Window w = XLibUtil::findWindow(process.checkNormality, process.searchPattern, m_manager->dockedWindows());
         if (w != 0) {
             emit windowFound(w, process.config);
             m_processesTitle.remove(i);

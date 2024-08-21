@@ -22,7 +22,7 @@
 
 #include "command.h"
 #include "trayitemoptions.h"
-#include "xlibutil.h"
+#include "xlibtypes.h"
 
 #include <QList>
 #include <QObject>

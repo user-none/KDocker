@@ -108,6 +108,8 @@ int main(int argc, char *argv[]) {
     // Register all our meta types so they're available
     registerTypes();
 
+    XLibUtil::silenceXErrors();
+
     Application app(argc, argv);
 
     // setup signal handlers that undock and quit

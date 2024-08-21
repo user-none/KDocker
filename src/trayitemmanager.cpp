@@ -22,7 +22,7 @@
 #include "trayitemoptions.h"
 #include "trayitemmanager.h"
 #include "scanner.h"
-#include "xlibutil.h"
+#include "xlibtypes.h"
 
 #include <QCoreApplication>
 #include <QByteArray>
@@ -32,10 +32,6 @@
 #include <xcb/xproto.h>
 
 #define  ESC_key  9
-
-int ignoreXErrors(Display *, XErrorEvent *) {
-    return 0;
-}
 
 TrayItemManager::TrayItemManager() {
     m_daemon = false;
@@ -48,10 +44,6 @@ TrayItemManager::TrayItemManager() {
     connect(m_grabInfo.qtimer, &QTimer::timeout, m_grabInfo.qloop, &QEventLoop::quit);
     connect(this, &TrayItemManager::quitMouseGrab, m_grabInfo.qloop, &QEventLoop::quit);
 
-    // This will prevent x errors from being written to the console.
-    // The isValidWindowId function in util.cpp will generate errors if the
-    // window is not valid while it is checking.
-    XSetErrorHandler(ignoreXErrors);
     qApp-> installNativeEventFilter(this);
 }
 
@@ -148,7 +140,7 @@ void TrayItemManager::dockLaunchApp(const QString &app, const QStringList &appAr
 
 void TrayItemManager::dockWindowId(int wid, const TrayItemOptions &options) {
     Window window = wid;
-    if (!XLibUtil::isValidWindowId(XLibUtil::display(), window)) {
+    if (!XLibUtil::isValidWindowId(window)) {
         QMessageBox::critical(0, qApp->applicationName(), tr("Invalid window id"));
         checkCount();
         return;
@@ -157,8 +149,8 @@ void TrayItemManager::dockWindowId(int wid, const TrayItemOptions &options) {
 }
 
 void TrayItemManager::dockPid(pid_t pid, bool checkNormality, const TrayItemOptions &options) {
-    Window window = XLibUtil::pidToWid(XLibUtil::display(), XLibUtil::appRootWindow(), checkNormality, pid, dockedWindows());
-    if (!XLibUtil::isValidWindowId(XLibUtil::display(), window)) {
+    Window window = XLibUtil::pidToWid(checkNormality, pid, dockedWindows());
+    if (!XLibUtil::isValidWindowId(window)) {
         QMessageBox::critical(0, qApp->applicationName(), tr("Invalid window id"));
         checkCount();
         return;
@@ -175,7 +167,7 @@ void TrayItemManager::dockSelectWindow(bool checkNormality, const TrayItemOption
 }
 
 void TrayItemManager::dockFocused(const TrayItemOptions &options) {
-    Window window = XLibUtil::activeWindow(XLibUtil::display());
+    Window window = XLibUtil::activeWindow();
     if (!window) {
         QMessageBox::critical(0, qApp->applicationName(), tr("Cannot dock the active window because no window has focus"));
         checkCount();
@@ -270,7 +262,7 @@ Window TrayItemManager::userSelectWindow(bool checkNormality) {
     out << tr("Click any other mouse button to abort.") << Qt::endl;
 
     QString error;
-    Window window = XLibUtil::selectWindow(XLibUtil::display(), m_grabInfo, error);
+    Window window = XLibUtil::selectWindow(m_grabInfo, error);
     if (!window) {
         if (error != QString()) {
             QMessageBox::critical(0, qApp->applicationName(), error);
@@ -280,7 +272,7 @@ Window TrayItemManager::userSelectWindow(bool checkNormality) {
     }
 
     if (checkNormality) {
-        if (!XLibUtil::isNormalWindow(XLibUtil::display(), window)) {
+        if (!XLibUtil::isNormalWindow(window)) {
             if (QMessageBox::warning(0, qApp->applicationName(), tr("The window you are attempting to dock does not seem to be a normal window."), QMessageBox::Abort | QMessageBox::Ignore) == QMessageBox::Abort) {
                 checkCount();
                 return 0;

@@ -28,10 +28,7 @@
 #include <QTimer>
 #include <QEventLoop>
 
-typedef uint64_t Atom;
-typedef uint64_t Window;
-struct _XDisplay;
-typedef struct _XDisplay Display;
+#include <xlibtypes.h>
 
 typedef struct GrabInfo {
 
@@ -49,20 +46,31 @@ class XLibUtil : public QObject {
     Q_OBJECT
 
 public:
-    static bool isNormalWindow(Display *display, Window w);
-    static bool isValidWindowId(Display *display, Window w);
-    static pid_t pid(Display *display, Window w);
-    static Window pidToWid(Display *display, Window window, bool checkNormality, pid_t epid, QList<Window> dockedWindows = QList<Window>());
-    static bool analyzeWindow(Display *display, Window w, const QRegularExpression &ename);
-    static Window findWindow(Display *display, Window w, bool checkNormality, const QRegularExpression &ename, QList<Window> dockedWindows = QList<Window>());
-    static void sendMessage(Display *display, Window to, Window w, const char *type, int format, long mask, void *data, int size);
-    static Window activeWindow(Display *display);
-    static Window selectWindow(Display *display, GrabInfo &grabInfo, QString &error);
-    static void subscribe(Display *display, Window w, long mask);
-    static void unSubscribe(Display *display, Window w);
+    static void silenceXErrors();
+
+    static bool isNormalWindow(Window w);
+    static bool isValidWindowId(Window w);
+    static Window pidToWid(bool checkNormality, pid_t epid, QList<Window> dockedWindows = QList<Window>());
+    static Window findWindow(bool checkNormality, const QRegularExpression &ename, QList<Window> dockedWindows = QList<Window>());
+    static Window activeWindow();
+    static Window selectWindow(GrabInfo &grabInfo, QString &error);
+    static void subscribe(Window w, long mask);
+    static void unSubscribe(Window w);
     static bool getCardinalProperty(Display *display, Window w, Atom prop, long *data);
     static Display *display();
     static Window appRootWindow();
+
+    static void iconifyWindow(Window w);
+
+    static void mapWindow(Window w);
+    static void mapRaised(Window w);
+    static void flush();
+
+    static void sendMessageWMState(Window w, const char *type, bool set);
+    static void sendMessageCurrentDesktop(long desktop, Window w);
+    static void sendMessageWMDesktop(long desktop, Window w);
+    static void sendMessageActiveWindow(Window w);
+    static void sendMessageCloseWindow(Window w);
 };
 
 #endif /* _XLIBUTIL_H */
