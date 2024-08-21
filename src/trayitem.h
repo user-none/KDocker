@@ -32,8 +32,6 @@
 #include <QString>
 #include <QSystemTrayIcon>
 
-#include <xcb/xproto.h>
-
 class TrayItem : public QSystemTrayIcon
 {
     Q_OBJECT
@@ -45,7 +43,7 @@ public:
     Window dockedWindow();
 
     // Pass on all events through this interface
-    bool xcbEventFilter(xcb_generic_event_t *event, xcb_window_t dockedWindow);
+    bool xcbEventFilter(void *message);
 
     void showWindow();
     void restoreWindow();

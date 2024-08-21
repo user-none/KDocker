@@ -123,7 +123,7 @@ bool TrayItemManager::nativeEventFilter([[maybe_unused]] const QByteArray &event
         while (ti.hasNext()) {
             t = ti.next();
             if (t->dockedWindow() == static_cast<Window>(dockedWindow)) {
-                return t->xcbEventFilter(static_cast<xcb_generic_event_t *>(message), dockedWindow);
+                return t->xcbEventFilter(message);
             }
         }
     }
