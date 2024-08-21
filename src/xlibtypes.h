@@ -23,7 +23,6 @@
 
 typedef uint64_t Atom;
 typedef uint64_t Window;
-struct _XDisplay;
-typedef struct _XDisplay Display;
+typedef void XLibUtilSizeHints;
 
 #endif // _XLIBTYPES

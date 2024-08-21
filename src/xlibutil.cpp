@@ -43,8 +43,16 @@
 #define BIT2  (1 << 2)
 #define BIT3  (1 << 3)
 
-int ignoreXErrors(Display *, XErrorEvent *) {
+static int ignoreXErrors(Display *, XErrorEvent *) {
     return 0;
+}
+
+static Display *getDisplay() {
+    return qApp->nativeInterface<QNativeInterface::QX11Application>()->display();
+}
+
+static Window getDefaultRootWindow() {
+    return DefaultRootWindow(getDisplay());
 }
 
 void XLibUtil::silenceXErrors() {
@@ -57,13 +65,36 @@ void XLibUtil::silenceXErrors() {
     XSetErrorHandler(ignoreXErrors);
 }
 
+XLibUtilSizeHints *XLibUtil::newSizeHints() {
+    XSizeHints *x = new XSizeHints();
+    return static_cast<XLibUtilSizeHints *>(x);
+}
+
+void XLibUtil::deleteSizeHints(XLibUtilSizeHints *sh) {
+    XSizeHints *x = static_cast<XSizeHints *>(sh);
+    delete x;
+}
+
+void XLibUtil::getWMSizeHints(Window w, XLibUtilSizeHints *sh) {
+    XSizeHints *x = static_cast<XSizeHints *>(sh);
+    long dummy;
+    XGetWMNormalHints(getDisplay(), w, x, &dummy);
+}
+
+void XLibUtil::setWMSizeHints(Window w, XLibUtilSizeHints *sh) {
+    XSizeHints *x = static_cast<XSizeHints *>(sh);
+
+    x->flags = USPosition;
+    XSetWMNormalHints(getDisplay(), w, x);
+}
+
 /*
  * Assert validity of the window id. Get window attributes for the heck of it
  * and see if the request went through.
  */
 bool XLibUtil::isValidWindowId(Window w) {
     XWindowAttributes attrib;
-    return (XGetWindowAttributes(XLibUtil::display(), w, &attrib) != 0);
+    return (XGetWindowAttributes(getDisplay(), w, &attrib) != 0);
 }
 
 /*
@@ -80,7 +111,7 @@ bool XLibUtil::isNormalWindow(Window w) {
     Atom *data = NULL;
     unsigned long nitems;
     Window transient_for = 0;
-    Display *display = XLibUtil::display();
+    Display *display = getDisplay();
 
     static Atom wmState      = XInternAtom(display, "WM_STATE", false);
     static Atom windowState  = XInternAtom(display, "_NET_WM_STATE", false);
@@ -183,7 +214,7 @@ static Window pidToWidEx(Display *display, Window window, bool checkNormality, p
 }
 
 Window XLibUtil::pidToWid(bool checkNormality, pid_t epid, QList<Window> dockedWindows) {
-    return pidToWidEx(XLibUtil::display(), XLibUtil::appRootWindow(), checkNormality, epid, dockedWindows);
+    return pidToWidEx(getDisplay(), getDefaultRootWindow(), checkNormality, epid, dockedWindows);
 }
 
 /*
@@ -264,7 +295,7 @@ static Window findWindowEx(Display *display, Window window, bool checkNormality,
 }
 
 Window XLibUtil::findWindow(bool checkNormality, const QRegularExpression &ename, QList<Window> dockedWindows) {
-    return findWindowEx(XLibUtil::display(), XLibUtil::appRootWindow(), checkNormality, ename, dockedWindows);
+    return findWindowEx(getDisplay(), getDefaultRootWindow(), checkNormality, ename, dockedWindows);
 }
 
 /*
@@ -285,42 +316,42 @@ static void sendMessage(Display* display, Window to, Window w, const char *type,
 void XLibUtil::sendMessageWMState(Window w, const char *type, bool set) {
     // set, true = add the state to the window. false, remove the state from
     // the window.
-    Display *display = XLibUtil::display();
+    Display *display = getDisplay();
     Atom atom = XInternAtom(display, type, false);
 
     qint64 l[2] = {set ? 1 : 0, static_cast<qint64>(atom)};
-    sendMessage(display, XLibUtil::appRootWindow(), w, "_NET_WM_STATE", 32, SubstructureNotifyMask, l, sizeof (l));
+    sendMessage(display, getDefaultRootWindow(), w, "_NET_WM_STATE", 32, SubstructureNotifyMask, l, sizeof (l));
 }
 
 void XLibUtil::sendMessageCurrentDesktop(long desktop, Window w) {
-    Window root = XLibUtil::appRootWindow();
+    Window root = getDefaultRootWindow();
     long l_currDesk[2] = {desktop, CurrentTime};
-    sendMessage(XLibUtil::display(), root, root, "_NET_CURRENT_DESKTOP", 32, SubstructureNotifyMask | SubstructureRedirectMask, l_currDesk, sizeof (l_currDesk));
+    sendMessage(getDisplay(), root, root, "_NET_CURRENT_DESKTOP", 32, SubstructureNotifyMask | SubstructureRedirectMask, l_currDesk, sizeof (l_currDesk));
 }
 
 void XLibUtil::sendMessageWMDesktop(long desktop, Window w) {
     long l_wmDesk[2] = {desktop, 1}; // 1 == request sent from application. 2 == from pager
-    sendMessage(XLibUtil::display(), XLibUtil::appRootWindow(), w, "_NET_WM_DESKTOP", 32, SubstructureNotifyMask | SubstructureRedirectMask, l_wmDesk, sizeof (l_wmDesk));
+    sendMessage(getDisplay(), getDefaultRootWindow(), w, "_NET_WM_DESKTOP", 32, SubstructureNotifyMask | SubstructureRedirectMask, l_wmDesk, sizeof (l_wmDesk));
 }
 
 void XLibUtil::sendMessageActiveWindow(Window w) {
     // 1 == request sent from application. 2 == from pager.
     // We use 2 because KWin doesn't always give the window focus with 1.
     long l_active[2] = {2, CurrentTime};
-    sendMessage(XLibUtil::display(), XLibUtil::appRootWindow(), w, "_NET_ACTIVE_WINDOW", 32, SubstructureNotifyMask | SubstructureRedirectMask, l_active, sizeof (l_active));
-    XSetInputFocus(XLibUtil::display(), w, RevertToParent, CurrentTime);
+    sendMessage(getDisplay(), getDefaultRootWindow(), w, "_NET_ACTIVE_WINDOW", 32, SubstructureNotifyMask | SubstructureRedirectMask, l_active, sizeof (l_active));
+    XSetInputFocus(getDisplay(), w, RevertToParent, CurrentTime);
 }
 
 void XLibUtil::sendMessageCloseWindow(Window w) {
     long l[5] = {0, 0, 0, 0, 0};
-    sendMessage(XLibUtil::display(), XLibUtil::appRootWindow(), w, "_NET_CLOSE_WINDOW", 32, SubstructureNotifyMask | SubstructureRedirectMask, l, sizeof (l));
+    sendMessage(getDisplay(), getDefaultRootWindow(), w, "_NET_CLOSE_WINDOW", 32, SubstructureNotifyMask | SubstructureRedirectMask, l, sizeof (l));
 }
 
 /*
  * Returns the id of the currently active window.
  */
 Window XLibUtil::activeWindow() {
-    Display *display = XLibUtil::display();
+    Display *display = getDisplay();
     Atom active_window_atom = XInternAtom(display, "_NET_ACTIVE_WINDOW", true);
     Atom type = 0;
     int format;
@@ -347,7 +378,7 @@ Window XLibUtil::activeWindow() {
  * Clicking any other mouse button or the Escape key will abort the selection.
  */
 Window XLibUtil::selectWindow(GrabInfo &grabInfo, QString &error) {
-    Display *display = XLibUtil::display();
+    Display *display = getDisplay();
     int screen  = DefaultScreen(display);
     Window root = RootWindow(display, screen);
     Cursor cursor = XCreateFontCursor(display, XC_draped_box);
@@ -401,8 +432,11 @@ Window XLibUtil::selectWindow(GrabInfo &grabInfo, QString &error) {
  * Have events associated with mask for the window set in the X11 Event loop
  * to the application.
  */
+void XLibUtil::subscribe(Window w) {
+    XLibUtil::subscribe(w, StructureNotifyMask | PropertyChangeMask | VisibilityChangeMask | FocusChangeMask);
+}
 void XLibUtil::subscribe(Window w, long mask) {
-    Display *display = XLibUtil::display();
+    Display *display = getDisplay();
     Window root = RootWindow(display, DefaultScreen(display));
     XWindowAttributes attr;
 
@@ -413,7 +447,7 @@ void XLibUtil::subscribe(Window w, long mask) {
 }
 
 void XLibUtil::unSubscribe(Window w) {
-    Display *display = XLibUtil::display();
+    Display *display = getDisplay();
     XSelectInput(display, w, NoEventMask);
     XSync(display, false);
 }
@@ -439,7 +473,7 @@ bool getCardinalProperty(Display *display, Window w, Atom prop, long *data) {
 
 long XLibUtil::getWindowDesktop(Window w) {
     long desktop = 0;
-    Display *display = XLibUtil::display();
+    Display *display = getDisplay();
     static Atom _NET_WM_DESKTOP = XInternAtom(display, "_NET_WM_DESKTOP", true);
     getCardinalProperty(display, w, _NET_WM_DESKTOP, &desktop);
     return desktop;
@@ -447,7 +481,7 @@ long XLibUtil::getWindowDesktop(Window w) {
 
 long XLibUtil::getCurrentDesktop() {
     long desktop = 0;
-    Display *display = XLibUtil::display();
+    Display *display = getDisplay();
     Atom type = 0;
     int format;
     unsigned long nitems, after;
@@ -466,7 +500,7 @@ long XLibUtil::getCurrentDesktop() {
 }
 
 void XLibUtil::iconifyWindow(Window w) {
-    Display *display = XLibUtil::display();
+    Display *display = getDisplay();
     int screen = DefaultScreen(display);
     /*
      * A simple call to XWithdrawWindow wont do. Here is what we do:
@@ -485,7 +519,7 @@ bool XLibUtil::isWindowIconic(Window w) {
     int format;
     unsigned long nitems, after;
     unsigned char *data = 0;
-    Display *display = XLibUtil::display();
+    Display *display = getDisplay();
     static Atom WM_STATE = XInternAtom(display, "WM_STATE", true);
 
     int r = XGetWindowProperty(display, w, WM_STATE, 0, 1, false, AnyPropertyType, &type, &format, &nitems, &after, &data);
@@ -497,15 +531,15 @@ bool XLibUtil::isWindowIconic(Window w) {
 }
 
 void XLibUtil::mapWindow(Window w) {
-    XMapWindow(XLibUtil::display(), w);
+    XMapWindow(getDisplay(), w);
 }
 
 void XLibUtil::mapRaised(Window w) {
-    XMapRaised(XLibUtil::display(), w);
+    XMapRaised(getDisplay(), w);
 }
 
 void XLibUtil::flush() {
-    XFlush(XLibUtil::display());
+    XFlush(getDisplay());
 }
 
 static QRgb convertToQColor(unsigned long pixel) {
@@ -554,7 +588,7 @@ QPixmap XLibUtil::createIcon(Window window) {
     if (!window)
         return QPixmap();
 
-    Display* display = XLibUtil::display();
+    Display* display = getDisplay();
     QPixmap appIcon;
 
     // First try to get the icon from WM_HINTS
@@ -622,7 +656,7 @@ QString XLibUtil::getAppName(Window w) {
     XClassHint ch;
     QString name;
 
-    if (XGetClassHint(XLibUtil::display(), w, &ch)) {
+    if (XGetClassHint(getDisplay(), w, &ch)) {
         if (ch.res_class) {
             name = QString(ch.res_class);
         } else if (ch.res_name) {
@@ -644,7 +678,7 @@ QString XLibUtil::getWindowTitle(Window w) {
     char *windowName = 0;
     QString title;
 
-    XFetchName(XLibUtil::display(), w, &windowName);
+    XFetchName(getDisplay(), w, &windowName);
     title = windowName;
 
     if (windowName)
@@ -654,13 +688,5 @@ QString XLibUtil::getWindowTitle(Window w) {
 }
 
 Atom XLibUtil::getAtom(const char *name) {
-    return XInternAtom(XLibUtil::display(), name, true);
-}
-
-Display *XLibUtil::display() {
-    return qApp->nativeInterface<QNativeInterface::QX11Application>()->display();
-}
-
-Window XLibUtil::appRootWindow() {
-    return DefaultRootWindow(XLibUtil::display());
+    return XInternAtom(getDisplay(), name, true);
 }

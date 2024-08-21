@@ -49,18 +49,22 @@ class XLibUtil : public QObject {
 public:
     static void silenceXErrors();
 
+    static XLibUtilSizeHints *newSizeHints();
+    static void deleteSizeHints(XLibUtilSizeHints *sh);
+    static void getWMSizeHints(Window w, XLibUtilSizeHints *sh);
+    static void setWMSizeHints(Window w, XLibUtilSizeHints *sh);
+
     static bool isNormalWindow(Window w);
     static bool isValidWindowId(Window w);
     static Window pidToWid(bool checkNormality, pid_t epid, QList<Window> dockedWindows = QList<Window>());
     static Window findWindow(bool checkNormality, const QRegularExpression &ename, QList<Window> dockedWindows = QList<Window>());
     static Window activeWindow();
     static Window selectWindow(GrabInfo &grabInfo, QString &error);
+    static void subscribe(Window w);
     static void subscribe(Window w, long mask);
     static void unSubscribe(Window w);
     static long getWindowDesktop(Window w);
     static long getCurrentDesktop();
-    static Display *display();
-    static Window appRootWindow();
 
     static void iconifyWindow(Window w);
     static bool isWindowIconic(Window w);

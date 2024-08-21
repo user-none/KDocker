@@ -28,9 +28,6 @@
 #include <QImage>
 #include <QIcon>
 
-#include <X11/Xatom.h>
-
-
 TrayItem::TrayItem(Window window, const TrayItemOptions &args) {
     m_wantsAttention = false;
     m_iconified = false;
@@ -40,8 +37,10 @@ TrayItem::TrayItem(Window window, const TrayItemOptions &args) {
     m_dockedAppName = "";
     m_window = window;
 
+    m_sizeHint = XLibUtil::newSizeHints();
+
     // Allows events from m_window to be forwarded to the x11EventFilter.
-    XLibUtil::subscribe(m_window, StructureNotifyMask | PropertyChangeMask | VisibilityChangeMask | FocusChangeMask);
+    XLibUtil::subscribe(m_window);
 
     // Store the desktop on which the window is being shown.
     m_desktop = XLibUtil::getWindowDesktop(m_window);
@@ -89,6 +88,8 @@ TrayItem::~TrayItem() {
     // Only the main menu needs to be deleted. The rest of the menus and actions
     // are children of this menu and Qt will delete all children.
     delete m_contextMenu;
+
+    XLibUtil::deleteSizeHints(m_sizeHint);
 }
 
 bool TrayItem::readSetting(TrayItemOptions::TriState argSetting, QString key, bool kdockerDefault) {
@@ -289,14 +290,10 @@ void TrayItem::restoreWindow() {
 
     m_is_restoring = true;
 
-    Display *display = XLibUtil::display();
-
     if (m_iconified) {
         m_iconified = false;
         XLibUtil::mapWindow(m_window);
-        m_sizeHint.flags = USPosition;
-        XSetWMNormalHints(display, m_window, &m_sizeHint);
-
+        XLibUtil::setWMSizeHints(m_window, m_sizeHint);
         updateToggleAction();
 
         if (m_wantsAttention) {
@@ -345,11 +342,7 @@ void TrayItem::iconifyWindow() {
     m_iconified = true;
 
     /* Get screen number */
-    Display *display = XLibUtil::display();
-    long dummy;
-
-    XGetWMNormalHints(display, m_window, &m_sizeHint, &dummy);
-
+    XLibUtil::getWMSizeHints(m_window, m_sizeHint);
     XLibUtil::iconifyWindow(m_window);
     updateToggleAction();
 }

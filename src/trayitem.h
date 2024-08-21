@@ -32,12 +32,7 @@
 #include <QSystemTrayIcon>
 #include <QSettings>
 
-#include <X11/Xutil.h>
 #include <xcb/xproto.h>
-
-#undef None
-#undef Unsorted
-#undef Bool
 
 class TrayItem : public QSystemTrayIcon {
     Q_OBJECT
@@ -134,7 +129,7 @@ private:
     TrayItemOptions m_settings;
 
     // SizeHint of m_window
-    XSizeHints m_sizeHint;
+    XLibUtilSizeHints *m_sizeHint;
     // The window that is associated with the tray icon.
     Window m_window;
     long m_desktop;
