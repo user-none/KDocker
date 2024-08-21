@@ -37,7 +37,20 @@
 #define BIT2 (1 << 2)
 #define BIT3 (1 << 3)
 
-static int ignoreXErrors(Display *, XErrorEvent *)
+// A number of functions are declared static and not part of
+// the XLibUtil class. They're private but can'tor shouldn't
+// be in the public header because it would introduce additional
+// X11 types we don't want exposed. These are all internal only
+// and all X11 lib functions are static. So this works fine even
+// though it's more c than cpp. But X11 is a c library.
+//
+// Most functions that look up Atom's will store the result in
+// a function local static variable. This is an optimization so
+// we don't have to keep calling a string lookup function. Atoms
+// are unsigned longs and never change their value.
+
+
+static int ignoreXErrors([[maybe_unused]] Display *, [[maybe_unused]] XErrorEvent *)
 {
     return 0;
 }
@@ -54,12 +67,6 @@ static Window getDefaultRootWindow()
 
 void XLibUtil::silenceXErrors()
 {
-    // Qt regeistereds the X error handler and writes the errors to
-    // the console. We can cause errors to be logged that can be safely ignored.
-    //
-    // This will prevent x errors from being written to the console.
-    // The isValidWindowId function in will generate errors if the
-    // window is not valid while it is checking.
     XSetErrorHandler(ignoreXErrors);
 }
 
@@ -86,27 +93,24 @@ void XLibUtil::setWMSizeHints(Window w, XLibUtilSizeHints *sh)
 {
     XSizeHints *x = static_cast<XSizeHints *>(sh);
 
+    XMapWindow(getDisplay(), w);
     x->flags = USPosition;
     XSetWMNormalHints(getDisplay(), w, x);
 }
 
-/*
- * Assert validity of the window id. Get window attributes for the heck of it
- * and see if the request went through.
- */
 bool XLibUtil::isValidWindowId(Window w)
 {
     XWindowAttributes attrib;
+    // Check if we can get the window's attributes. If we can't that
+    // indicates the window isn't valid.
     return (XGetWindowAttributes(getDisplay(), w, &attrib) != 0);
 }
 
-/*
- * Checks if this window is a normal window (i.e)
- * - Has a WM_STATE
- * - Not modal window
- * - Not a purely transient window (with no window type set)
- * - Not a special window (desktop/menu/util) as indicated in the window type
- */
+// Checks if this window is a normal window (i.e)
+// - Has a WM_STATE
+// - Not modal window
+// - Not a purely transient window (with no window type set)
+// - Not a special window (desktop/menu/util) as indicated in the window type
 bool XLibUtil::isNormalWindow(Window w)
 {
     Atom type;
@@ -170,10 +174,8 @@ bool XLibUtil::isNormalWindow(Window w)
     }
 }
 
-/*
- * Returns the contents of the _NET_WM_PID (which is supposed to contain the
- * process id of the application that created the window)
- */
+// Returns the contents of the _NET_WM_PID (which is supposed to contain the
+// process id of the application that created the window)
 static pid_t pid(Display *display, Window w)
 {
     Atom actual_type;
@@ -181,8 +183,9 @@ static pid_t pid(Display *display, Window w)
     unsigned long nitems, leftover;
     unsigned char *pid;
     pid_t pid_return = -1;
+    static Atom type = XInternAtom(display, "_NET_WM_PID", false);
 
-    if (XGetWindowProperty(display, w, XInternAtom(display, "_NET_WM_PID", false), 0, 1, false, XA_CARDINAL,
+    if (XGetWindowProperty(display, w, type, 0, 1, false, XA_CARDINAL,
                            &actual_type, &actual_format, &nitems, &leftover, &pid) == Success)
     {
         if (pid) {
@@ -193,6 +196,8 @@ static pid_t pid(Display *display, Window w)
     return pid_return;
 }
 
+// Walk the window's tree of subwindows until we find the window matching
+// the window with the pid we're looking for.
 static Window pidToWidEx(Display *display, Window window, bool checkNormality, pid_t epid,
                          QList<Window> dockedWindows = QList<Window>())
 {
@@ -227,29 +232,28 @@ static Window pidToWidEx(Display *display, Window window, bool checkNormality, p
 
 Window XLibUtil::pidToWid(bool checkNormality, pid_t epid, QList<Window> dockedWindows)
 {
+    // Walk from the top most (root) window going though all of them until we find
+    // the one we want. Hopefully find the one we want.
     return pidToWidEx(getDisplay(), getDefaultRootWindow(), checkNormality, epid, dockedWindows);
 }
 
-/*
- * The Grand Window Analyzer. Checks if window w has matching name
- */
+// Checks if window w has matching name
 static bool analyzeWindow(Display *display, Window w, const QRegularExpression &ename)
 {
-    XClassHint ch;
-
-    // no plans to analyze windows without a name
+    // Can't analyze windows without a name
     char *window_name = NULL;
-    if (!XFetchName(display, w, &window_name)) {
+    if (!XFetchName(display, w, &window_name))
         return false;
-    }
+
     if (window_name) {
         XFree(window_name);
     } else {
         return false;
     }
 
-    bool this_is_our_man = false;
     // lets try the program name
+    bool this_is_our_man = false;
+    XClassHint ch;
     if (XGetClassHint(display, w, &ch)) {
         if (QString(ch.res_name).contains(ename)) {
             this_is_our_man = true;
@@ -262,6 +266,7 @@ static bool analyzeWindow(Display *display, Window w, const QRegularExpression &
             if (wm_name && QString(wm_name).contains(ename)) {
                 this_is_our_man = true;
             }
+            XFree(wm_name);
         }
 
         if (ch.res_class) {
@@ -272,14 +277,11 @@ static bool analyzeWindow(Display *display, Window w, const QRegularExpression &
         }
     }
 
-    // it's probably a good idea to check (obsolete) WM_COMMAND here
     return this_is_our_man;
 }
 
-/*
- * Given a starting window look though all children and try to find a window
- * that matches the ename.
- */
+// Given a starting window look though all children and try to find a window
+// that matches the ename.
 static Window findWindowEx(Display *display, Window window, bool checkNormality, const QRegularExpression &ename,
                            QList<Window> dockedWindows = QList<Window>())
 {
@@ -312,76 +314,98 @@ static Window findWindowEx(Display *display, Window window, bool checkNormality,
 
 Window XLibUtil::findWindow(bool checkNormality, const QRegularExpression &ename, QList<Window> dockedWindows)
 {
+    // Walk from the top most (root) window going though all of them until we find
+    // the one we want. Hopefully find the one we want.
     return findWindowEx(getDisplay(), getDefaultRootWindow(), checkNormality, ename, dockedWindows);
 }
 
-/*
- * Sends ClientMessage to a window.
- */
-static void sendMessage(Display *display, Window to, Window w, const char *type, int format, long mask, void *data,
+// Sends a given ClientMessage to a window.
+static void sendMessage(Display *display, Window to, Window w, Atom type, int format, long mask, void *data,
                         int size)
 {
     XEvent ev;
     memset(&ev, 0, sizeof(ev));
     ev.xclient.type = ClientMessage;
     ev.xclient.window = w;
-    ev.xclient.message_type = XInternAtom(display, type, true);
+    ev.xclient.message_type = type;
     ev.xclient.format = format;
     memcpy((char *)&ev.xclient.data, (const char *)data, size);
     XSendEvent(display, to, false, mask, &ev);
     XSync(display, false);
 }
 
-void XLibUtil::sendMessageWMState(Window w, const char *type, bool set)
+void sendMessageWMState(Window w, Atom state_type, bool set)
 {
-    // set, true = add the state to the window. false, remove the state from
-    // the window.
     Display *display = getDisplay();
-    Atom atom = XInternAtom(display, type, false);
-
-    qint64 l[2] = {set ? 1 : 0, static_cast<qint64>(atom)};
-    sendMessage(display, getDefaultRootWindow(), w, "_NET_WM_STATE", 32, SubstructureNotifyMask, l, sizeof(l));
+    static Atom type = XInternAtom(display, "_NET_WM_STATE", true);
+    // true = add the state to the window.
+    // false, remove the state from the window.
+    qint64 l[2] = {set ? 1 : 0, static_cast<qint64>(state_type)};
+    sendMessage(display, getDefaultRootWindow(), w, type, 32, SubstructureNotifyMask, l, sizeof(l));
 }
 
-void XLibUtil::sendMessageCurrentDesktop(long desktop, Window w)
+void XLibUtil::setWindowSkipTaskbar(Window w, bool set)
 {
+    static Atom atom = XInternAtom(getDisplay(), "_NET_WM_STATE_SKIP_TASKBAR", false);
+    sendMessageWMState(w, atom, set);
+}
+
+void XLibUtil::setWindowSkipPager(Window w, bool set)
+{
+    static Atom atom = XInternAtom(getDisplay(), "_NET_WM_STATE_SKIP_PAGER", false);
+    sendMessageWMState(w, atom, set);
+}
+
+void XLibUtil::setWindowSticky(Window w, bool set)
+{
+    static Atom atom = XInternAtom(getDisplay(), "_NET_WM_STATE_STICKY", false);
+    sendMessageWMState(w, atom, set);
+}
+
+void XLibUtil::setCurrentDesktop(long desktop)
+{
+    Display *display = getDisplay();
+    static Atom type = XInternAtom(display, "_NET_CURRENT_DESKTOP", true);
     Window root = getDefaultRootWindow();
     long l_currDesk[2] = {desktop, CurrentTime};
-    sendMessage(getDisplay(), root, root, "_NET_CURRENT_DESKTOP", 32, SubstructureNotifyMask | SubstructureRedirectMask,
+    sendMessage(display, root, root, type, 32, SubstructureNotifyMask | SubstructureRedirectMask,
                 l_currDesk, sizeof(l_currDesk));
 }
 
-void XLibUtil::sendMessageWMDesktop(long desktop, Window w)
+void XLibUtil::setWindowDesktop(long desktop, Window w)
 {
+    Display *display = getDisplay();
+    static Atom type = XInternAtom(display, "_NET_WM_DESKTOP", true);
     long l_wmDesk[2] = {desktop, 1}; // 1 == request sent from application. 2 == from pager
-    sendMessage(getDisplay(), getDefaultRootWindow(), w, "_NET_WM_DESKTOP", 32,
+    sendMessage(display, getDefaultRootWindow(), w, type, 32,
                 SubstructureNotifyMask | SubstructureRedirectMask, l_wmDesk, sizeof(l_wmDesk));
 }
 
-void XLibUtil::sendMessageActiveWindow(Window w)
+void XLibUtil::setActiveWindow(Window w)
 {
+    Display *display = getDisplay();
+    static Atom type = XInternAtom(display, "_NET_ACTIVE_WINDOW", true);
     // 1 == request sent from application. 2 == from pager.
     // We use 2 because KWin doesn't always give the window focus with 1.
     long l_active[2] = {2, CurrentTime};
-    sendMessage(getDisplay(), getDefaultRootWindow(), w, "_NET_ACTIVE_WINDOW", 32,
+    sendMessage(getDisplay(), getDefaultRootWindow(), w, type, 32,
                 SubstructureNotifyMask | SubstructureRedirectMask, l_active, sizeof(l_active));
-    XSetInputFocus(getDisplay(), w, RevertToParent, CurrentTime);
+    XSetInputFocus(display, w, RevertToParent, CurrentTime);
 }
 
-void XLibUtil::sendMessageCloseWindow(Window w)
+void XLibUtil::closeWindow(Window w)
 {
+    static Atom type = XInternAtom(getDisplay(), "_NET_CLOSE_WINDOW", true);
     long l[5] = {0, 0, 0, 0, 0};
-    sendMessage(getDisplay(), getDefaultRootWindow(), w, "_NET_CLOSE_WINDOW", 32,
+    sendMessage(getDisplay(), getDefaultRootWindow(), w, type, 32,
                 SubstructureNotifyMask | SubstructureRedirectMask, l, sizeof(l));
 }
 
-/*
- * Returns the id of the currently active window.
- */
-Window XLibUtil::activeWindow()
+// Returns the id of the currently active window.
+Window XLibUtil::getActiveWindow()
 {
     Display *display = getDisplay();
-    Atom active_window_atom = XInternAtom(display, "_NET_ACTIVE_WINDOW", true);
+    Atom active_window_atom = XInternAtom(getDisplay(), "_NET_ACTIVE_WINDOW", true);
     Atom type = 0;
     int format;
     unsigned long nitems, after;
@@ -402,11 +426,6 @@ Window XLibUtil::activeWindow()
     return w;
 }
 
-/*
- * Requests user to select a window by grabbing the mouse.
- * A left click will select the application.
- * Clicking any other mouse button or the Escape key will abort the selection.
- */
 Window XLibUtil::selectWindow(GrabInfo &grabInfo, QString &error)
 {
     Display *display = getDisplay();
@@ -423,11 +442,10 @@ Window XLibUtil::selectWindow(GrabInfo &grabInfo, QString &error)
         error = tr("Failed to grab mouse");
         return 0;
     }
-    //
+
     //  X11 treats Scroll_Lock & Num_Lock as 'modifiers'; each exact combination has to be grabbed
     //   from [ESC + No Modifier] (raw) through to [ESC + CAPS_lock + NUM_lock + SCROLL_lock]
     //  Cannot use 'AnyModifier' here in case, say, CTRL+ESC is in use (results in failure to grab at all)
-    //
     KeyCode keyEsc = XKeysymToKeycode(display, XK_Escape);
     for (int b = 0; b < BIT3; b++) {                  // 000..111 (grab eight Escape key combinations)
         int modifiers = ((b & BIT0) ? LockMask : 0) | // CAPS_lock
@@ -461,15 +479,7 @@ Window XLibUtil::selectWindow(GrabInfo &grabInfo, QString &error)
     return XmuClientWindow(display, grabInfo.window);
 }
 
-/*
- * Have events associated with mask for the window set in the X11 Event loop
- * to the application.
- */
 void XLibUtil::subscribe(Window w)
-{
-    XLibUtil::subscribe(w, StructureNotifyMask | PropertyChangeMask | VisibilityChangeMask | FocusChangeMask);
-}
-void XLibUtil::subscribe(Window w, long mask)
 {
     Display *display = getDisplay();
     Window root = RootWindow(display, DefaultScreen(display));
@@ -477,7 +487,7 @@ void XLibUtil::subscribe(Window w, long mask)
 
     XGetWindowAttributes(display, w == 0 ? root : w, &attr);
 
-    XSelectInput(display, w == 0 ? root : w, attr.your_event_mask | mask);
+    XSelectInput(display, w == 0 ? root : w, attr.your_event_mask | StructureNotifyMask | PropertyChangeMask | VisibilityChangeMask | FocusChangeMask);
     XSync(display, false);
 }
 
@@ -488,9 +498,7 @@ void XLibUtil::unSubscribe(Window w)
     XSync(display, false);
 }
 
-/*
- * Sets data to the value of the requested window property.
- */
+// Sets data to the value of the requested window property.
 bool getCardinalProperty(Display *display, Window w, Atom prop, long *data)
 {
     Atom type;
@@ -498,9 +506,8 @@ bool getCardinalProperty(Display *display, Window w, Atom prop, long *data)
     unsigned long nitems, bytes;
     unsigned char *d = NULL;
 
-    if (XGetWindowProperty(display, w, prop, 0, 1, false, XA_CARDINAL, &type, &format, &nitems, &bytes, &d) ==
-            Success &&
-        d)
+    if (XGetWindowProperty(display, w, prop, 0, 1, false, XA_CARDINAL, &type,
+                &format, &nitems, &bytes, &d) == Success && d)
     {
         if (data) {
             *data = *reinterpret_cast<long *>(d);
@@ -544,17 +551,17 @@ void XLibUtil::iconifyWindow(Window w)
 {
     Display *display = getDisplay();
     int screen = DefaultScreen(display);
-    /*
-     * A simple call to XWithdrawWindow wont do. Here is what we do:
-     * 1. Iconify. This will make the application hide all its other windows. For
-     *    example, xmms would take off the playlist and equalizer window.
-     * 2. Withdraw the window to remove it from the taskbar.
-     */
+
+    // A simple call to XWithdrawWindow wont do. Here is what we do:
+    // 1. Iconify. This will make the application hide all its other windows. For
+    //    example, xmms would take off the playlist and equalizer window.
+    // 2. Withdraw the window to remove it from the taskbar.
     XIconifyWindow(display, w, screen); // good for effects too
     XSync(display, false);
     XWithdrawWindow(display, w, screen);
 }
 
+// Is the window in an iconified state.
 bool XLibUtil::isWindowIconic(Window w)
 {
     bool iconic = false;
@@ -569,24 +576,16 @@ bool XLibUtil::isWindowIconic(Window w)
         XGetWindowProperty(display, w, WM_STATE, 0, 1, false, AnyPropertyType, &type, &format, &nitems, &after, &data);
     if ((r == Success) && data && (*reinterpret_cast<long *>(data) == IconicState))
         iconic = true;
-    XFree(data);
 
+    XFree(data);
     return iconic;
 }
 
-void XLibUtil::mapWindow(Window w)
+void XLibUtil::raiseWindow(Window w)
 {
-    XMapWindow(getDisplay(), w);
-}
-
-void XLibUtil::mapRaised(Window w)
-{
-    XMapRaised(getDisplay(), w);
-}
-
-void XLibUtil::flush()
-{
-    XFlush(getDisplay());
+    Display * display = getDisplay();
+    XMapRaised(display, w);
+    XFlush(display);
 }
 
 static QRgb convertToQColor(unsigned long pixel)
@@ -599,16 +598,14 @@ static QRgb convertToQColor(unsigned long pixel)
 
 static QImage imageFromX11IconData(unsigned long *iconData, unsigned long dataLength)
 {
-    if (!iconData || dataLength < 2) {
+    if (!iconData || dataLength < 2)
         return QImage();
-    }
 
     unsigned long width = iconData[0];
     unsigned long height = iconData[1];
 
-    if (width == 0 || height == 0 || dataLength < width * height + 2) {
+    if (width == 0 || height == 0 || dataLength < width * height + 2)
         return QImage();
-    }
 
     QVector<QRgb> pixels(width * height);
     unsigned long *src = iconData + 2;
@@ -623,9 +620,8 @@ static QImage imageFromX11IconData(unsigned long *iconData, unsigned long dataLe
 static QImage imageFromX11Pixmap(Display *display, Pixmap pixmap, int width, int height)
 {
     XImage *ximage = XGetImage(display, pixmap, 0, 0, width, height, AllPlanes, ZPixmap);
-    if (!ximage) {
+    if (!ximage)
         return QImage();
-    }
 
     QImage image((uchar *)ximage->data, width, height, QImage::Format_ARGB32);
     QImage result = image.copy(); // Make a copy of the image data
@@ -634,7 +630,7 @@ static QImage imageFromX11Pixmap(Display *display, Pixmap pixmap, int width, int
     return result;
 }
 
-QPixmap XLibUtil::createIcon(Window window)
+QPixmap XLibUtil::getWindowIcon(Window window)
 {
     if (!window)
         return QPixmap();
@@ -664,15 +660,15 @@ QPixmap XLibUtil::createIcon(Window window)
 
     // Fallback to _NET_WM_ICON if WM_HINTS icon is not available
     if (appIcon.isNull()) {
-        Atom netWmIcon = XInternAtom(display, "_NET_WM_ICON", false);
+        static Atom netWmIcon = XInternAtom(display, "_NET_WM_ICON", false);
         Atom actualType;
         int actualFormat;
         unsigned long nItems, bytesAfter;
         unsigned char *data = nullptr;
 
-        if (XGetWindowProperty(display, window, netWmIcon, 0, LONG_MAX, false, XA_CARDINAL, &actualType, &actualFormat,
-                               &nItems, &bytesAfter, &data) == Success &&
-            data)
+        if (XGetWindowProperty(display, window, netWmIcon, 0, LONG_MAX, false,
+                    XA_CARDINAL, &actualType, &actualFormat, &nItems,
+                    &bytesAfter, &data) == Success && data)
         {
             unsigned long *iconData = reinterpret_cast<unsigned long *>(data);
             unsigned long dataLength = nItems;

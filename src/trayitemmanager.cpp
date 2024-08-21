@@ -177,7 +177,7 @@ void TrayItemManager::dockSelectWindow(bool checkNormality, const TrayItemOption
 
 void TrayItemManager::dockFocused(const TrayItemOptions &options)
 {
-    Window window = XLibUtil::activeWindow();
+    Window window = XLibUtil::getActiveWindow();
     if (!window) {
         QMessageBox::critical(0, qApp->applicationName(),
                               tr("Cannot dock the active window because no window has focus"));

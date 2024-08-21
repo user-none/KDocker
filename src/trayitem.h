@@ -105,8 +105,6 @@ private:
     void obscureEvent();
     void focusLostEvent();
 
-    void set_NET_WM_STATE(const char *type, bool set);
-
     void readDockedAppName();
     void updateTitle();
     void updateIcon();

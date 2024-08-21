@@ -307,7 +307,6 @@ void TrayItem::restoreWindow()
 
     if (m_iconified) {
         m_iconified = false;
-        XLibUtil::mapWindow(m_window);
         XLibUtil::setWMSizeHints(m_window, m_sizeHint);
         updateToggleAction();
 
@@ -316,19 +315,18 @@ void TrayItem::restoreWindow()
             setIcon(m_defaultIcon);
         }
     }
-    XLibUtil::mapRaised(m_window);
-    XLibUtil::flush();
+    XLibUtil::raiseWindow(m_window);
 
     // Change to the desktop that the window was last on.
-    XLibUtil::sendMessageCurrentDesktop(m_desktop, m_window);
+    XLibUtil::setCurrentDesktop(m_desktop);
 
     if (m_settings.getLockToDesktop()) {
         // Set the desktop the window wants to be on.
-        XLibUtil::sendMessageWMDesktop(m_desktop, m_window);
+        XLibUtil::setWindowDesktop(m_desktop, m_window);
     }
 
     // Make it the active window
-    XLibUtil::sendMessageActiveWindow(m_window);
+    XLibUtil::setActiveWindow(m_window);
 
     updateToggleAction();
     doSkipTaskbar();
@@ -367,22 +365,31 @@ void TrayItem::closeWindow()
     if (isBadWindow())
         return;
 
-    XLibUtil::sendMessageCloseWindow(m_window);
+    XLibUtil::closeWindow(m_window);
 }
 
 void TrayItem::doSkipTaskbar()
 {
-    set_NET_WM_STATE("_NET_WM_STATE_SKIP_TASKBAR", m_settings.getSkipTaskbar());
+    if (isBadWindow())
+        return;
+
+    XLibUtil::setWindowSkipTaskbar(m_window, m_settings.getSkipTaskbar());
 }
 
 void TrayItem::doSkipPager()
 {
-    set_NET_WM_STATE("_NET_WM_STATE_SKIP_PAGER", m_settings.getSkipPager());
+    if (isBadWindow())
+        return;
+
+    XLibUtil::setWindowSkipPager(m_window, m_settings.getSkipPager());
 }
 
 void TrayItem::doSticky()
 {
-    set_NET_WM_STATE("_NET_WM_STATE_STICKY", m_settings.getSticky());
+    if (isBadWindow())
+        return;
+
+    XLibUtil::setWindowSticky(m_window, m_settings.getSticky());
 }
 
 QString TrayItem::appName()
@@ -519,7 +526,7 @@ void TrayItem::setBalloonTimeout(bool value)
 
 void TrayItem::toggleWindow()
 {
-    if (m_iconified || m_window != XLibUtil::activeWindow()) {
+    if (m_iconified || m_window != XLibUtil::getActiveWindow()) {
         if (!m_iconified) {
             // Iconify on original desktop in case restoring to another
             iconifyWindow();
@@ -612,16 +619,8 @@ void TrayItem::focusLostEvent()
         qApp->processEvents();
     }
 
-    if (m_settings.getIconifyFocusLost() && m_window != XLibUtil::activeWindow())
+    if (m_settings.getIconifyFocusLost() && m_window != XLibUtil::getActiveWindow())
         iconifyWindow();
-}
-
-void TrayItem::set_NET_WM_STATE(const char *type, bool set)
-{
-    if (isBadWindow())
-        return;
-
-    XLibUtil::sendMessageWMState(m_window, type, set);
 }
 
 void TrayItem::readDockedAppName()
@@ -655,7 +654,7 @@ void TrayItem::updateIcon()
     if (isBadWindow() || m_customIcon)
         return;
 
-    QPixmap pm = XLibUtil::createIcon(m_window);
+    QPixmap pm = XLibUtil::getWindowIcon(m_window);
     if (pm.isNull())
         pm.load(":/images/question.png");
     m_defaultIcon = QIcon(pm);
