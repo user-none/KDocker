@@ -46,7 +46,7 @@ TrayItem::TrayItem(Window window, const TrayItemOptions &args) {
     XLibUtil::subscribe(m_window, StructureNotifyMask | PropertyChangeMask | VisibilityChangeMask | FocusChangeMask);
 
     // Store the desktop on which the window is being shown.
-    XLibUtil::getCardinalProperty(display, m_window, XInternAtom(display, "_NET_WM_DESKTOP", true), &m_desktop);
+    m_desktop = XLibUtil::getWindowDesktop(m_window);
 
     readDockedAppName();
 
@@ -562,7 +562,7 @@ void TrayItem::propertyChangeEvent(Atom property) {
     } else if (property == WM_ICON) {
         updateIcon();
     } else if (property == _NET_WM_DESKTOP) {
-        XLibUtil::getCardinalProperty(display, m_window, _NET_WM_DESKTOP, &m_desktop);
+        m_desktop = XLibUtil::getWindowDesktop(m_window);
     } else if (property == WM_STATE) {
         Atom type = 0;
         int format;
@@ -665,10 +665,13 @@ void TrayItem::updateIcon() {
         return;
     }
 
-    m_defaultIcon = createIcon(m_window);
-    if (!m_wantsAttention) {
+    QPixmap pm = XLibUtil::createIcon(m_window);
+    if (pm.isNull())
+        pm.load(":/images/question.png");
+    m_defaultIcon = QIcon(pm);
+
+    if (!m_wantsAttention)
         setIcon(m_defaultIcon);
-    }
 }
 
 void TrayItem::updateToggleAction() {
@@ -783,121 +786,6 @@ void TrayItem::createContextMenu() {
     setContextMenu(m_contextMenu);
 }
 
-QRgb convertToQColor(unsigned long pixel) {
-    return qRgba((pixel & 0x00FF0000) >> 16, // Red
-                 (pixel & 0x0000FF00) >> 8,  // Green
-                 (pixel & 0x000000FF),       // Blue
-                 (pixel & 0xFF000000) >> 24); // Alpha
-}
-
-QImage imageFromX11IconData(unsigned long* iconData, unsigned long dataLength) {
-    if (!iconData || dataLength < 2) {
-        return QImage();
-    }
-
-    unsigned long width = iconData[0];
-    unsigned long height = iconData[1];
-
-    if (width == 0 || height == 0 || dataLength < width * height + 2) {
-        return QImage();
-    }
-
-    QVector<QRgb> pixels(width * height);
-    unsigned long* src = iconData + 2;
-    for (unsigned long i = 0; i < width * height; ++i) {
-        pixels[i] = convertToQColor(src[i]);
-    }
-
-    QImage iconImage((uchar*)pixels.data(), width, height, QImage::Format_ARGB32);
-    return iconImage.copy();
-}
-
-QImage imageFromX11Pixmap(Display* display, Pixmap pixmap, int width, int height) {
-    XImage* ximage = XGetImage(display, pixmap, 0, 0, width, height, AllPlanes, ZPixmap);
-    if (!ximage) {
-        return QImage();
-    }
-
-    QImage image((uchar*)ximage->data, width, height, QImage::Format_ARGB32);
-    QImage result = image.copy(); // Make a copy of the image data
-    XDestroyImage(ximage);
-
-    return result;
-}
-
-QIcon TrayItem::createIcon(Window window) {
-    if (!window) {
-        return QIcon();
-    }
-
-    Display* display = XLibUtil::display();
-    QPixmap appIcon;
-
-    // First try to get the icon from WM_HINTS
-    XWMHints* wm_hints = XGetWMHints(display, window);
-    if (wm_hints != nullptr) {
-        if (!(wm_hints->flags & IconMaskHint)) {
-            wm_hints->icon_mask = 0;
-        }
-
-        if ((wm_hints->flags & IconPixmapHint) && (wm_hints->icon_pixmap)) {
-            Window root;
-            int x, y;
-            unsigned int width, height, border_width, depth;
-            XGetGeometry(display, wm_hints->icon_pixmap, &root, &x, &y, &width, &height, &border_width, &depth);
-
-            QImage image = imageFromX11Pixmap(display, wm_hints->icon_pixmap, width, height);
-            appIcon = QPixmap::fromImage(image);
-        }
-
-        XFree(wm_hints);
-    }
-
-    // Fallback to _NET_WM_ICON if WM_HINTS icon is not available
-    if (appIcon.isNull()) {
-        Atom netWmIcon = XInternAtom(display, "_NET_WM_ICON", false);
-        Atom actualType;
-        int actualFormat;
-        unsigned long nItems, bytesAfter;
-        unsigned char* data = nullptr;
-
-        if (XGetWindowProperty(display, window, netWmIcon, 0, LONG_MAX, false, XA_CARDINAL,
-                               &actualType, &actualFormat, &nItems, &bytesAfter, &data) == Success && data) {
-            unsigned long* iconData = reinterpret_cast<unsigned long*>(data);
-            unsigned long dataLength = nItems;
-
-            // Extract the largest icon available
-            QImage largestImage;
-            unsigned long maxIconSize = 0;
-
-            for (unsigned long i = 0; i < dataLength; ) {
-                unsigned long width = iconData[i];
-                unsigned long height = iconData[i + 1];
-                unsigned long iconSize = width * height;
-
-                if (iconSize > maxIconSize) {
-                    largestImage = imageFromX11IconData(&iconData[i], dataLength - i);
-                    maxIconSize = iconSize;
-                }
-
-                i += (2 + iconSize);
-            }
-
-            if (!largestImage.isNull()) {
-                appIcon = QPixmap::fromImage(largestImage);
-            }
-
-            XFree(data);
-        }
-    }
-
-    if (appIcon.isNull()) {
-        appIcon.load(":/images/question.png");
-    }
-
-    return QIcon(appIcon);
-}
-
 bool TrayItem::isBadWindow() {
     if (!XLibUtil::isValidWindowId(m_window)) {
         destroyEvent();
@@ -909,24 +797,8 @@ bool TrayItem::isBadWindow() {
 // Checks to see if the virtual desktop the window is on is currently 
 // displayed. Returns true if it is, otherwise false
 bool TrayItem::isOnCurrentDesktop() {
-    Display *display = XLibUtil::display();
-    Atom type = 0;
-    int format;
-    unsigned long nitems, after;
-    unsigned char *data = 0;
-
-    static Atom _NET_CURRENT_DESKTOP = XInternAtom(display, "_NET_CURRENT_DESKTOP", true);
-
-    long currentDesktop;
-    int r = XGetWindowProperty(display, DefaultRootWindow(display), _NET_CURRENT_DESKTOP, 0, 4, false,
-                           AnyPropertyType, &type, &format,     
-                           &nitems, &after, &data);
-    if (r == Success && data) 
-        currentDesktop = *reinterpret_cast<long *> (data);
-    else
-        currentDesktop = m_desktop;
-
-    XFree(data);
-
+    long currentDesktop = XLibUtil::getCurrentDesktop();
+    if (currentDesktop == -1)
+        return true;
     return (currentDesktop == m_desktop);
 }

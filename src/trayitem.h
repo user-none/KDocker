@@ -117,7 +117,6 @@ private:
     void updateToggleAction();
 
     void createContextMenu();
-    QIcon createIcon(Window window);
     QString selectIcon(QString title);
 
     bool isBadWindow();

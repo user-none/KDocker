@@ -27,6 +27,7 @@
 #include <QString>
 #include <QTimer>
 #include <QEventLoop>
+#include <QPixmap>
 
 #include <xlibtypes.h>
 
@@ -56,7 +57,8 @@ public:
     static Window selectWindow(GrabInfo &grabInfo, QString &error);
     static void subscribe(Window w, long mask);
     static void unSubscribe(Window w);
-    static bool getCardinalProperty(Display *display, Window w, Atom prop, long *data);
+    static long getWindowDesktop(Window w);
+    static long getCurrentDesktop();
     static Display *display();
     static Window appRootWindow();
 
@@ -65,6 +67,8 @@ public:
     static void mapWindow(Window w);
     static void mapRaised(Window w);
     static void flush();
+
+    static QPixmap createIcon(Window window);
 
     static void sendMessageWMState(Window w, const char *type, bool set);
     static void sendMessageCurrentDesktop(long desktop, Window w);
