@@ -74,6 +74,5 @@ private:
 
 Q_DECLARE_METATYPE(Command::Type)
 Q_DECLARE_METATYPE(Command)
-// qDBusRegisterMetaType<Command>();
 
 #endif // _COMMAND_H

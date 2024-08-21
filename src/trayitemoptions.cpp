@@ -411,43 +411,36 @@ void TrayItemOptions::setIconifyFocusLost(bool v)
 void TrayItemOptions::setIconifyMinimized(bool v)
 {
     m_iconifyMinimized = v ? TrayItemOptions::TriState::SetTrue : TrayItemOptions::TriState::SetFalse;
-    ;
 }
 
 void TrayItemOptions::setIconifyObscured(bool v)
 {
     m_iconifyObscured = v ? TrayItemOptions::TriState::SetTrue : TrayItemOptions::TriState::SetFalse;
-    ;
 }
 
 void TrayItemOptions::setQuiet(bool v)
 {
     m_quiet = v ? TrayItemOptions::TriState::SetTrue : TrayItemOptions::TriState::SetFalse;
-    ;
 }
 
 void TrayItemOptions::setSkipPager(bool v)
 {
     m_skipPager = v ? TrayItemOptions::TriState::SetTrue : TrayItemOptions::TriState::SetFalse;
-    ;
 }
 
 void TrayItemOptions::setSticky(bool v)
 {
     m_sticky = v ? TrayItemOptions::TriState::SetTrue : TrayItemOptions::TriState::SetFalse;
-    ;
 }
 
 void TrayItemOptions::setSkipTaskbar(bool v)
 {
     m_skipTaskbar = v ? TrayItemOptions::TriState::SetTrue : TrayItemOptions::TriState::SetFalse;
-    ;
 }
 
 void TrayItemOptions::setLockToDesktop(bool v)
 {
     m_lockToDesktop = v ? TrayItemOptions::TriState::SetTrue : TrayItemOptions::TriState::SetFalse;
-    ;
 }
 
 QString TrayItemOptions::defaultIconPath()

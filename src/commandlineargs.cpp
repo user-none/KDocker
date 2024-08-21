@@ -28,7 +28,6 @@ bool CommandLineArgs::processArgs(const QStringList &arguments, Command &command
     QCommandLineParser parser;
 
     parser.setApplicationDescription(
-        ""
         "Dock almost anything\n\n"
         "Kdocker can dock a window in a few different ways\n"
         "1. By specifying an application to launch (app argument)\n"
@@ -125,37 +124,37 @@ bool CommandLineArgs::validateParserArgs(const QCommandLineParser &parser)
 
 void CommandLineArgs::buildConfig(const QCommandLineParser &parser, TrayItemOptions &config)
 {
-    if (parser.isSet("icon")) {
+    if (parser.isSet("icon"))
         config.setIconPath(parser.value("icon"));
-    }
-    if (parser.isSet("attention-icon")) {
+
+    if (parser.isSet("attention-icon"))
         config.setAttentionIconPath(parser.value("attention-icon"));
-    }
-    if (parser.isSet("iconify-focus-lost")) {
+
+    if (parser.isSet("iconify-focus-lost"))
         config.setIconifyFocusLost(TrayItemOptions::TriState::SetTrue);
-    }
-    if (parser.isSet("m")) {
+
+    if (parser.isSet("m"))
         config.setIconifyMinimized(TrayItemOptions::TriState::SetFalse);
-    }
-    if (parser.isSet("iconify-obscured")) {
+
+    if (parser.isSet("iconify-obscured"))
         config.setIconifyObscured(TrayItemOptions::TriState::SetTrue);
-    }
+
     if (parser.isSet("notify-time")) {
         bool ok;
         config.setNotifyTime(QString(parser.value("notify-time")).toUInt(&ok, 0) * 1000);
     }
-    if (parser.isSet("quiet")) {
+
+    if (parser.isSet("quiet"))
         config.setQuiet(TrayItemOptions::TriState::SetTrue);
-    }
-    if (parser.isSet("skip-pager")) {
+
+    if (parser.isSet("skip-pager"))
         config.setSkipPager(TrayItemOptions::TriState::SetTrue);
-    }
-    if (parser.isSet("sticky")) {
+
+    if (parser.isSet("sticky"))
         config.setSticky(TrayItemOptions::TriState::SetTrue);
-    }
-    if (parser.isSet("skip-taskbar")) {
+
+    if (parser.isSet("skip-taskbar"))
         config.setSkipTaskbar(TrayItemOptions::TriState::SetTrue);
-    }
 }
 
 void CommandLineArgs::buildCommand(const QCommandLineParser &parser, Command &command)
@@ -201,8 +200,7 @@ void CommandLineArgs::buildCommand(const QCommandLineParser &parser, Command &co
         command.setType(Command::Type::Focused);
     }
 
-    if (command.getType() == Command::Type::NoCommand) {
-        // None of the other commands were specified leaving select window as the only option
+    // None of the other commands were specified leaving select window as the only option
+    if (command.getType() == Command::Type::NoCommand)
         command.setType(Command::Type::Select);
-    }
 }

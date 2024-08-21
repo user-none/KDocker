@@ -53,9 +53,8 @@ void Application::handleCloseSignal()
     char tmp;
     [[maybe_unused]] ssize_t r = ::read(m_closeSignalFd[1], &tmp, sizeof(tmp));
 
-    if (m_trayItemManager) {
+    if (m_trayItemManager)
         m_trayItemManager->undockAll();
-    }
     quit();
 
     m_closeSignalSocketNotifier->setEnabled(true);

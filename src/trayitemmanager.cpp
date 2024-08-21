@@ -170,9 +170,8 @@ void TrayItemManager::dockPid(pid_t pid, bool checkNormality, const TrayItemOpti
 void TrayItemManager::dockSelectWindow(bool checkNormality, const TrayItemOptions &options)
 {
     Window window = userSelectWindow(checkNormality);
-    if (window) {
+    if (window)
         dockWindow(window, options);
-    }
     checkCount();
 }
 
@@ -333,8 +332,7 @@ void TrayItemManager::about()
 {
     QMessageBox aboutBox;
     aboutBox.setWindowTitle(tr("About"));
-    aboutBox.setText(QString(""
-                             "# %1\n"
+    aboutBox.setText(QString("# %1\n"
                              "### Version %2\n\n"
                              "[Website](%3)")
                          .arg(qApp->applicationName())
@@ -354,10 +352,8 @@ void TrayItemManager::daemonize()
 void TrayItemManager::selectAndIconify()
 {
     Window window = userSelectWindow(true);
-
-    if (window) {
+    if (window)
         dockWindow(window, m_initArgs);
-    }
 }
 
 void TrayItemManager::quit()
@@ -371,9 +367,8 @@ void TrayItemManager::checkCount()
     if (m_daemon)
         return;
 
-    if (m_trayItems.isEmpty() && !m_scanner->isRunning()) {
+    if (m_trayItems.isEmpty() && !m_scanner->isRunning())
         qApp->quit();
-    }
 }
 
 QList<Window> TrayItemManager::dockedWindows()
