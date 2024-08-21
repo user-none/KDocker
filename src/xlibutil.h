@@ -31,6 +31,11 @@
 
 #include <xlibtypes.h>
 
+// Hiding XSizeHints. X11 uses a typdef'ed anonymous struct
+// so we can't forward declare the type. Instead we'll define
+// it as void and use pointers. Not ideal but it will work.
+typedef void XLibUtilSizeHints;
+
 // XLibUtil is a helper class that wraps all X11 functions and
 // isolates them from the reset of the application. The xcb header
 // for the event filter is an exception.

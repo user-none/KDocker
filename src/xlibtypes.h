@@ -27,9 +27,4 @@
 typedef uint64_t Atom;
 typedef uint64_t Window;
 
-// Hiding XSizeHints. X11 uses a typdef'ed anonymous struct
-// so we can't forward declare the type. Instead we'll define
-// it as void and use pointers. Not ideal but it will work.
-typedef void XLibUtilSizeHints;
-
 #endif // _XLIBTYPES
