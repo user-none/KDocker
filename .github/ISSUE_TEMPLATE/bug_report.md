@@ -7,6 +7,10 @@ assignees: ''
 
 ---
 
+Common topics that shouldn't have an issue opened:
+- [Wayland](https://github.com/user-none/KDocker/wiki/Wayland)
+- [Close to Tray](https://github.com/user-none/KDocker/wiki/Close-to-Tray)
+
 **Describe the bug**
 A clear and concise description of what the bug is.
 
