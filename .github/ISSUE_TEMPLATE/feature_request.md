@@ -8,8 +8,8 @@ assignees: ''
 ---
 
 **REQUESTS FOR THE FOLLOWING WILL NOT BE CONSIDERED**
-- Wayland support
-- Close to tray (override close button and minimize to tray instead)
+- [Wayland support](https://github.com/user-none/KDocker/wiki/Wayland)
+- [Close to tray](https://github.com/user-none/KDocker/wiki/Close-to-Tray)
 
 ---
 
