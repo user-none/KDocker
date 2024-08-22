@@ -327,12 +327,10 @@ void TrayItemManager::about()
 {
     QMessageBox aboutBox;
     aboutBox.setWindowTitle(tr("About"));
-    aboutBox.setText(QString("# %1\n"
-                             "### Version %2\n\n"
-                             "[Website](%3)")
+    aboutBox.setText(QString("# %1\n\n"
+                             "Version: %2\n\n")
                          .arg(qApp->applicationName())
-                         .arg(qApp->applicationVersion())
-                         .arg(Constants::WEBSITE));
+                         .arg(qApp->applicationVersion()));
     aboutBox.setTextFormat(Qt::MarkdownText);
     aboutBox.setIconPixmap(QPixmap(":/logo/kdocker.png"));
     aboutBox.setStandardButtons(QMessageBox::Ok);
