@@ -71,7 +71,11 @@ set(SOURCES
 
 # Generate the dbus adaptor 
 qt_add_dbus_adaptor(SOURCES resources/dbus/com.kdocker.KDocker.xml adaptor.h "" kdocker_adaptor)
+
+# Install the dbus files
 install(FILES resources/dbus/com.kdocker.KDocker.xml DESTINATION share/dbus-1/interfaces/)
+configure_file(resources/dbus/com.kdocker.KDocker.service.in ${CMAKE_CURRENT_BINARY_DIR}/dbus/com.kdocker.KDocker.service @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/dbus/com.kdocker.KDocker.service DESTINATION share/dbus-1/services/)
 
 # Add resources
 qt_add_resources(SOURCES resources/resources.qrc)

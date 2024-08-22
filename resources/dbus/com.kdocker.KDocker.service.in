@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=com.kdocker.KDocker
+Exec=@CMAKE_INSTALL_PREFIX@/bin/kdocker -z
