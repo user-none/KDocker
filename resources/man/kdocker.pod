@@ -1,7 +1,7 @@
 
 =head1 NAME
 
- kdocker - dock most applications to the system tray
+ kdocker
 
 =head1 SYNOPSIS
 
@@ -11,75 +11,83 @@ B<kdocker> [I<options>]I<>
 
  KDocker is a program that will dock most applications to the system tray
 
+ Kdocker can dock a window in a few different ways
+
+ 1. By specifying an application to launch (app argument)
+ 2. Specifying a regular expression to find a window based on its title (-n)
+ 3. Specifying a window id (-w)
+ 4. Specifying a pid (-x)
+ 5. Not specifying any of the above. KDocker will have you select the window to dock. Negated by the -z option
+
+ The -n option is compatible with application launching. Useful if the application spawns another process (E.g. a launcher)
+
+ A DBus interface is exposed at com.kdocker.KDocker which can be used to dock and interact with docked windows.
+
 =head1 OPTIONS
 
 =over
 
-=item B<-a>
-
- Show about information
-
-=item B<-b>
+=item B<-b, --blind> 
 
  Suppress the warning dialog when docking non-normal windows (blind mode)
 
-=item B<-d> I<secs>
+=item B<-d, --timeout> I<secs>
 
  Maximum time in seconds to allow for a command to start and open a window
  [default: 5 seconds]
 
-=item B<-f>
+=item B<-f, --dock-focused>
 
  Dock the window that has focus (active window)
 
-=item B<-h>
+=item B<-h, --help>
 
  Display this help, then exit
 
-=item B<-i> I<file>
+=item B<-i, --icon> I<file>
 
  Custom icon path
 
-=item B<-I> I<file>
+=item B<-I, --attention-icon> I<file>
 
  Custom attention icon path. This icon is set if the title
  of the application window changes while it is iconified.
 
-=item B<-l>
+=item B<-l, --iconify-focus-lost>
 
  Iconify when focus lost
 
 =item B<-m>
 
- Keep application window showing (don't hide on dock)
+ Don't iconfiy when minimized
 
-=item B<-n> I<name>
+=item B<-n, --search-pattern> I<pattern>
 
- Match window based on its title using PCRE compatible regular expression
+ Match window based on its name (title) using PCRE compatible regular expression
 
-=item B<-o>
+=item B<-o, --iconify-obscured>
 
  Iconify when obscured by other windows
 
-=item B<-p> I<secs>
+=item B<-p, --notify-time> I<secs>
 
  By default, when the title of the application changes,
  a popup is displayed from the system tray for 4 seconds
  Works well with music players
 
-=item B<-q>
+=item B<-q, --quiet>
 
  Disable ballooning title changes (quiet)
 
-=item B<-r>
+=item B<-r, --skip-pager>
 
  Remove this application from the pager
 
-=item B<-s>
+=item B<-s, --sticky>
 
  Make the window sticky (appears on all desktops)
 
-=item B<-t>
+=item B<-t, --skip-taskbar>
 
  Remove this application from the taskbar
 
@@ -87,21 +95,18 @@ B<kdocker> [I<options>]I<>
 
  Show the KDocker version string, then exit
 
-=item B<-w> I<wid>
+=item B<-w, --window-id> I<wid>
 
  Window id of the application to dock
- Assumes hex number of the form 0x###...
 
-=item B<-x> I<pid>
+=item B<-x, --pid> I<pid>
 
  Process id of the application to dock
- Assumes decimal number of the form ###...
 
-=item B<-z>
+=item B<-z, --daemon>
 
  Run in the background and don't exit if no
- windows are docked. Will not attempt to launch
- or dock a window. Used to start KDocker as as
+ windows are docked. Used to start KDocker as as
  service for control via another instance of
  the application or by DBus.
 

@@ -53,7 +53,7 @@ bool CommandLineArgs::processArgs(const QStringList &arguments, Command &command
          "file"},
         {{"l", "iconify-focus-lost"}, "Iconify when focus lost"},
         {"m", "Don't iconfiy when minimized"},
-        {{"n", "search-pattern"}, "Match window based on its title using a PCRE regular expression", "search-pattern"},
+        {{"n", "search-pattern"}, "Match window based on its name (title) using a PCRE regular expression", "pattern"},
         {{"o", "iconify-obscured"}, "Iconify when obscured by other windows"},
         {{"p", "notify-time"},
          "Maximum time in seconds to display a notification when window title changes",
