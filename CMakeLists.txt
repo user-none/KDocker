@@ -77,6 +77,6 @@ qt_add_resources(SOURCES resources/resources.qrc)
 
 # Build
 qt_add_executable(kdocker ${SOURCES})
-
 target_include_directories(kdocker PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(kdocker PRIVATE Qt6::Core Qt6::DBus Qt6::Widgets X11::X11 X11::Xmu X11::xcb)
+install(TARGETS kdocker DESTINATION bin)
