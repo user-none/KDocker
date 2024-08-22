@@ -334,7 +334,7 @@ void TrayItemManager::about()
                          .arg(qApp->applicationVersion())
                          .arg(Constants::WEBSITE));
     aboutBox.setTextFormat(Qt::MarkdownText);
-    aboutBox.setIconPixmap(QPixmap(":/images/kdocker.png"));
+    aboutBox.setIconPixmap(QPixmap(":/logo/kdocker.png"));
     aboutBox.setStandardButtons(QMessageBox::Ok);
     aboutBox.exec();
 }

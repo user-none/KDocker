@@ -1,17 +1,19 @@
 <RCC>
-    <qresource prefix="/">
-        <file>images/about.png</file>
-        <file>images/another.png</file>
-        <file>images/close.png</file>
-        <file>images/iconify.png</file>
-        <file>images/kdocker.png</file>
-        <file>images/options.png</file>
-        <file>images/question.png</file>
-        <file>images/restore.png</file>
-        <file>images/savesettings.png</file>
-        <file>images/seticon.png</file>
-        <file>images/setaicon.png</file>
-        <file>images/undock.png</file>
-        <file>images/undockall.png</file>
+    <qresource prefix="/menu">
+        <file alias="about.png">images/menu/about.png</file>
+        <file alias="another.png">images/menu/another.png</file>
+        <file alias="close.png">images/menu/close.png</file>
+        <file alias="iconify.png">images/menu/iconify.png</file>
+        <file alias="options.png">images/menu/options.png</file>
+        <file alias="question.png">images/menu/question.png</file>
+        <file alias="restore.png">images/menu/restore.png</file>
+        <file alias="savesettings.png">images/menu/savesettings.png</file>
+        <file alias="seticon.png">images/menu/seticon.png</file>
+        <file alias="setaicon.png">images/menu/setaicon.png</file>
+        <file alias="undock.png">images/menu/undock.png</file>
+        <file alias="undockall.png">images/menu/undockall.png</file>
+    </qresource>
+    <qresource prefix="/logo">
+        <file alias="kdocker.png">images/icons/kdocker_256x256.png</file>
     </qresource>
 </RCC>

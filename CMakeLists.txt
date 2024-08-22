@@ -18,16 +18,19 @@ set(VERSION ${CMAKE_PROJECT_VERSION})
 
 # install appdata xml
 configure_file(resources/appdata/kdocker.appdata.xml.in ${CMAKE_CURRENT_BINARY_DIR}/appdata/kdocker.appdata.xml @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/appdata/kdocker.appdata.xml DESTINATION share/metainfo)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/appdata/kdocker.appdata.xml DESTINATION share/metainfo/)
 
 # Install icon
-install(FILES resources/images/kdocker.png DESTINATION share/icons/hicolor/128x128/apps)
+foreach(SIZE 32x32 64x64 128x128 256x256 512x512)
+    install(FILES resources/images/icons/kdocker_${SIZE}.png DESTINATION share/icons/hicolor/${SIZE}/apps/ RENAME kdocker.png)
+endforeach()
+install(FILES resources/images/icons/kdocker.svg DESTINATION share/icons/hicolor/scalable/apps/)
 
 # Install desktop file
-install(FILES resources/kdocker.desktop DESTINATION share/applications)
+install(FILES resources/kdocker.desktop DESTINATION share/applications/)
 
 # Install bash completions
-install(FILES resources/bash-completion/kdocker DESTINATION share/bash-completion/completions)
+install(FILES resources/bash-completion/kdocker DESTINATION share/bash-completion/completions/)
 
 # Generate man page
 find_program(POD2MAN pod2man)
@@ -42,7 +45,7 @@ if (NOT POD2MAN MATCHES "NOTFOUND")
         COMMAND ${POD2MAN} --center "General Commands Manual" --release "Version ${CMAKE_PROJECT_VERSION}" --date "${DATE}" "${POD_IN}" "${MAN_OUT}"
         VERBATIM)
     add_custom_target(generate_man ALL DEPENDS ${MAN_OUT})
-    install(FILES ${MAN_OUT} DESTINATION share/man/man1)
+    install(FILES ${MAN_OUT} DESTINATION share/man/man1/)
 else ()
     message(STATUS "pod2man not found")
     message(WARNING "will not generate man file")
