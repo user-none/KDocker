@@ -35,7 +35,6 @@ TrayItem::TrayItem(windowid_t window, const TrayItemOptions &args)
 {
     m_wantsAttention = false;
     m_iconified = false;
-    m_is_restoring = false;
     m_customIcon = false;
 
     m_dockedAppName = "";
@@ -331,8 +330,6 @@ void TrayItem::restoreWindow()
     if (isBadWindow())
         return;
 
-    m_is_restoring = true;
-
     if (m_iconified) {
         m_iconified = false;
         XLibUtil::setWMSizeHints(m_window, m_sizeHint);
@@ -358,26 +355,11 @@ void TrayItem::restoreWindow()
 
     updateToggleAction();
     doSkipTaskbar();
-
-    /*
-     * Wait half a second to ensure the window is fully restored.
-     * This and m_is_restoring are a work around for KWin.
-     * KWin is the only WM that will send a PropertyNotify
-     * event with the Iconic state set because of the above
-     * XIconifyWindow call.
-     */
-    QElapsedTimer t;
-    t.start();
-    while (t.elapsed() < 500) {
-        qApp->processEvents();
-    }
-
-    m_is_restoring = false;
 }
 
 void TrayItem::iconifyWindow()
 {
-    if (isBadWindow() || m_is_restoring)
+    if (isBadWindow())
         return;
 
     m_iconified = true;
@@ -613,15 +595,7 @@ void TrayItem::obscureEvent()
 
 void TrayItem::focusLostEvent()
 {
-    // Wait half a second before checking to ensure the window is properly
-    // focused when being restored.
-    QElapsedTimer t;
-    t.start();
-    while (t.elapsed() < 500) {
-        qApp->processEvents();
-    }
-
-    if (m_settings.getIconifyFocusLost() && m_window != XLibUtil::getActiveWindow())
+    if (m_settings.getIconifyFocusLost())
         iconifyWindow();
 }
 

@@ -115,7 +115,6 @@ private:
 
     bool m_wantsAttention;
     bool m_iconified;
-    bool m_is_restoring;
     bool m_customIcon;
 
     QIcon m_defaultIcon;
