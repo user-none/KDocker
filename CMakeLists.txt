@@ -16,9 +16,9 @@ string(TIMESTAMP TIMESTAMP)
 string(TIMESTAMP DATE "%d %B, %Y")
 set(VERSION ${CMAKE_PROJECT_VERSION})
 
-# install appdata xml
-configure_file(resources/appdata/kdocker.appdata.xml.in ${CMAKE_CURRENT_BINARY_DIR}/appdata/kdocker.appdata.xml @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/appdata/kdocker.appdata.xml DESTINATION share/metainfo/)
+# install appstream xml
+configure_file(resources/appstream/kdocker.metainfo.xml.in ${CMAKE_CURRENT_BINARY_DIR}/appstream/kdocker.metainfo.xml @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/appstream/kdocker.metainfo.xml DESTINATION share/metainfo/)
 
 # Install icon
 foreach(SIZE 32x32 64x64 128x128 256x256 512x512)

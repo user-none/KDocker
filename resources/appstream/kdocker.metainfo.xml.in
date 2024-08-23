@@ -4,25 +4,25 @@
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-2.0</project_license>
   <name>KDocker</name>
-  <summary>Run command and dock window</summary>
+  <summary>Dock almost any window</summary>
   <description>
     <p>KDocker will help you dock most applications to the system tray. Just point and click!</p>
     <p>All you need to do is start KDocker and select an application using the mouse and the application gets docked into the system tray.</p>
   </description>
-  <icon type="cached">kdocker.png</icon>
-  <icon type="remote" width="128" height="128">https://raw.githubusercontent.com/user-none/KDocker/master/resources/images/kdocker.png</icon>
-  <icon type="local" width="128" height="128">/usr/share/icons/hicolor/128x128/apps/kdocker.png</icon>
+  <icon type="stock">kdocker</icon>
+  <icon type="local" width="512" height="512">/usr/share/icons/hicolor/512x512/apps/kdocker.png</icon>
+  <icon type="remote" width="512" height="512">https://raw.githubusercontent.com/user-none/KDocker/main/resources/images/icons/kdocker_512x512.png</icon>
   <screenshots>
     <screenshot type="default">
-        <image width="640" height="360">https://raw.githubusercontent.com/user-none/KDocker/master/helpers/appdata/context.png</image>
+        <image type="source" width="828" height="612">https://raw.githubusercontent.com/user-none/KDocker/main/resources/appstream/menu.png</image>
         <caption>Context menu showing available actions and option settings</caption>
     </screenshot>
   </screenshots>
   <url type="homepage">https://github.com/user-none/KDocker</url>
   <url type="bugtracker">https://github.com/user-none/KDocker/issues</url>
-  <url type="help">https://github.com/user-none/KDocker/blob/master/README.md</url>
   <provides>
     <binary>kdocker</binary>
+    <dbus type="user">com.kdocker.KDocker</dbus>
   </provides>
   <releases>
     <release version="@VERSION@" timestamp="@TIMESTAMP@">
