@@ -555,8 +555,8 @@ void TrayItem::setBalloonTimeout(bool value)
 void TrayItem::toggleWindow()
 {
     if (m_iconified || m_window != XLibUtil::getActiveWindow()) {
-        if (!m_iconified) {
-            // Iconify on original desktop in case restoring to another
+        // Iconify on original desktop in case restoring to another
+        if (!m_iconified && !isOnCurrentDesktop()) {
             iconifyWindow();
         }
         restoreWindow();
