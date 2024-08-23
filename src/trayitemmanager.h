@@ -69,7 +69,7 @@ public slots:
     void undockAll();
 
     void quit();
-    void daemonize();
+    void keepRunning();
 
 private slots:
     void dockWindow(windowid_t window, const TrayItemOptions &settings);
@@ -92,7 +92,7 @@ private:
     TrayItemOptions m_initArgs;
     QList<TrayItem *> m_trayItems;
     GrabInfo m_grabInfo;
-    bool m_daemon;
+    bool m_keepRunning;
 };
 
 #endif // _TRAYITEMMANAGER_H

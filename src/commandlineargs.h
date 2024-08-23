@@ -28,7 +28,7 @@
 class CommandLineArgs
 {
 public:
-    static bool processArgs(const QStringList &arguments, Command &command, TrayItemOptions &config, bool &daemon);
+    static bool processArgs(const QStringList &arguments, Command &command, TrayItemOptions &config, bool &keepRunning);
 
 private:
     static bool validateParserArgs(const QCommandLineParser &parser);

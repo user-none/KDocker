@@ -23,7 +23,7 @@
 #include <QString>
 #include <QStringList>
 
-bool CommandLineArgs::processArgs(const QStringList &arguments, Command &command, TrayItemOptions &config, bool &daemon)
+bool CommandLineArgs::processArgs(const QStringList &arguments, Command &command, TrayItemOptions &config, bool &keepRunning)
 {
     QCommandLineParser parser;
 
@@ -66,7 +66,7 @@ bool CommandLineArgs::processArgs(const QStringList &arguments, Command &command
         // Don't use v or version because they're already handled by the parser object.
         {{"w", "window-id"}, "Window id of the application to dock. Hex number formatted (0x###...)", "window-id"},
         {{"x", "pid"}, "Process id of the application to dock. Decimal number (###...)", "pid"},
-        {{"z", "daemon"}, "Run in the background and don't exit if no windows are docked"},
+        {{"z", "keep-running"}, "Run in the background and don't exit if no windows are docked"},
     });
 
     parser.process(arguments);
@@ -77,9 +77,9 @@ bool CommandLineArgs::processArgs(const QStringList &arguments, Command &command
     buildConfig(parser, config);
     buildCommand(parser, command);
 
-    daemon = false;
-    if (parser.isSet("daemon"))
-        daemon = true;
+    keepRunning = false;
+    if (parser.isSet("keep-running"))
+        keepRunning = true;
 
     return true;
 }

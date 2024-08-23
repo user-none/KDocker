@@ -99,10 +99,10 @@ undockAll    | ()           | ()
 
 ### Behavior
 
-Method    | input | output
---------- | ----- | ------
-daemonize | ()    | ()
-quit      | ()    | ()
+Method      | input | output
+----------- | ----- | ------
+keepRunning | ()    | ()
+quit        | ()    | ()
 
 
 ## Website

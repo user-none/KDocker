@@ -103,7 +103,7 @@ B<kdocker> [I<options>]I<>
 
  Process id of the application to dock
 
-=item B<-z, --daemon>
+=item B<-z, --keep-running>
 
  Run in the background and don't exit if no
  windows are docked. Used to start KDocker as as

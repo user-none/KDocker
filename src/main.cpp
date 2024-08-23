@@ -59,7 +59,7 @@ static bool setupDbus(TrayItemManager *trayitemmanager)
     return registered;
 }
 
-static void sendDbusCommand(const Command &command, const TrayItemOptions &config, bool daemon)
+static void sendDbusCommand(const Command &command, const TrayItemOptions &config, bool keepRunning)
 {
     QDBusInterface iface(Constants::DBUS_NAME, Constants::DBUS_PATH);
     if (!iface.isValid()) {
@@ -68,8 +68,8 @@ static void sendDbusCommand(const Command &command, const TrayItemOptions &confi
     }
 
     // Non command command
-    if (daemon)
-        iface.call(QDBus::NoBlock, "daemonize");
+    if (keepRunning)
+        iface.call(QDBus::NoBlock, "keepRunning");
 
     switch (command.getType()) {
         case Command::Type::NoCommand:
@@ -91,7 +91,7 @@ static void sendDbusCommand(const Command &command, const TrayItemOptions &confi
                        QVariant::fromValue(config));
             break;
         case Command::Type::Select:
-            if (daemon) {
+            if (keepRunning) {
                 break;
             }
             iface.call(QDBus::NoBlock, "dockSelectWindow", command.getCheckNormality(), QVariant::fromValue(config));
@@ -140,8 +140,8 @@ int main(int argc, char *argv[])
     // Parse the command line arguments so we know what to do
     Command command;
     TrayItemOptions config;
-    bool daemon = false;
-    if (!CommandLineArgs::processArgs(app.arguments(), command, config, daemon))
+    bool keepRunning = false;
+    if (!CommandLineArgs::processArgs(app.arguments(), command, config, keepRunning))
         return 1;
 
     TrayItemManager trayItemManager;
@@ -150,7 +150,7 @@ int main(int argc, char *argv[])
     // Setup Dbus so we'll only have 1 instance running
     bool dbus_registered = setupDbus(&trayItemManager);
     // Send the requested action through DBus regardless if this is the only instance.
-    sendDbusCommand(command, config, daemon);
+    sendDbusCommand(command, config, keepRunning);
 
     // Can't register dbus means another instance already has. Requests
     // were handled by the other instance and there is nothing more for us to do.

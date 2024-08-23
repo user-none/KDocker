@@ -307,7 +307,7 @@
         </method>
 
         <!-- KDocker behavior -->
-        <method name="daemonize">
+        <method name="keepRunning">
             <doc:doc>
                 <doc:description>
                     <doc:para>

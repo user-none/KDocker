@@ -35,7 +35,7 @@
 
 TrayItemManager::TrayItemManager()
 {
-    m_daemon = false;
+    m_keepRunning = false;
     m_scanner = new Scanner(this);
     connect(m_scanner, &Scanner::windowFound, this, &TrayItemManager::dockWindow);
     connect(m_scanner, &Scanner::stopping, this, &TrayItemManager::checkCount);
@@ -337,9 +337,9 @@ void TrayItemManager::about()
     aboutBox.exec();
 }
 
-void TrayItemManager::daemonize()
+void TrayItemManager::keepRunning()
 {
-    m_daemon = true;
+    m_keepRunning = true;
 }
 
 void TrayItemManager::selectAndIconify()
@@ -357,7 +357,7 @@ void TrayItemManager::quit()
 
 void TrayItemManager::checkCount()
 {
-    if (m_daemon)
+    if (m_keepRunning)
         return;
 
     if (m_trayItems.isEmpty() && !m_scanner->isRunning())
