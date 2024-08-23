@@ -45,7 +45,7 @@ public:
     // Pass on all events through this interface
     bool xcbEventFilter(void *message);
 
-    void showWindow();
+    void show();
     void restoreWindow();
     void iconifyWindow();
 

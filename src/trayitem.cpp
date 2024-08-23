@@ -319,18 +319,11 @@ windowid_t TrayItem::dockedWindow()
     return m_window;
 }
 
-void TrayItem::showWindow()
+void TrayItem::show()
 {
-
-    show();
-
-    if (m_settings.getIconifyMinimized()) {
-        iconifyWindow();
-    } else {
-        if (m_settings.getSkipTaskbar()) {
-            doSkipTaskbar();
-        }
-    }
+    doSkipTaskbar();
+    iconifyWindow();
+    QSystemTrayIcon::show();
 }
 
 void TrayItem::restoreWindow()

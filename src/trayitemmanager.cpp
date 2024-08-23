@@ -264,7 +264,7 @@ void TrayItemManager::dockWindow(windowid_t window, const TrayItemOptions &setti
     connect(ti, &TrayItem::undockAll, this, &TrayItemManager::undockAll);
     connect(ti, &TrayItem::about, this, &TrayItemManager::about);
 
-    ti->showWindow();
+    ti->show();
 
     m_trayItems.append(ti);
 }
