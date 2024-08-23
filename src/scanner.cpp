@@ -66,15 +66,9 @@ ProcessId &ProcessId::operator=(const ProcessId &obj)
 Scanner::Scanner(TrayItemManager *manager)
 {
     m_manager = manager;
-    m_timer = new QTimer();
     // Check every 1/4 second if a window has been created.
-    m_timer->setInterval(250);
-    connect(m_timer, &QTimer::timeout, this, &Scanner::check);
-}
-
-Scanner::~Scanner()
-{
-    delete m_timer;
+    m_timer.setInterval(250);
+    connect(&m_timer, &QTimer::timeout, this, &Scanner::check);
 }
 
 void Scanner::enqueueSearch(const QRegularExpression &searchPattern, quint32 maxTime, bool checkNormality,
@@ -85,7 +79,7 @@ void Scanner::enqueueSearch(const QRegularExpression &searchPattern, quint32 max
 
     ProcessId processId(QString(), 0, config, maxTime * 1000, checkNormality, searchPattern);
     m_processesTitle.append(processId);
-    m_timer->start();
+    m_timer.start();
 }
 
 void Scanner::enqueueLaunch(const QString &command, const QStringList &arguments,
@@ -109,7 +103,7 @@ void Scanner::enqueueLaunch(const QString &command, const QStringList &arguments
         processId.pid = static_cast<pid_t>(pid);
         m_processesPid.append(processId);
     }
-    m_timer->start();
+    m_timer.start();
 }
 
 bool Scanner::isRunning()
@@ -157,7 +151,7 @@ void Scanner::check()
     checkTitle();
 
     if (m_processesPid.isEmpty() && m_processesTitle.isEmpty()) {
-        m_timer->stop();
+        m_timer.stop();
         emit stopping();
     }
 }

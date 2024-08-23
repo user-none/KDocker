@@ -57,7 +57,6 @@ class Scanner : public QObject
 
 public:
     Scanner(TrayItemManager *manager);
-    ~Scanner();
     void enqueueSearch(const QRegularExpression &searchPattern, quint32 maxTime, bool checkNormality,
                        const TrayItemOptions &config);
     void enqueueLaunch(const QString &command, const QStringList &arguments, const QRegularExpression &searchPattern,
@@ -78,7 +77,7 @@ private:
                  const TrayItemOptions &config, quint32 maxTime, bool checkNormality);
 
     TrayItemManager *m_manager;
-    QTimer *m_timer;
+    QTimer m_timer;
     QList<ProcessId> m_processesPid;
     QList<ProcessId> m_processesTitle;
 };
