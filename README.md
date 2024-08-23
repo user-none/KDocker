@@ -28,6 +28,83 @@ XFCE    | show / hide | opens menu             | show / hide  | nothing
 Gnome, not all distros install the system tray plugin by default.
 
 
+## DBus Interface
+
+A DBus interface is available at `com.kdocker.KDocker/manage` and allows
+performing various actions with KDocker. The interface can be used to script
+working with KDocker.
+
+### Docking methods
+
+Two versions of every method are provided with one being a simple command
+and the other supporting extended attributes for fine tuned control. DBus
+does not allow default values to multiple versions of the methods with
+different options is required.
+
+Method           | input                                                                        | output
+---------------- | ---------------------------------------------------------------------------- | ------
+dockWindowTitle  | (s pattern)                                                                  | ()
+dockWindowTitle  | (s pattern, u timeout, b checkNormality, a{ss} windowConfig)                 | ()
+dockLaunchApp    | (s app, as args, s pattern)                                                  | ()
+dockLaunchApp    | (s app, as args, s pattern, u timeout, b checkNormality, a{ss} windowConfig) | ()
+dockWindowId     | (u windowId)                                                                 | (b found)
+dockWindowId     | (u windowId, a{ss} windowConfig)                                             | (b found)
+dockPid          | (i pid)                                                                      | (b found)
+dockPid          | (i pid, b checkNormality, a{ss} windowConfig)                                | (b found)
+dockSelectWindow | ()                                                                           | ()
+dockSelectWindow | (b checkNormality, a{ss} windowConfig)                                       | ()
+dockFocused      | ()                                                                           | ()
+dockFocused      | (a{ss} windowConfig)                                                         | ()
+
+### pattern
+
+Pattern is a PCRE regular expression.
+
+If `pattern` matching on the window name is not wanted with `dockLaunchApp` use `""` as the value.
+
+#### windowConfig
+
+Tray item options correspond to the options seen in the `options` menu. It is a list of
+dictionary references. Keys and value are both strings.
+
+Key                | value
+------------------ | -----
+icon               | file path
+attention-icon     | file path
+iconify-focus-lost | true / false
+iconify-minimized  | true / false
+iconify-obscured   | true / false
+notify-time        | seconds
+quiet              | true / false
+skip-pager         | true / false
+sticky             | true / false
+skip-taskbar       | true / false
+
+Invalid keys are ignored.
+
+Entries in the dictionary are options and only need to be provided if desired. However,
+DBus does not allow empty dictionary parameters. If no settings are desired either send
+one with the default value or send a key that isn't valid with any value. E.g. `{ "a", "b" }`.
+
+### Docked window management
+
+Method       | input        | output
+------------ | ------------ | ------
+listWindows  | ()           | (a{us} windows)
+closeWindow  | (u windowId) | (b found)
+undockWindow | (u windowId) | (b found)
+showWindow   | (u windowId) | (b found)
+hideWindow   | (u windowId) | (b found)
+undockAll    | ()           | ()
+
+### Behavior
+
+Method    | input | output
+--------- | ----- | ------
+daemonize | ()    | ()
+quit      | ()    | ()
+
+
 ## Website
 
 https://github.com/user-none/KDocker

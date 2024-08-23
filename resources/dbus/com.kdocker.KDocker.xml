@@ -218,7 +218,7 @@
             </doc:doc>
         </method>
 
-        <!-- Docked window managmeent -->
+        <!-- Docked window management -->
         <method name="listWindows">
             <arg name="windows" direction="out" type="a{us}">
                 <doc:doc><doc:summary>Dictionary of, "window id" = "application name"</doc:summary></doc:doc>
