@@ -89,10 +89,11 @@ protected:
     bool event(QEvent *e);
 
 private:
-    //   readSetting overloaded function
-    bool readSetting(TrayItemOptions::TriState argSetting, QString key, bool kdockerDefault);
-    int readSetting(int argSetting, QString key, int kdockerDefault);
-    QString readSetting(const QString &argSetting, QString key, const QString &kdockerDefault);
+    void loadSettings(const TrayItemOptions &args);
+    bool readSetting(TrayItemOptions::TriState argSetting, const QString &key, bool kdockerDefault);
+    int readSetting(int argSetting, const QString &key, int kdockerDefault);
+    QString readSetting(const QString &argSetting, const QString &key, const QString &kdockerDefault);
+    QVariant readConfigValue(const QString &key, const QVariant &defaultValue);
     int nonZeroBalloonTimeout();
     TrayItemOptions readConfigGlobals();
     void saveSettings();
