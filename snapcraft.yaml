@@ -1,0 +1,69 @@
+# 'classis' is required for launcher functionality.
+#
+# If 'strict' is used everything except launching other apps works.
+#   There isn't a way to make launching work with 'strict' confinement.
+#
+#   Using 'system-files' as a plug to expose bin directories won't work for
+#   launching because applications need more than just the bin directory to
+#   run. We'd need to expose /etc/, */lib, */share and more. Pretty much the
+#   entire file system which defeates the purpose of strict containment.
+#
+#   Further, the environment in a strict snap is setup for the snap container.
+#   Most apps won't be able to run due to the the paths being wrong for them.
+
+
+name: kdocker
+confinement: classic
+grade: devel
+base: core24
+adopt-info: kdocker
+compression: lzo
+platforms:
+    arm64:
+      build-on: [amd64, arm64]
+      build-for: arm64
+    amd64:
+      build-on: [amd64, arm64]
+      build-for: amd64
+apps:
+    kdocker:
+        common-id: org.kdocker.KDocker
+        desktop: usr/share/applications/kdocker.desktop
+        command: usr/bin/kdocker
+        plugs:
+        - home
+        - x11
+        - desktop
+        environment:
+          QT_QPA_PLATFORM_PLUGIN_PATH: $SNAP/usr/lib/${CRAFT_ARCH_TRIPLET_BUILD_FOR}/qt6/plugins/platforms
+slots:
+    session-dbus-interface:
+        interface: dbus
+        name: org.kdocker.KDocker
+        bus: session
+parts:
+    kdocker:
+        parse-info:
+        - usr/share/metainfo/kdocker.metainfo.xml
+        plugin: cmake
+        cmake-generator: Ninja
+        source: .
+        source-type: local
+        cmake-parameters:
+        - -DCMAKE_INSTALL_PREFIX=/usr
+        - -DCMAKE_BUILD_TYPE=RelWithDebInfo
+        - -DQT_MAJOR_VERSION=6
+        - -DBUILD_WITH_QT6=ON
+        build-packages:
+        - qt6-base-dev
+        - libx11-dev
+        - libxcb1-dev
+        - libxmu-dev
+        stage-packages:
+        - libx11-6
+        - libxcb1
+        - libxmu6
+        - libqt6core6
+        - libqt6dbus6
+        - libqt6gui6
+        - libqt6widgets6

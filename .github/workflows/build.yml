@@ -17,3 +17,20 @@ jobs:
         cd build
         cmake -G Ninja ..
         ninja
+
+  build-snap:
+    runs-on: ubuntu-24.04
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Snap
+      uses: snapcore/action-build@v1
+      id: snapcraft
+    - name: Get snap filename
+      id: vars
+      run: echo "fname=$(basename ${{ steps.snapcraft.outputs.snap }})" >> $GITHUB_OUTPUT
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.vars.outputs.fname }}
+          path: ${{ steps.snapcraft.outputs.snap }}
