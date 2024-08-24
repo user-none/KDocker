@@ -18,13 +18,6 @@ grade: devel
 base: core24
 adopt-info: kdocker
 compression: lzo
-platforms:
-    arm64:
-      build-on: [amd64, arm64]
-      build-for: arm64
-    amd64:
-      build-on: [amd64, arm64]
-      build-for: amd64
 apps:
     kdocker:
         common-id: org.kdocker.KDocker
