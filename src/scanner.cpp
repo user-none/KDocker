@@ -92,7 +92,12 @@ void Scanner::enqueueLaunch(const QString &command, const QStringList &arguments
     // Launch the requested application.
     qint64 pid;
     if (!QProcess::startDetached(command, arguments, "", &pid)) {
-        QMessageBox::information(0, qApp->applicationName(), tr("'%1' did not start properly.").arg(command));
+        QMessageBox box;
+        box.setText(tr("'%1' did not start properly.").arg(command));
+        box.setWindowIcon(QPixmap(":/logo/kdocker.png"));
+        box.setIcon(QMessageBox::Information);
+        box.setStandardButtons(QMessageBox::Ok);
+        box.exec();
         return;
     }
 
@@ -121,8 +126,13 @@ void Scanner::checkPid()
             emit windowFound(window, process.config);
             m_processesPid.remove(i);
         } else if (process.etimer.hasExpired(process.timeout)) {
-            QMessageBox::information(0, qApp->applicationName(),
-                                     tr("Could not a window for command '%1'").arg(process.command));
+            QMessageBox box;
+            box.setText(tr("Could not find a window for command '%1'").arg(process.command));
+            box.setWindowIcon(QPixmap(":/logo/kdocker.png"));
+            box.setIcon(QMessageBox::Information);
+            box.setStandardButtons(QMessageBox::Ok);
+            box.exec();
+
             m_processesPid.remove(i);
         }
     }
@@ -138,8 +148,13 @@ void Scanner::checkTitle()
             emit windowFound(window, process.config);
             m_processesTitle.remove(i);
         } else if (process.etimer.hasExpired(process.timeout)) {
-            QMessageBox::information(0, qApp->applicationName(),
-                                     tr("Could not find a window matching '%1'").arg(process.searchPattern.pattern()));
+            QMessageBox box;
+            box.setText(tr("Could not find a window matching '%1'").arg(process.searchPattern.pattern()));
+            box.setWindowIcon(QPixmap(":/logo/kdocker.png"));
+            box.setIcon(QMessageBox::Information);
+            box.setStandardButtons(QMessageBox::Ok);
+            box.exec();
+
             m_processesTitle.remove(i);
         }
     }
