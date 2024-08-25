@@ -1,0 +1,19 @@
+name: Build
+
+on: push
+
+jobs:
+  build-snap:
+    runs-on: ubuntu-24.04
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Snap
+      uses: snapcore/action-build@v1
+      id: snapcraft
+    - name: Upload snap artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ steps.snapcraft.outputs.snap }}
+        path: ${{ steps.snapcraft.outputs.snap }}
+
