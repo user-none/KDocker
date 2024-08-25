@@ -11,21 +11,10 @@ finish-args:
   - --talk-name=org.kde.StatusNotifierWatcher
   - --talk-name=org.freedesktop.Notifications
 modules:
-  - name: libXmu
-    sources:
-      - type: archive
-        url: https://www.x.org/releases/individual/lib/libXmu-1.2.1.tar.gz
-        sha256: bf0902583dd1123856c11e0a5085bd3c6e9886fbbd44954464975fd7d52eb599
-    cleanup:
-      - /include
-      - /share
   - name: kdocker
     buildsystem: cmake-ninja
     config-opts:
       - -DCMAKE_BUILD_TYPE=RelWithDebInfo
     sources:
-      #- type: git
-      #  url: https://github.com/user-none/KDocker.git
-      #  branch: main
       - type: dir
         path: ../..

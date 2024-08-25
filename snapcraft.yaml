@@ -35,11 +35,9 @@ parts:
         - qt6-base-dev
         - libx11-dev
         - libxcb1-dev
-        - libxmu-dev
         stage-packages:
         - libx11-6
         - libxcb1
-        - libxmu6
         - libqt6core6
         - libqt6dbus6
         - libqt6gui6
