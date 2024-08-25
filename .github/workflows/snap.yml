@@ -11,8 +11,6 @@ jobs:
     - name: Snap
       uses: snapcore/action-build@v1
       id: snapcraft
-      with:
-        path: resources/snap
     - name: Upload snap artifact
       uses: actions/upload-artifact@v4
       with:

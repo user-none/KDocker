@@ -20,8 +20,8 @@ adopt-info: kdocker
 compression: lzo
 apps:
     kdocker:
-        common-id: org.kdocker.KDocker
-        desktop: usr/share/applications/kdocker.desktop
+        common-id: com.kdocker.KDocker
+        desktop: usr/share/applications/com.kdocker.KDocker.desktop
         command: usr/bin/kdocker
         plugs:
         - home
@@ -32,12 +32,12 @@ apps:
 slots:
     session-dbus-interface:
         interface: dbus
-        name: org.kdocker.KDocker
+        name: com.kdocker.KDocker
         bus: session
 parts:
     kdocker:
         parse-info:
-        - usr/share/metainfo/kdocker.metainfo.xml
+        - usr/share/metainfo/com.kdocker.KDocker.metainfo.xml
         plugin: cmake
         cmake-generator: Ninja
         source: .
