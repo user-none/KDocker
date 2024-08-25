@@ -142,7 +142,13 @@ void TrayItemManager::dockLaunchApp(const QString &app, const QStringList &appAr
 bool TrayItemManager::dockWindowId(uint windowId, const TrayItemOptions &options)
 {
     if (!XLibUtil::isValidWindowId(windowId)) {
-        QMessageBox::critical(0, qApp->applicationName(), tr("Invalid window id"));
+        QMessageBox box;
+        box.setText(tr("Invalid window id"));
+        box.setWindowIcon(QPixmap(":/logo/kdocker.png"));
+        box.setIcon(QMessageBox::Critical);
+        box.setStandardButtons(QMessageBox::Ok);
+        box.exec();
+
         checkCount();
         return false;
     }
@@ -154,7 +160,13 @@ bool TrayItemManager::dockPid(pid_t pid, bool checkNormality, const TrayItemOpti
 {
     windowid_t window = XLibUtil::pidToWid(checkNormality, pid, dockedWindows());
     if (!XLibUtil::isValidWindowId(window)) {
-        QMessageBox::critical(0, qApp->applicationName(), tr("Invalid pid"));
+        QMessageBox box;
+        box.setText(tr("Invalid pid"));
+        box.setWindowIcon(QPixmap(":/logo/kdocker.png"));
+        box.setIcon(QMessageBox::Critical);
+        box.setStandardButtons(QMessageBox::Ok);
+        box.exec();
+
         checkCount();
         return false;
     }
@@ -174,8 +186,13 @@ void TrayItemManager::dockFocused(const TrayItemOptions &options)
 {
     windowid_t window = XLibUtil::getActiveWindow();
     if (!window) {
-        QMessageBox::critical(0, qApp->applicationName(),
-                              tr("Cannot dock the active window because no window has focus"));
+        QMessageBox box;
+        box.setText(tr("Cannot dock the active window because no window has focus"));
+        box.setWindowIcon(QPixmap(":/logo/kdocker.png"));
+        box.setIcon(QMessageBox::Critical);
+        box.setStandardButtons(QMessageBox::Ok);
+        box.exec();
+
         checkCount();
         return;
     }
@@ -250,8 +267,14 @@ bool TrayItemManager::undockWindow(uint windowId)
 void TrayItemManager::dockWindow(windowid_t window, const TrayItemOptions &settings)
 {
     if (isWindowDocked(window)) {
-        QMessageBox::information(0, qApp->applicationName(),
-                                 tr("This window is already docked.\nClick on system tray icon to toggle docking."));
+        QMessageBox box;
+        box.setText(tr("This window is already docked"));
+        box.setInformativeText(tr("Click on system tray icon to toggle docking."));
+        box.setWindowIcon(QPixmap(":/logo/kdocker.png"));
+        box.setIcon(QMessageBox::Information);
+        box.setStandardButtons(QMessageBox::Ok);
+        box.exec();
+
         checkCount();
         return;
     }
@@ -279,7 +302,12 @@ windowid_t TrayItemManager::userSelectWindow(bool checkNormality)
     windowid_t window = XLibUtil::selectWindow(m_grabInfo, error);
     if (!window) {
         if (error != QString()) {
-            QMessageBox::critical(0, qApp->applicationName(), error);
+            QMessageBox box;
+            box.setText(error);
+            box.setWindowIcon(QPixmap(":/logo/kdocker.png"));
+            box.setIcon(QMessageBox::Critical);
+            box.setStandardButtons(QMessageBox::Ok);
+            box.exec();
         }
         checkCount();
         return 0;
@@ -287,9 +315,14 @@ windowid_t TrayItemManager::userSelectWindow(bool checkNormality)
 
     if (checkNormality) {
         if (!XLibUtil::isNormalWindow(window)) {
-            if (QMessageBox::warning(0, qApp->applicationName(),
-                                     tr("The window you are attempting to dock does not seem to be a normal window."),
-                                     QMessageBox::Abort | QMessageBox::Ignore) == QMessageBox::Abort)
+            QMessageBox box;
+            box.setText(tr("The window you are attempting to dock does not seem to be a normal window"));
+            box.setWindowIcon(QPixmap(":/logo/kdocker.png"));
+            box.setIcon(QMessageBox::Warning);
+            box.setStandardButtons(QMessageBox::Abort | QMessageBox::Ignore);
+            box.setDefaultButton(QMessageBox::Abort);
+            auto ret = box.exec();
+            if (ret == QMessageBox::Abort)
             {
                 checkCount();
                 return 0;
@@ -327,12 +360,11 @@ void TrayItemManager::about()
 {
     QMessageBox aboutBox;
     aboutBox.setWindowTitle(tr("About"));
-    aboutBox.setText(QString("# %1\n\n"
-                             "Version: %2\n\n")
-                         .arg(qApp->applicationName())
-                         .arg(qApp->applicationVersion()));
+    aboutBox.setText(QString("## %1").arg(qApp->applicationName()));
+    aboutBox.setInformativeText(QString("Version: %1").arg(qApp->applicationVersion()));
     aboutBox.setTextFormat(Qt::MarkdownText);
     aboutBox.setIconPixmap(QPixmap(":/logo/kdocker.png"));
+    aboutBox.setWindowIcon(QPixmap(":/logo/kdocker.png"));
     aboutBox.setStandardButtons(QMessageBox::Ok);
     aboutBox.exec();
 }
