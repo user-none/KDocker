@@ -322,8 +322,7 @@ windowid_t TrayItemManager::userSelectWindow(bool checkNormality)
             box.setStandardButtons(QMessageBox::Abort | QMessageBox::Ignore);
             box.setDefaultButton(QMessageBox::Abort);
             auto ret = box.exec();
-            if (ret == QMessageBox::Abort)
-            {
+            if (ret == QMessageBox::Abort) {
                 checkCount();
                 return 0;
             }

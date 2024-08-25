@@ -9,7 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Qt6 REQUIRED COMPONENTS Core DBus Widgets)
 qt_standard_project_setup()
 
-find_package(X11 REQUIRED COMPONENTS Xmu xcb)
+find_package(X11 REQUIRED COMPONENTS xcb)
 
 # Create some variables used when generating files
 string(TIMESTAMP TIMESTAMP)
@@ -83,5 +83,5 @@ qt_add_resources(SOURCES resources/resources.qrc)
 # Build
 qt_add_executable(kdocker ${SOURCES})
 target_include_directories(kdocker PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(kdocker PRIVATE Qt6::Core Qt6::DBus Qt6::Widgets X11::X11 X11::Xmu X11::xcb)
+target_link_libraries(kdocker PRIVATE Qt6::Core Qt6::DBus Qt6::Widgets X11::X11 X11::xcb)
 install(TARGETS kdocker DESTINATION bin)
