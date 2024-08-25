@@ -28,7 +28,6 @@
 
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
-#include <X11/Xmu/WinUtil.h>
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>
 
@@ -424,6 +423,64 @@ windowid_t XLibUtil::getActiveWindow()
     return window;
 }
 
+static windowid_t findWMStateWindowChildren(Display *display, windowid_t window, Atom wmState)
+{
+    Window w = 0;
+    Window root;
+    Window parent;
+    Window *child;
+    unsigned int num_child;
+
+    if (XQueryTree(display, window, &root, &parent, &child, &num_child) != 0) {
+        for (unsigned int i = 0; i < num_child; i++) {
+            int format;
+            unsigned long left;
+            Atom *data = NULL;
+            Atom type = 0;
+            unsigned long nitems;
+
+            int ret = XGetWindowProperty(display, child[i], wmState, 0, 0, false, AnyPropertyType, &type, &format, &nitems, &left,
+                    (unsigned char **)&data);
+
+            if (data != NULL) {
+                XFree(data);
+            }
+
+            if (ret == Success && type) {
+                return child[i];
+            }
+
+            w = findWMStateWindowChildren(display, child[i], wmState);
+            if (w != 0) {
+                return w;
+            }
+        }
+    }
+
+    return w;
+}
+
+// Functional equivelent to libXmu's XmuClientWindow.
+static windowid_t findWMStateWindow(Display *display, windowid_t window)
+{
+    int format;
+    unsigned long left;
+    Atom *data = NULL;
+    Atom type = 0;
+    unsigned long nitems;
+    static Atom wmState = XInternAtom(display, "WM_STATE", false);
+
+    int ret = XGetWindowProperty(display, window, wmState, 0, 0, false, AnyPropertyType, &type, &format, &nitems, &left,
+                                 (unsigned char **)&data);
+    if (data != NULL)
+        XFree(data);
+
+    if (ret == Success && type)
+        return window;
+
+    return findWMStateWindowChildren(display, window, wmState);
+}
+
 windowid_t XLibUtil::selectWindow(GrabInfo &grabInfo, QString &error)
 {
     Display *display = getDisplay();
@@ -464,7 +521,14 @@ windowid_t XLibUtil::selectWindow(GrabInfo &grabInfo, QString &error)
     if (grabInfo.getButton() != Button1 || !grabInfo.getWindow() || !grabInfo.isActive())
         return 0;
 
-    return XmuClientWindow(display, grabInfo.getWindow());
+    // Find window (or subwindow) of the grabbed window with WM_STATE which should be a dockable window.
+    windowid_t w = findWMStateWindow(display, grabInfo.getWindow());
+    if (w != 0)
+        return w;
+    // Return the window that was grabbed even if it's not a proper dockable window.
+    // It was grabbed and if the user want's to check if it's a valid window they have
+    // that option which happens elsewhere.
+    return grabInfo.getWindow();
 }
 
 void XLibUtil::subscribe(windowid_t window)
