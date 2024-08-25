@@ -17,17 +17,17 @@ string(TIMESTAMP DATE "%d %B, %Y")
 set(VERSION ${CMAKE_PROJECT_VERSION})
 
 # install appstream xml
-configure_file(resources/appstream/kdocker.metainfo.xml.in ${CMAKE_CURRENT_BINARY_DIR}/appstream/kdocker.metainfo.xml @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/appstream/kdocker.metainfo.xml DESTINATION share/metainfo/)
+configure_file(resources/appstream/com.kdocker.KDocker.metainfo.xml.in ${CMAKE_CURRENT_BINARY_DIR}/appstream/com.kdocker.KDocker.metainfo.xml @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/appstream/com.kdocker.KDocker.metainfo.xml DESTINATION share/metainfo/)
 
 # Install icon
 foreach(SIZE 32x32 64x64 128x128 256x256 512x512)
-    install(FILES resources/images/icons/kdocker_${SIZE}.png DESTINATION share/icons/hicolor/${SIZE}/apps/ RENAME kdocker.png)
+    install(FILES resources/images/icons/kdocker_${SIZE}.png DESTINATION share/icons/hicolor/${SIZE}/apps/ RENAME com.kdocker.KDocker.png)
 endforeach()
-install(FILES resources/images/icons/kdocker.svg DESTINATION share/icons/hicolor/scalable/apps/)
+install(FILES resources/images/icons/kdocker.svg DESTINATION share/icons/hicolor/scalable/apps/ RENAME com.kdocker.KDocker.svg)
 
 # Install desktop file
-install(FILES resources/kdocker.desktop DESTINATION share/applications/)
+install(FILES resources/desktop/com.kdocker.KDocker.desktop DESTINATION share/applications/)
 
 # Install bash completions
 install(FILES resources/bash-completion/kdocker DESTINATION share/bash-completion/completions/)

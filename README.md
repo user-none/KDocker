@@ -112,13 +112,14 @@ https://github.com/user-none/KDocker
 
 ## Building from source
 
-KDocker requires Qt 6. Unlike the name implies, it does not use any libraires
+KDocker requires Qt 6. Unlike the name implies, it does not use any libraries
 from KDE nor does KDE need to be installed.
 
 Build dependencies for Ubuntu 24.04
 
 - build-essential
 - cmake
+- ninja-build
 - qt6-base-dev
 - libx11-dev
 - libxcb1-dev
@@ -128,8 +129,29 @@ Building
 
 1. `mkdir build`
 2. `cd build`
-3. `cmake ..`
-4. `make`
+3. `cmake -G Ninja ..`
+4. `ninja`
 
 *IMPORTANT*: Close all previous instances of KDocker that are running before running
 a new build. KDocker is a single instance application.
+
+
+## Standalone packages
+
+Snap and Flatpak both isolate applications and limit system access.
+Which has an impact on KDocker when packaged with these formats.
+
+### Snap
+
+The KDocker snap is built with 'classic' confinement in order to
+have full functionality. This isn't ideal but building with 'strict'
+confinement will prevent KDocker form being able to launch other applications.
+
+Snap does not like this level but at this time is is desirable. Most likely
+the confinement level will be changed to 'strict' when building the KDocker snap.
+At that time the application launching functionality will no longer work.
+
+### Flatpak
+
+The KDocker flatpak package cannot launch other applications. There is no work
+around like is currently available with Snap.
