@@ -1,17 +1,3 @@
-# 'classis' is required for launcher functionality.
-#
-# If 'strict' is used everything except launching other apps works.
-#   There isn't a way to make launching work with 'strict' confinement.
-#
-#   Using 'system-files' as a plug to expose bin directories won't work for
-#   launching because applications need more than just the bin directory to
-#   run. We'd need to expose /etc/, */lib, */share and more. Pretty much the
-#   entire file system which defeates the purpose of strict containment.
-#
-#   Further, the environment in a strict snap is setup for the snap container.
-#   Most apps won't be able to run due to the the paths being wrong for them.
-
-
 name: kdocker
 confinement: classic
 grade: devel
