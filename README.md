@@ -147,9 +147,10 @@ The KDocker snap is built with 'classic' confinement in order to
 have full functionality. This isn't ideal but building with 'strict'
 confinement will prevent KDocker form being able to launch other applications.
 
-Snap does not like this level but at this time is is desirable. Most likely
-the confinement level will be changed to 'strict' when building the KDocker snap.
-At that time the application launching functionality will no longer work.
+Snap discourages this level, but it is desirable to have full functionality.
+In the future, most likely, the confinement level will be changed to 'strict'
+when building the KDocker snap. At that time the application launching
+functionality will no longer work if using snap.
 
 ### Flatpak
 
