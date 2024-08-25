@@ -1,4 +1,4 @@
-name: Build
+name: Snap
 
 on: push
 
