@@ -377,6 +377,7 @@ void TrayItem::closeWindow()
     if (isBadWindow())
         return;
 
+    restoreWindow();
     XLibUtil::closeWindow(m_window);
 }
 
