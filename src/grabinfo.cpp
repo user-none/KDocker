@@ -34,7 +34,7 @@ void GrabInfo::exec()
     // m_qtimer-> start(20000);   // 20 second timeout
     m_qtimer.start(5000); // 5 second timeout
 
-    m_qloop.exec();     // block until button pressed or timeout
+    m_qloop.exec(); // block until button pressed or timeout
 }
 
 void GrabInfo::stop()

@@ -20,8 +20,8 @@
 #ifndef _GRABINFO_H
 #define _GRABINFO_H
 
-#include <QObject>
 #include <QEventLoop>
+#include <QObject>
 #include <QTimer>
 
 #include "xlibtypes.h"
@@ -84,7 +84,6 @@ private:
     windowid_t m_window;
     unsigned int m_button;
     bool m_isGrabbing;
-
 };
 
 #endif // _GRABINFO_H

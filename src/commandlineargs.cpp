@@ -23,7 +23,8 @@
 #include <QString>
 #include <QStringList>
 
-bool CommandLineArgs::processArgs(const QStringList &arguments, Command &command, TrayItemOptions &config, bool &keepRunning)
+bool CommandLineArgs::processArgs(const QStringList &arguments, Command &command, TrayItemOptions &config,
+                                  bool &keepRunning)
 {
     QCommandLineParser parser;
 

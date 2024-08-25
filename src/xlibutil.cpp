@@ -126,8 +126,8 @@ bool XLibUtil::isNormalWindow(windowid_t window)
     static Atom normalWindow = XInternAtom(display, "_NET_WM_WINDOW_TYPE_NORMAL", false);
     static Atom dialogWindow = XInternAtom(display, "_NET_WM_WINDOW_TYPE_DIALOG", false);
 
-    int ret = XGetWindowProperty(display, window, wmState, 0, 10, false, AnyPropertyType, &type, &format, &nitems, &left,
-                                 (unsigned char **)&data);
+    int ret = XGetWindowProperty(display, window, wmState, 0, 10, false, AnyPropertyType, &type, &format, &nitems,
+                                 &left, (unsigned char **)&data);
 
     if (ret != Success || data == NULL) {
         if (data != NULL)
@@ -138,8 +138,8 @@ bool XLibUtil::isNormalWindow(windowid_t window)
         XFree(data);
     }
 
-    ret = XGetWindowProperty(display, window, windowState, 0, 10, false, AnyPropertyType, &type, &format, &nitems, &left,
-                             (unsigned char **)&data);
+    ret = XGetWindowProperty(display, window, windowState, 0, 10, false, AnyPropertyType, &type, &format, &nitems,
+                             &left, (unsigned char **)&data);
     if (ret == Success) {
         unsigned int i;
         for (i = 0; i < nitems; i++) {
@@ -183,8 +183,8 @@ static pid_t pid(Display *display, Window window)
     pid_t pid_return = -1;
     static Atom type = XInternAtom(display, "_NET_WM_PID", false);
 
-    if (XGetWindowProperty(display, window, type, 0, 1, false, XA_CARDINAL,
-                           &actual_type, &actual_format, &nitems, &leftover, &pid) == Success)
+    if (XGetWindowProperty(display, window, type, 0, 1, false, XA_CARDINAL, &actual_type, &actual_format, &nitems,
+                           &leftover, &pid) == Success)
     {
         if (pid) {
             pid_return = *(pid_t *)pid;
@@ -366,8 +366,8 @@ void XLibUtil::setCurrentDesktop(long desktop)
     static Atom type = XInternAtom(display, "_NET_CURRENT_DESKTOP", true);
     Window root = getDefaultRootWindow();
     long l_currDesk[2] = {desktop, CurrentTime};
-    sendMessage(display, root, root, type, 32, SubstructureNotifyMask | SubstructureRedirectMask,
-                l_currDesk, sizeof(l_currDesk));
+    sendMessage(display, root, root, type, 32, SubstructureNotifyMask | SubstructureRedirectMask, l_currDesk,
+                sizeof(l_currDesk));
 }
 
 void XLibUtil::setWindowDesktop(long desktop, windowid_t window)
@@ -375,8 +375,8 @@ void XLibUtil::setWindowDesktop(long desktop, windowid_t window)
     Display *display = getDisplay();
     static Atom type = XInternAtom(display, "_NET_WM_DESKTOP", true);
     long l_wmDesk[2] = {desktop, 1}; // 1 == request sent from application. 2 == from pager
-    sendMessage(display, getDefaultRootWindow(), window, type, 32,
-                SubstructureNotifyMask | SubstructureRedirectMask, l_wmDesk, sizeof(l_wmDesk));
+    sendMessage(display, getDefaultRootWindow(), window, type, 32, SubstructureNotifyMask | SubstructureRedirectMask,
+                l_wmDesk, sizeof(l_wmDesk));
 }
 
 void XLibUtil::setActiveWindow(windowid_t window)
@@ -439,8 +439,8 @@ static windowid_t findWMStateWindowChildren(Display *display, windowid_t window,
             Atom type = 0;
             unsigned long nitems;
 
-            int ret = XGetWindowProperty(display, child[i], wmState, 0, 0, false, AnyPropertyType, &type, &format, &nitems, &left,
-                    (unsigned char **)&data);
+            int ret = XGetWindowProperty(display, child[i], wmState, 0, 0, false, AnyPropertyType, &type, &format,
+                                         &nitems, &left, (unsigned char **)&data);
 
             if (data != NULL) {
                 XFree(data);
@@ -539,7 +539,9 @@ void XLibUtil::subscribe(windowid_t window)
 
     XGetWindowAttributes(display, window == 0 ? root : window, &attr);
 
-    XSelectInput(display, window == 0 ? root : window, attr.your_event_mask | StructureNotifyMask | PropertyChangeMask | VisibilityChangeMask | FocusChangeMask);
+    XSelectInput(display, window == 0 ? root : window,
+                 attr.your_event_mask | StructureNotifyMask | PropertyChangeMask | VisibilityChangeMask |
+                     FocusChangeMask);
     XSync(display, false);
 }
 
@@ -558,8 +560,9 @@ bool getCardinalProperty(Display *display, windowid_t window, Atom prop, long *d
     unsigned long nitems, bytes;
     unsigned char *d = NULL;
 
-    if (XGetWindowProperty(display, window, prop, 0, 1, false, XA_CARDINAL, &type,
-                &format, &nitems, &bytes, &d) == Success && d)
+    if (XGetWindowProperty(display, window, prop, 0, 1, false, XA_CARDINAL, &type, &format, &nitems, &bytes, &d) ==
+            Success &&
+        d)
     {
         if (data) {
             *data = *reinterpret_cast<long *>(d);
@@ -624,8 +627,8 @@ bool XLibUtil::isWindowIconic(windowid_t window)
     Display *display = getDisplay();
     static Atom WM_STATE = XInternAtom(display, "WM_STATE", true);
 
-    int r =
-        XGetWindowProperty(display, window, WM_STATE, 0, 1, false, AnyPropertyType, &type, &format, &nitems, &after, &data);
+    int r = XGetWindowProperty(display, window, WM_STATE, 0, 1, false, AnyPropertyType, &type, &format, &nitems, &after,
+                               &data);
     if ((r == Success) && data && (*reinterpret_cast<long *>(data) == IconicState))
         iconic = true;
 
@@ -635,7 +638,7 @@ bool XLibUtil::isWindowIconic(windowid_t window)
 
 void XLibUtil::raiseWindow(windowid_t window)
 {
-    Display * display = getDisplay();
+    Display *display = getDisplay();
     XMapRaised(display, window);
     XFlush(display);
 }
@@ -718,9 +721,9 @@ QPixmap XLibUtil::getWindowIcon(windowid_t window)
         unsigned long nItems, bytesAfter;
         unsigned char *data = nullptr;
 
-        if (XGetWindowProperty(display, window, netWmIcon, 0, LONG_MAX, false,
-                    XA_CARDINAL, &actualType, &actualFormat, &nItems,
-                    &bytesAfter, &data) == Success && data)
+        if (XGetWindowProperty(display, window, netWmIcon, 0, LONG_MAX, false, XA_CARDINAL, &actualType, &actualFormat,
+                               &nItems, &bytesAfter, &data) == Success &&
+            data)
         {
             unsigned long *iconData = reinterpret_cast<unsigned long *>(data);
             unsigned long dataLength = nItems;

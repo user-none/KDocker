@@ -143,7 +143,8 @@ void Scanner::checkTitle()
     // Counting backwards because we can remove items from the list
     for (size_t i = m_processesTitle.count(); i-- > 0;) {
         ProcessId process = m_processesTitle[i];
-        windowid_t window = XLibUtil::findWindow(process.checkNormality, process.searchPattern, m_manager->dockedWindows());
+        windowid_t window =
+            XLibUtil::findWindow(process.checkNormality, process.searchPattern, m_manager->dockedWindows());
         if (window != 0) {
             emit windowFound(window, process.config);
             m_processesTitle.remove(i);

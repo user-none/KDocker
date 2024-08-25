@@ -93,7 +93,7 @@ bool TrayItemManager::nativeEventFilter([[maybe_unused]] const QByteArray &event
                 m_grabInfo.setWindow(static_cast<xcb_button_press_event_t *>(message)->child);
 
                 emit quitMouseGrab(); // Interrupt QTimer waiting for grab
-                return true;       // Event has been handled - don't propagate
+                return true;          // Event has been handled - don't propagate
             }
             break;
 
@@ -103,7 +103,7 @@ bool TrayItemManager::nativeEventFilter([[maybe_unused]] const QByteArray &event
                     m_grabInfo.stopGrabbing();
 
                     emit quitMouseGrab(); // Interrupt QTimer waiting for grab
-                    return true;       // Event has been handled - don't propagate
+                    return true;          // Event has been handled - don't propagate
                 }
             }
             break;

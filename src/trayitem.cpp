@@ -278,8 +278,7 @@ bool TrayItem::xcbEventFilter(void *message)
             }
             break;
 
-        case XCB_PROPERTY_NOTIFY:
-        {
+        case XCB_PROPERTY_NOTIFY: {
             if (isBadWindow())
                 break;
 
