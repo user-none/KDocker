@@ -157,19 +157,20 @@ a new build. KDocker is a single instance application.
 
 ## Packages
 
-Snap and Flatpak both isolate applications and limit system access.
-Which has an impact on KDocker when packaged with these formats.
+Snap and Flatpak packages are available but due to design decisions surrounding the package
+systems, KDocker has reduced functionality when installed using either of these.
 
 ### Snap
 
-The KDocker snap is built with 'classic' confinement in order to
-have full functionality. This isn't ideal but building with 'strict'
-confinement will prevent KDocker form being able to launch other applications.
+Snap isolates applications and limits system access. In order to support
+application launching, the KDocker snap is built with 'classic' confinement.
+Otherwise, KDocker would not have access outside of it's isolation to start
+other applications.
 
 Snap discourages this level, but it is desirable to have full functionality.
 In the future, most likely, the confinement level will be changed to 'strict'
 when building the KDocker snap. At that time the application launching
-functionality will no longer work if using snap.
+functionality will no longer work if using Snap.
 
 DBus auto start does not function because Snap does not currently support this
 with applications that use the session bus. Use the `--keep-running` option in
@@ -177,9 +178,9 @@ order to keep KDocker accessible via DBus if no windows are docked.
 
 ### Flatpak
 
-The KDocker flatpak package cannot launch other applications. There is no work
-around like is currently available with Snap.
+Flatpak isolates applications and limits system access. Due to this, the KDocker
+flatpak package cannot launch other applications.
 
-KDocker will not stay running with the `--keep-running` option after
-all windows are undocked. However, DBus auto start does work and will start
-KDocker as needed. Reducing the need for this option.
+KDocker will not stay running with the `--keep-running` option after all
+windows are undocked. However, DBus auto start will start KDocker as needed,
+reducing the need for this option.
