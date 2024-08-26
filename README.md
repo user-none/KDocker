@@ -171,8 +171,9 @@ In the future, most likely, the confinement level will be changed to 'strict'
 when building the KDocker snap. At that time the application launching
 functionality will no longer work if using snap.
 
-DBus auto start does not function because snap does not currently allow connecting
-to the session bus. Use the `--keep-running` option in order to keep KDocker accessible.
+DBus auto start does not function because Snap does not currently support this
+with applications that use the session bus. Use the `--keep-running` option in
+order to keep KDocker accessible via DBus if no windows are docked.
 
 ### Flatpak
 
@@ -181,4 +182,4 @@ around like is currently available with Snap.
 
 KDocker will not stay running with the `--keep-running` option after
 all windows are undocked. However, DBus auto start does work and will start
-KDocker as needed. Negating the need for this option.
+KDocker as needed. Reducing the need for this option.
