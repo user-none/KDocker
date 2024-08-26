@@ -143,7 +143,6 @@ Build dependencies for Ubuntu 24.04
 - qt6-base-dev
 - libx11-dev
 - libxcb1-dev
-- libxmu-dev
 
 Building
 
