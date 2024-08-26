@@ -104,6 +104,26 @@ Method      | input | output
 keepRunning | ()    | ()
 quit        | ()    | ()
 
+### Auto start
+
+KDocker installs itself as a DBus auto start service using DBus' service activation
+functionality. If a message for KDocker is sent to the session bus and KDocker is
+not running, then DBus will auto start KDocker.
+
+The `--keep-running` command line flag can be used to keep KDocker running and able
+to respond to DBus requests if DBus auto start is not supported on the installed system.
+
+### Cli Example
+
+Examples of interacting with KDocker via DBus using the `dbus-send` utility.
+
+```sh
+dbus-send --session --print-reply --type=method_call --dest=com.kdocker.KDocker /manage com.kdocker.KdockerInterface.dockSelectWindow
+dbus-send --session --print-reply --type=method_call --dest=com.kdocker.KDocker /manage com.kdocker.KdockerInterface.listWindows
+dbus-send --session --print-reply --type=method_call --dest=com.kdocker.KDocker /manage com.kdocker.KdockerInterface.hideWindow uint32:73400330
+dbus-send --session --print-reply --type=method_call --dest=com.kdocker.KDocker /manage com.kdocker.KdockerInterface.dockWindowTitle string:kcalc uint32:4 boolean:true dict:string:string:"iconify-focus-lost","true"
+```
+
 
 ## Website
 
@@ -152,7 +172,14 @@ In the future, most likely, the confinement level will be changed to 'strict'
 when building the KDocker snap. At that time the application launching
 functionality will no longer work if using snap.
 
+DBus auto start does not function because snap does not currently allow connecting
+to the session bus. Use the `--keep-running` option in order to keep KDocker accessible.
+
 ### Flatpak
 
 The KDocker flatpak package cannot launch other applications. There is no work
 around like is currently available with Snap.
+
+KDocker will not stay running with the `--keep-running` option after
+all windows are undocked. However, DBus auto start does work and will start
+KDocker as needed. Negating the need for this option.
