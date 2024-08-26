@@ -155,7 +155,7 @@ Building
 a new build. KDocker is a single instance application.
 
 
-## Standalone packages
+## Packages
 
 Snap and Flatpak both isolate applications and limit system access.
 Which has an impact on KDocker when packaged with these formats.
