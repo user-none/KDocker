@@ -75,7 +75,7 @@ private slots:
     void dockWindow(windowid_t window, const TrayItemOptions &settings);
     windowid_t userSelectWindow(bool checkNormality = true);
     void remove(TrayItem *trayItem);
-    void undock(TrayItem *trayItem);
+    void undockRestore(TrayItem *trayItem);
     void selectAndIconify();
     void about();
 

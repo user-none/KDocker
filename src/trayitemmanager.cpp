@@ -48,7 +48,7 @@ TrayItemManager::~TrayItemManager()
 {
     while (!m_trayItems.isEmpty()) {
         TrayItem *t = m_trayItems.takeFirst();
-        undock(t);
+        undockRestore(t);
         delete t;
     }
     delete m_scanner;
@@ -111,13 +111,9 @@ bool TrayItemManager::nativeEventFilter([[maybe_unused]] const QByteArray &event
 
     if (dockedWindow) {
         // Pass on the event to the tray item with the associated window.
-        QListIterator<TrayItem *> ti(m_trayItems);
-        static TrayItem *t;
-
-        while (ti.hasNext()) {
-            t = ti.next();
-            if (t->dockedWindow() == static_cast<windowid_t>(dockedWindow)) {
-                return t->xcbEventFilter(message);
+        for (auto &trayItem : std::as_const(m_trayItems)) {
+            if (trayItem->dockedWindow() == static_cast<windowid_t>(dockedWindow)) {
+                return trayItem->xcbEventFilter(message);
             }
         }
     }
@@ -203,9 +199,7 @@ WindowNameMap TrayItemManager::listWindows()
 {
     WindowNameMap items;
 
-    QListIterator<TrayItem *> ti(m_trayItems);
-    while (ti.hasNext()) {
-        TrayItem *trayItem = ti.next();
+    for (auto &trayItem : std::as_const(m_trayItems)) {
         items.insert(trayItem->dockedWindow(), trayItem->appName());
     }
 
@@ -214,9 +208,7 @@ WindowNameMap TrayItemManager::listWindows()
 
 bool TrayItemManager::closeWindow(uint windowId)
 {
-    QListIterator<TrayItem *> ti(m_trayItems);
-    while (ti.hasNext()) {
-        TrayItem *trayItem = ti.next();
+    for (auto &trayItem : std::as_const(m_trayItems)) {
         if (trayItem->dockedWindow() == static_cast<windowid_t>(windowId)) {
             trayItem->closeWindow();
             return true;
@@ -227,9 +219,7 @@ bool TrayItemManager::closeWindow(uint windowId)
 
 bool TrayItemManager::hideWindow(uint windowId)
 {
-    QListIterator<TrayItem *> ti(m_trayItems);
-    while (ti.hasNext()) {
-        TrayItem *trayItem = ti.next();
+    for (auto &trayItem : std::as_const(m_trayItems)) {
         if (trayItem->dockedWindow() == static_cast<windowid_t>(windowId)) {
             trayItem->iconifyWindow();
             return true;
@@ -240,9 +230,7 @@ bool TrayItemManager::hideWindow(uint windowId)
 
 bool TrayItemManager::showWindow(uint windowId)
 {
-    QListIterator<TrayItem *> ti(m_trayItems);
-    while (ti.hasNext()) {
-        TrayItem *trayItem = ti.next();
+    for (auto &trayItem : std::as_const(m_trayItems)) {
         if (trayItem->dockedWindow() == static_cast<windowid_t>(windowId)) {
             trayItem->restoreWindow();
             return true;
@@ -253,11 +241,15 @@ bool TrayItemManager::showWindow(uint windowId)
 
 bool TrayItemManager::undockWindow(uint windowId)
 {
-    QListIterator<TrayItem *> ti(m_trayItems);
-    while (ti.hasNext()) {
-        TrayItem *trayItem = ti.next();
+    for (size_t i = m_trayItems.count(); i-- > 0;) {
+        auto *trayItem = m_trayItems[i];
         if (trayItem->dockedWindow() == static_cast<windowid_t>(windowId)) {
-            undock(trayItem);
+            undockRestore(trayItem);
+
+            trayItem->deleteLater();
+            m_trayItems.remove(i);
+
+            checkCount();
             return true;
         }
     }
@@ -283,7 +275,7 @@ void TrayItemManager::dockWindow(windowid_t window, const TrayItemOptions &setti
 
     connect(ti, &TrayItem::selectAnother, this, &TrayItemManager::selectAndIconify);
     connect(ti, &TrayItem::dead, this, &TrayItemManager::remove);
-    connect(ti, &TrayItem::undock, this, &TrayItemManager::undock);
+    connect(ti, &TrayItem::undock, this, &TrayItemManager::remove);
     connect(ti, &TrayItem::undockAll, this, &TrayItemManager::undockAll);
     connect(ti, &TrayItem::about, this, &TrayItemManager::about);
 
@@ -340,19 +332,22 @@ void TrayItemManager::remove(TrayItem *trayItem)
     checkCount();
 }
 
-void TrayItemManager::undock(TrayItem *trayItem)
+void TrayItemManager::undockRestore(TrayItem *trayItem)
 {
     trayItem->restoreWindow();
     trayItem->setSkipTaskbar(false);
     trayItem->doSkipTaskbar();
-    remove(trayItem);
 }
 
 void TrayItemManager::undockAll()
 {
-    Q_FOREACH (TrayItem *ti, m_trayItems) {
-        undock(ti);
+    while (!m_trayItems.isEmpty()) {
+        TrayItem *t = m_trayItems.takeFirst();
+        undockRestore(t);
+        t->deleteLater();
     }
+
+    checkCount();
 }
 
 void TrayItemManager::about()
@@ -399,9 +394,8 @@ QList<windowid_t> TrayItemManager::dockedWindows()
 {
     QList<windowid_t> windows;
 
-    QListIterator<TrayItem *> ti(m_trayItems);
-    while (ti.hasNext()) {
-        windows.append(ti.next()->dockedWindow());
+    for (auto &trayItem : std::as_const(m_trayItems)) {
+        windows.append(trayItem->dockedWindow());
     }
 
     return windows;
@@ -409,5 +403,10 @@ QList<windowid_t> TrayItemManager::dockedWindows()
 
 bool TrayItemManager::isWindowDocked(windowid_t window)
 {
-    return dockedWindows().contains(window);
+    for (auto &trayItem : std::as_const(m_trayItems)) {
+        if (trayItem->dockedWindow() == window) {
+            return true;
+        }
+    }
+    return false;
 }

@@ -446,7 +446,7 @@ QString TrayItem::selectIcon(QString title)
     QStringList types;
     QString supportedTypes;
 
-    Q_FOREACH (QByteArray type, QImageReader::supportedImageFormats()) {
+    for (QByteArray type : QImageReader::supportedImageFormats()) {
         types << QString(type);
     }
     if (types.isEmpty()) {
@@ -574,6 +574,10 @@ bool TrayItem::event(QEvent *e)
 
 void TrayItem::doUndock()
 {
+    restoreWindow();
+    setSkipTaskbar(false);
+    doSkipTaskbar();
+
     emit undock(this);
 }
 
