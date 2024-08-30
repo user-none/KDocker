@@ -73,9 +73,6 @@ signals:
     void stopping();
 
 private:
-    void enqueue(const QString &command, const QStringList &arguments, const QRegularExpression &searchPattern,
-                 const TrayItemOptions &config, quint32 maxTime, bool checkNormality);
-
     TrayItemManager *m_manager;
     QTimer m_timer;
     QList<ProcessId> m_processesPid;
