@@ -20,37 +20,20 @@
 #ifndef _SCANNER_H
 #define _SCANNER_H
 
-#include "command.h"
+#include "scannersearch.h"
 #include "trayitemoptions.h"
 
-#include <QElapsedTimer>
 #include <QList>
 #include <QObject>
 #include <QRegularExpression>
 #include <QString>
 #include <QTimer>
 
+// Forward declared because trayitemmanager.h incldues scanner.h
 class TrayItemManager;
 
-class ProcessId
-{
-public:
-    ProcessId(const QString &command, pid_t pid, const TrayItemOptions &config, uint64_t timeout, bool checkNormality,
-              const QRegularExpression &searchPattern);
-    ProcessId(const ProcessId &obj);
-    ProcessId &operator=(const ProcessId &obj);
-
-    QString command;
-    pid_t pid;
-    TrayItemOptions config;
-    QElapsedTimer etimer;
-    uint64_t timeout;
-    bool checkNormality;
-    QRegularExpression searchPattern;
-};
-
 // Launches commands and looks for the window ids they create.
-
+// Looks for windows based on a search pattern.
 class Scanner : public QObject
 {
     Q_OBJECT
@@ -59,7 +42,7 @@ public:
     Scanner(TrayItemManager *manager);
     void enqueueSearch(const QRegularExpression &searchPattern, quint32 maxTime, bool checkNormality,
                        const TrayItemOptions &config);
-    void enqueueLaunch(const QString &command, const QStringList &arguments, const QRegularExpression &searchPattern,
+    void enqueueLaunch(const QString &launchCommand, const QStringList &arguments, const QRegularExpression &searchPattern,
                        quint32 maxTime, bool checkNormality, const TrayItemOptions &config);
     bool isRunning();
 
@@ -75,8 +58,8 @@ signals:
 private:
     TrayItemManager *m_manager;
     QTimer m_timer;
-    QList<ProcessId> m_processesPid;
-    QList<ProcessId> m_processesTitle;
+    QList<ScannerSearchPid> m_searchPid;
+    QList<ScannerSearchTitle> m_searchTitle;
 };
 
 #endif // _SCANNER_H

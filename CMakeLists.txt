@@ -63,6 +63,7 @@ set(SOURCES
     src/grabinfo.cpp
     src/main.cpp
     src/scanner.cpp
+    src/scannersearch.cpp
     src/trayitem.cpp
     src/trayitemoptions.cpp
     src/trayitemmanager.cpp
