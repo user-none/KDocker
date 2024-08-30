@@ -31,8 +31,7 @@ void GrabInfo::exec()
     m_isGrabbing = true; // Enable XCB_BUTTON_PRESS code in event filter
                          //
     m_qtimer.setSingleShot(true);
-    // m_qtimer-> start(20000);   // 20 second timeout
-    m_qtimer.start(5000); // 5 second timeout
+    m_qtimer.start(6000); // 6 second timeout
 
     m_qloop.exec(); // block until button pressed or timeout
 }
