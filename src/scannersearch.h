@@ -32,11 +32,16 @@ class ScannerSearch
 public:
     ScannerSearch(const TrayItemOptions &config, uint64_t timeout, bool checkNormality);
 
-    TrayItemOptions config;
-    bool checkNormality;
+    const TrayItemOptions &config();
+    bool checkNormality();
+    bool hasExpired();
 
-    QElapsedTimer etimer;
-    uint64_t timeout;
+private:
+    TrayItemOptions m_config;
+    bool m_checkNormality;
+
+    QElapsedTimer m_etimer;
+    uint64_t m_timeout;
 };
 
 class ScannerSearchPid : public ScannerSearch
@@ -45,8 +50,12 @@ public:
     ScannerSearchPid(const QString &launchCommand, pid_t pid, const TrayItemOptions &config, uint64_t timeout,
                      bool checkNormality);
 
-    QString launchCommand;
-    pid_t pid;
+    const QString launchCommand();
+    pid_t pid();
+
+private:
+    QString m_launchCommand;
+    pid_t m_pid;
 };
 
 class ScannerSearchTitle : public ScannerSearch
@@ -55,7 +64,10 @@ public:
     ScannerSearchTitle(const QRegularExpression &searchPattern, const TrayItemOptions &config, uint64_t timeout,
                        bool checkNormality);
 
-    QRegularExpression searchPattern;
+    const QRegularExpression &searchPattern();
+
+private:
+    QRegularExpression m_searchPattern;
 };
 
 #endif // _SCANNERSEARCH_H

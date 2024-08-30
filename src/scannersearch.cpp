@@ -20,17 +20,48 @@
 #include "scannersearch.h"
 
 ScannerSearch::ScannerSearch(const TrayItemOptions &config, uint64_t timeout, bool checkNormality)
-    : config(config), timeout(timeout), checkNormality(checkNormality)
+    : m_config(config), m_checkNormality(checkNormality)
 {
-    etimer.start();
+    m_timeout = timeout * 1000;
+    m_etimer.start();
+}
+
+const TrayItemOptions &ScannerSearch::config()
+{
+    return m_config;
+}
+
+bool ScannerSearch::checkNormality()
+{
+    return m_checkNormality;
+}
+
+bool ScannerSearch::hasExpired()
+{
+    return m_etimer.hasExpired(m_timeout);
 }
 
 ScannerSearchPid::ScannerSearchPid(const QString &launchCommand, pid_t pid, const TrayItemOptions &config,
                                    uint64_t timeout, bool checkNormality)
-    : ScannerSearch(config, timeout, checkNormality), launchCommand(launchCommand), pid(pid)
+    : ScannerSearch(config, timeout, checkNormality), m_launchCommand(launchCommand), m_pid(pid)
 {}
+
+const QString ScannerSearchPid::launchCommand()
+{
+    return m_launchCommand;
+}
+
+pid_t ScannerSearchPid::pid()
+{
+    return m_pid;
+}
 
 ScannerSearchTitle::ScannerSearchTitle(const QRegularExpression &searchPattern, const TrayItemOptions &config,
                                        uint64_t timeout, bool checkNormality)
-    : ScannerSearch(config, timeout, checkNormality), searchPattern(searchPattern)
+    : ScannerSearch(config, timeout, checkNormality), m_searchPattern(searchPattern)
 {}
+
+const QRegularExpression &ScannerSearchTitle::searchPattern()
+{
+    return m_searchPattern;
+}

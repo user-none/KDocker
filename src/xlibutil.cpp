@@ -232,6 +232,8 @@ windowid_t XLibUtil::pidToWid(bool checkNormality, pid_t epid)
     return pidToWidEx(getDisplay(), getDefaultRootWindow(), checkNormality, epid);
 }
 
+#include <stdio.h>
+#include <strings.h>
 // Checks if window window has matching name
 static bool analyzeWindow(Display *display, windowid_t window, const QRegularExpression &ename)
 {
@@ -249,10 +251,11 @@ static bool analyzeWindow(Display *display, windowid_t window, const QRegularExp
     // lets try the program name
     bool this_is_our_man = false;
     XClassHint ch;
+    memset(&ch, 0, sizeof(ch));
     if (XGetClassHint(display, window, &ch)) {
-        if (QString(ch.res_name).contains(ename)) {
+        if (ch.res_name && QString(ch.res_name).contains(ename)) {
             this_is_our_man = true;
-        } else if (QString(ch.res_class).contains(ename)) {
+        } else if (ch.res_class && QString(ch.res_class).contains(ename)) {
             this_is_our_man = true;
         } else {
             // sheer desperation
@@ -756,6 +759,7 @@ QPixmap XLibUtil::getWindowIcon(windowid_t window)
 QString XLibUtil::getAppName(windowid_t window)
 {
     XClassHint ch;
+    memset(&ch, 0, sizeof(ch));
     QString name;
 
     if (XGetClassHint(getDisplay(), window, &ch)) {

@@ -44,7 +44,7 @@ void Scanner::enqueueSearch(const QRegularExpression &searchPattern, quint32 max
     if (maxTime == 0)
         maxTime = 1;
 
-    m_searchTitle.append(ScannerSearchTitle(searchPattern, config, maxTime * 1000, checkNormality));
+    m_searchTitle.append(ScannerSearchTitle(searchPattern, config, maxTime, checkNormality));
     m_timer.start();
 }
 
@@ -68,10 +68,10 @@ void Scanner::enqueueLaunch(const QString &launchCommand, const QStringList &arg
     }
 
     if (!searchPattern.pattern().isEmpty()) {
-        m_searchTitle.append(ScannerSearchTitle(searchPattern, config, maxTime * 1000, checkNormality));
+        m_searchTitle.append(ScannerSearchTitle(searchPattern, config, maxTime, checkNormality));
     } else {
         m_searchPid.append(
-            ScannerSearchPid(launchCommand, static_cast<pid_t>(pid), config, maxTime * 1000, checkNormality));
+            ScannerSearchPid(launchCommand, static_cast<pid_t>(pid), config, maxTime, checkNormality));
     }
     m_timer.start();
 }
@@ -86,13 +86,14 @@ void Scanner::checkPid()
     // Counting backwards because we can remove items from the list
     for (size_t i = m_searchPid.count(); i-- > 0;) {
         ScannerSearchPid &search = m_searchPid[i];
-        windowid_t window = XLibUtil::pidToWid(search.checkNormality, search.pid);
+
+        windowid_t window = XLibUtil::pidToWid(search.checkNormality(), search.pid());
         if (window != 0) {
-            emit windowFound(window, search.config);
+            emit windowFound(window, search.config());
             m_searchPid.remove(i);
-        } else if (search.etimer.hasExpired(search.timeout)) {
+        } else if (search.hasExpired()) {
             QMessageBox box;
-            box.setText(tr("Could not find a window for '%1'").arg(search.launchCommand));
+            box.setText(tr("Could not find a window for '%1'").arg(search.launchCommand()));
             box.setWindowIcon(QPixmap(":/logo/kdocker.png"));
             box.setIcon(QMessageBox::Information);
             box.setStandardButtons(QMessageBox::Ok);
@@ -108,14 +109,16 @@ void Scanner::checkTitle()
     // Counting backwards because we can remove items from the list
     for (size_t i = m_searchTitle.count(); i-- > 0;) {
         ScannerSearchTitle &search = m_searchTitle[i];
+        const QRegularExpression searchPattern = search.searchPattern();
+
         windowid_t window =
-            XLibUtil::findWindow(search.checkNormality, search.searchPattern, m_manager->dockedWindows());
+            XLibUtil::findWindow(search.checkNormality(), searchPattern, m_manager->dockedWindows());
         if (window != 0) {
-            emit windowFound(window, search.config);
+            emit windowFound(window, search.config());
             m_searchTitle.remove(i);
-        } else if (search.etimer.hasExpired(search.timeout)) {
+        } else if (search.hasExpired()) {
             QMessageBox box;
-            box.setText(tr("Could not find a window matching '%1'").arg(search.searchPattern.pattern()));
+            box.setText(tr("Could not find a window matching '%1'").arg(searchPattern.pattern()));
             box.setWindowIcon(QPixmap(":/logo/kdocker.png"));
             box.setIcon(QMessageBox::Information);
             box.setStandardButtons(QMessageBox::Ok);
