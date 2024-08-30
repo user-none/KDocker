@@ -86,7 +86,6 @@ private:
     bool isWindowDocked(windowid_t window);
 
     Scanner m_scanner;
-    TrayItemOptions m_initArgs;
     QList<TrayItem *> m_trayItems;
     GrabInfo m_grabInfo;
     bool m_keepRunning;

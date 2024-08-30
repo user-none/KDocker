@@ -369,7 +369,7 @@ void TrayItemManager::selectAndIconify()
 {
     windowid_t window = userSelectWindow(true);
     if (window)
-        dockWindow(window, m_initArgs);
+        dockWindow(window, TrayItemOptions());
 }
 
 void TrayItemManager::quit()
