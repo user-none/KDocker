@@ -25,12 +25,12 @@ ScannerSearch::ScannerSearch(const TrayItemOptions &config, uint64_t timeout, bo
     etimer.start();
 }
 
-ScannerSearchPid::ScannerSearchPid(const QString &launchCommand, pid_t pid, const TrayItemOptions &config, uint64_t timeout, bool checkNormality)
+ScannerSearchPid::ScannerSearchPid(const QString &launchCommand, pid_t pid, const TrayItemOptions &config,
+                                   uint64_t timeout, bool checkNormality)
     : ScannerSearch(config, timeout, checkNormality), launchCommand(launchCommand), pid(pid)
-{
-}
+{}
 
-ScannerSearchTitle::ScannerSearchTitle(const QRegularExpression &searchPattern, const TrayItemOptions &config, uint64_t timeout, bool checkNormality)
+ScannerSearchTitle::ScannerSearchTitle(const QRegularExpression &searchPattern, const TrayItemOptions &config,
+                                       uint64_t timeout, bool checkNormality)
     : ScannerSearch(config, timeout, checkNormality), searchPattern(searchPattern)
-{
-}
+{}

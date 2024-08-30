@@ -71,7 +71,8 @@ void Scanner::enqueueLaunch(const QString &launchCommand, const QStringList &arg
     if (!searchPattern.pattern().isEmpty()) {
         m_searchTitle.append(ScannerSearchTitle(searchPattern, config, maxTime * 1000, checkNormality));
     } else {
-        m_searchPid.append(ScannerSearchPid(launchCommand, static_cast<pid_t>(pid), config, maxTime * 1000, checkNormality));
+        m_searchPid.append(
+            ScannerSearchPid(launchCommand, static_cast<pid_t>(pid), config, maxTime * 1000, checkNormality));
     }
     m_timer.start();
 }

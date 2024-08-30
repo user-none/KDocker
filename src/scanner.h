@@ -42,8 +42,9 @@ public:
     Scanner(TrayItemManager *manager);
     void enqueueSearch(const QRegularExpression &searchPattern, quint32 maxTime, bool checkNormality,
                        const TrayItemOptions &config);
-    void enqueueLaunch(const QString &launchCommand, const QStringList &arguments, const QRegularExpression &searchPattern,
-                       quint32 maxTime, bool checkNormality, const TrayItemOptions &config);
+    void enqueueLaunch(const QString &launchCommand, const QStringList &arguments,
+                       const QRegularExpression &searchPattern, quint32 maxTime, bool checkNormality,
+                       const TrayItemOptions &config);
     bool isRunning();
 
 private slots:

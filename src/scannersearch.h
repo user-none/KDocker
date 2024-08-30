@@ -23,11 +23,11 @@
 #include "trayitemoptions.h"
 #include "xlibtypes.h"
 
+#include <QElapsedTimer>
 #include <QRegularExpression>
 #include <QString>
-#include <QElapsedTimer>
 
-class ScannerSearch 
+class ScannerSearch
 {
 public:
     ScannerSearch(const TrayItemOptions &config, uint64_t timeout, bool checkNormality);
@@ -42,7 +42,8 @@ public:
 class ScannerSearchPid : public ScannerSearch
 {
 public:
-    ScannerSearchPid(const QString &launchCommand, pid_t pid, const TrayItemOptions &config, uint64_t timeout, bool checkNormality);
+    ScannerSearchPid(const QString &launchCommand, pid_t pid, const TrayItemOptions &config, uint64_t timeout,
+                     bool checkNormality);
 
     QString launchCommand;
     pid_t pid;
@@ -51,7 +52,8 @@ public:
 class ScannerSearchTitle : public ScannerSearch
 {
 public:
-    ScannerSearchTitle(const QRegularExpression &searchPattern, const TrayItemOptions &config, uint64_t timeout, bool checkNormality);
+    ScannerSearchTitle(const QRegularExpression &searchPattern, const TrayItemOptions &config, uint64_t timeout,
+                       bool checkNormality);
 
     QRegularExpression searchPattern;
 };
