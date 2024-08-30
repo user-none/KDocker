@@ -152,7 +152,7 @@ bool TrayItemManager::dockWindowId(uint windowId, const TrayItemOptions &options
     return true;
 }
 
-bool TrayItemManager::dockPid(pid_t pid, bool checkNormality, const TrayItemOptions &options)
+bool TrayItemManager::dockPid(int pid, bool checkNormality, const TrayItemOptions &options)
 {
     windowid_t window = XLibUtil::pidToWid(checkNormality, pid, dockedWindows());
     if (!XLibUtil::isValidWindowId(window)) {

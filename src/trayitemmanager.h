@@ -57,7 +57,7 @@ public slots:
                        uint timeout = 4, bool checkNormality = true,
                        const TrayItemOptions &options = TrayItemOptions());
     bool dockWindowId(uint windowId, const TrayItemOptions &options = TrayItemOptions());
-    bool dockPid(pid_t pid, bool checkNormality = true, const TrayItemOptions &options = TrayItemOptions());
+    bool dockPid(int pid, bool checkNormality = true, const TrayItemOptions &options = TrayItemOptions());
     void dockSelectWindow(bool checkNormality = true, const TrayItemOptions &options = TrayItemOptions());
     void dockFocused(const TrayItemOptions &options = TrayItemOptions());
 
