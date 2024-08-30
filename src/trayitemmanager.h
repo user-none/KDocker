@@ -24,6 +24,7 @@
 #include "adaptor.h"
 #include "command.h"
 #include "grabinfo.h"
+#include "scanner.h"
 #include "trayitem.h"
 #include "xlibtypes.h"
 
@@ -32,8 +33,6 @@
 #include <QObject>
 #include <QStringList>
 #include <QtCore/QAbstractNativeEventFilter>
-
-class Scanner;
 
 class TrayItemManager : public QObject, public QAbstractNativeEventFilter
 {
@@ -88,7 +87,7 @@ private:
     QList<windowid_t> dockedWindows();
     bool isWindowDocked(windowid_t window);
 
-    Scanner *m_scanner;
+    Scanner m_scanner;
     TrayItemOptions m_initArgs;
     QList<TrayItem *> m_trayItems;
     GrabInfo m_grabInfo;

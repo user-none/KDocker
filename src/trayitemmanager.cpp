@@ -20,7 +20,6 @@
 
 #include "trayitemmanager.h"
 #include "constants.h"
-#include "scanner.h"
 #include "trayitemoptions.h"
 #include "xlibutil.h"
 
@@ -33,12 +32,11 @@
 
 #define ESC_key 9
 
-TrayItemManager::TrayItemManager()
+TrayItemManager::TrayItemManager() : m_scanner(this)
 {
     m_keepRunning = false;
-    m_scanner = new Scanner(this);
-    connect(m_scanner, &Scanner::windowFound, this, &TrayItemManager::dockWindow);
-    connect(m_scanner, &Scanner::stopping, this, &TrayItemManager::checkCount);
+    connect(&m_scanner, &Scanner::windowFound, this, &TrayItemManager::dockWindow);
+    connect(&m_scanner, &Scanner::stopping, this, &TrayItemManager::checkCount);
     connect(this, &TrayItemManager::quitMouseGrab, &m_grabInfo, &GrabInfo::stop);
 
     qApp->installNativeEventFilter(this);
@@ -51,7 +49,6 @@ TrayItemManager::~TrayItemManager()
         undockRestore(t);
         delete t;
     }
-    delete m_scanner;
     qApp->removeNativeEventFilter(this);
 }
 
@@ -124,14 +121,14 @@ bool TrayItemManager::nativeEventFilter([[maybe_unused]] const QByteArray &event
 void TrayItemManager::dockWindowTitle(const QString &searchPattern, uint timeout, bool checkNormality,
                                       const TrayItemOptions &options)
 {
-    m_scanner->enqueueSearch(QRegularExpression(searchPattern), timeout, checkNormality, options);
+    m_scanner.enqueueSearch(QRegularExpression(searchPattern), timeout, checkNormality, options);
     checkCount();
 }
 
 void TrayItemManager::dockLaunchApp(const QString &app, const QStringList &appArguments, const QString &searchPattern,
                                     uint timeout, bool checkNormality, const TrayItemOptions &options)
 {
-    m_scanner->enqueueLaunch(app, appArguments, QRegularExpression(searchPattern), timeout, checkNormality, options);
+    m_scanner.enqueueLaunch(app, appArguments, QRegularExpression(searchPattern), timeout, checkNormality, options);
     checkCount();
 }
 
@@ -386,7 +383,7 @@ void TrayItemManager::checkCount()
     if (m_keepRunning)
         return;
 
-    if (m_trayItems.isEmpty() && !m_scanner->isRunning())
+    if (m_trayItems.isEmpty() && !m_scanner.isRunning())
         qApp->quit();
 }
 
