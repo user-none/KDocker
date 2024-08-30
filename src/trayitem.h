@@ -50,33 +50,34 @@ public:
     void iconifyWindow();
 
     void doSkipTaskbar();
-    void doSkipPager();
-    void doSticky();
 
     QString appName();
 
 public slots:
     void closeWindow();
+    void setSkipTaskbar(bool value);
+
+private slots:
     void setCustomIcon(QString path);
     void setAttentionIcon(QString path);
     void selectCustomIcon(bool value);
     void selectAttentionIcon(bool value);
-    void setSkipTaskbar(bool value);
     void setSkipPager(bool value);
     void setSticky(bool value);
     void setIconifyMinimized(bool value);
     void setIconifyObscured(bool value);
     void setIconifyFocusLost(bool value);
     void setLockToDesktop(bool value);
-    void setBalloonTimeout(int value);
     void setBalloonTimeout(bool value);
 
-private slots:
     void toggleWindow();
     void trayActivated(QSystemTrayIcon::ActivationReason reason = QSystemTrayIcon::Trigger);
-    void doUndock();
     void saveSettingsGlobal();
     void saveSettingsApp();
+
+    void doUndock();
+    void doSkipPager();
+    void doSticky();
 
 signals:
     void selectAnother();
@@ -131,22 +132,9 @@ private:
     long m_desktop;
     QString m_dockedAppName;
 
-    QMenu *m_contextMenu;
-    QMenu *m_optionsMenu;
-    QAction *m_actionSetIcon;
-    QAction *m_actionSetAttentionIcon;
-    QAction *m_actionSkipTaskbar;
-    QAction *m_actionSkipPager;
-    QAction *m_actionSticky;
-    QAction *m_actionIconifyMinimized;
-    QAction *m_actionIconifyObscured;
-    QAction *m_actionIconifyFocusLost;
-    QAction *m_actionLockToDesktop;
-    QAction *m_actionBalloonTitleChanges;
+    QMenu m_contextMenu;
+    // Owned and managed by m_contextMenu
     QAction *m_actionToggle;
-    QMenu *m_defaultsMenu;
-    QAction *m_actionSaveSettingsApp;
-    QAction *m_actionSaveSettingsGlobal;
 };
 
 #endif // _TRAYITEM_H

@@ -63,14 +63,10 @@ TrayItem::TrayItem(windowid_t window, const TrayItemOptions &args)
     if (!m_settings.getAttentionIconPath().isEmpty())
         setAttentionIcon(m_settings.getAttentionIconPath());
 
-    setBalloonTimeout(m_settings.getNotifyTime());
-    setSticky(m_settings.getSticky());
-    setSkipPager(m_settings.getSkipPager());
-    setSkipTaskbar(m_settings.getSkipTaskbar());
-    setIconifyMinimized(m_settings.getIconifyMinimized());
-    setIconifyObscured(m_settings.getIconifyObscured());
-    setIconifyFocusLost(m_settings.getIconifyFocusLost());
-    setLockToDesktop(m_settings.getLockToDesktop());
+    doSkipTaskbar();
+    doSkipPager();
+    doSticky();
+    focusLostEvent();
 
     connect(this, &TrayItem::activated, this, &TrayItem::trayActivated);
 }
@@ -79,10 +75,6 @@ TrayItem::~TrayItem()
 {
     // No further interest in events from undocked window.
     XLibUtil::unSubscribe(m_window);
-    // Only the main menu needs to be deleted. The rest of the menus and actions
-    // are children of this menu and Qt will delete all children.
-    delete m_contextMenu;
-
     XLibUtil::deleteSizeHints(m_sizeHint);
 }
 
@@ -475,64 +467,48 @@ void TrayItem::selectAttentionIcon([[maybe_unused]] bool value)
 void TrayItem::setSkipTaskbar(bool value)
 {
     m_settings.setSkipTaskbar(value);
-    m_actionSkipTaskbar->setChecked(value);
     doSkipTaskbar();
 }
 
 void TrayItem::setSkipPager(bool value)
 {
     m_settings.setSkipPager(value);
-    m_actionSkipPager->setChecked(value);
     doSkipPager();
 }
 
 void TrayItem::setSticky(bool value)
 {
     m_settings.setSticky(value);
-    m_actionSticky->setChecked(value);
     doSticky();
 }
 
 void TrayItem::setIconifyMinimized(bool value)
 {
     m_settings.setIconifyMinimized(value);
-    m_actionIconifyMinimized->setChecked(value);
 }
 
 void TrayItem::setIconifyObscured(bool value)
 {
     m_settings.setIconifyObscured(value);
-    m_actionIconifyObscured->setChecked(value);
 }
 
 void TrayItem::setIconifyFocusLost(bool value)
 {
     m_settings.setIconifyFocusLost(value);
-    m_actionIconifyFocusLost->setChecked(value);
     focusLostEvent();
 }
 
 void TrayItem::setLockToDesktop(bool value)
 {
     m_settings.setLockToDesktop(value);
-    m_actionLockToDesktop->setChecked(value);
-}
-
-void TrayItem::setBalloonTimeout(int value)
-{
-    if (value < 0)
-        value = 0;
-
-    m_settings.setNotifyTime(value);
-    m_actionBalloonTitleChanges->setChecked(value ? true : false);
 }
 
 void TrayItem::setBalloonTimeout(bool value)
 {
     if (!value) {
-        setBalloonTimeout(-1);
+        m_settings.setNotifyTime(0);
     } else {
-        setBalloonTimeout(nonZeroBalloonTimeout());
+        m_settings.setNotifyTime(nonZeroBalloonTimeout());
     }
 }
 
@@ -664,100 +640,67 @@ void TrayItem::updateToggleAction()
 
 void TrayItem::createContextMenu()
 {
-    m_contextMenu = new QMenu();
-
-    m_contextMenu->addAction(QIcon(":/menu/about.png"), tr("About %1").arg(qApp->applicationName()), this,
-                             &TrayItem::about);
-    m_contextMenu->addSeparator();
+    m_contextMenu.addAction(QIcon(":/menu/about.png"), tr("About %1").arg(qApp->applicationName()), this, &TrayItem::about);
+    m_contextMenu.addSeparator();
 
     // Options menu
-    m_optionsMenu = new QMenu(tr("Options"), m_contextMenu);
-    m_optionsMenu->setIcon(QIcon(":/menu/options.png"));
+    QMenu *optionsMenu = m_contextMenu.addMenu(tr("Options"));
+    optionsMenu->setIcon(QIcon(":/menu/options.png"));
 
-    m_actionSetIcon = new QAction(QIcon(":/menu/seticon.png"), tr("Set icon..."), m_optionsMenu);
-    connect(m_actionSetIcon, &QAction::triggered, this, &TrayItem::selectCustomIcon);
-    m_optionsMenu->addAction(m_actionSetIcon);
+    QAction *action = optionsMenu->addAction(QIcon(":/menu/seticon.png"), tr("Set icon..."), this, &TrayItem::selectCustomIcon);
+    action = optionsMenu->addAction(QIcon(":/menu/setaicon.png"), tr("Set attention icon..."), this, &TrayItem::selectAttentionIcon);
+    optionsMenu->addSeparator();
 
-    m_actionSetAttentionIcon = new QAction(QIcon(":/menu/setaicon.png"), tr("Set attention icon..."), m_optionsMenu);
-    connect(m_actionSetAttentionIcon, &QAction::triggered, this, &TrayItem::selectAttentionIcon);
-    m_optionsMenu->addAction(m_actionSetAttentionIcon);
+    action = optionsMenu->addAction(tr("Skip taskbar"), this, &TrayItem::setSkipTaskbar);
+    action->setCheckable(true);
+    action->setChecked(m_settings.getSkipTaskbar());
 
-    m_actionSkipTaskbar = new QAction(tr("Skip taskbar"), m_optionsMenu);
-    m_actionSkipTaskbar->setCheckable(true);
-    m_actionSkipTaskbar->setChecked(m_settings.getSkipTaskbar());
-    connect(m_actionSkipTaskbar, &QAction::triggered, this, &TrayItem::setSkipTaskbar);
-    m_optionsMenu->addAction(m_actionSkipTaskbar);
+    action = optionsMenu->addAction(tr("Skip pager"), this, &TrayItem::setSkipPager);
+    action->setCheckable(true);
+    action->setChecked(m_settings.getSkipPager());
 
-    m_actionSkipPager = new QAction(tr("Skip pager"), m_optionsMenu);
-    m_actionSkipPager->setCheckable(true);
-    m_actionSkipPager->setChecked(m_settings.getSkipPager());
-    connect(m_actionSkipPager, &QAction::triggered, this, &TrayItem::setSkipPager);
-    m_optionsMenu->addAction(m_actionSkipPager);
+    action = optionsMenu->addAction(tr("Sticky"), this, &TrayItem::setSticky);
+    action->setCheckable(true);
+    action->setChecked(m_settings.getSticky());
 
-    m_actionSticky = new QAction(tr("Sticky"), m_optionsMenu);
-    m_actionSticky->setCheckable(true);
-    m_actionSticky->setChecked(m_settings.getSticky());
-    connect(m_actionSticky, &QAction::triggered, this, &TrayItem::setSticky);
-    m_optionsMenu->addAction(m_actionSticky);
+    action = optionsMenu->addAction(tr("Iconify when minimized"), this, &TrayItem::setIconifyMinimized);
+    action->setCheckable(true);
+    action->setChecked(m_settings.getIconifyMinimized());
 
-    m_actionIconifyMinimized = new QAction(tr("Iconify when minimized"), m_optionsMenu);
-    m_actionIconifyMinimized->setCheckable(true);
-    m_actionIconifyMinimized->setChecked(m_settings.getIconifyMinimized());
-    connect(m_actionIconifyMinimized, &QAction::triggered, this, &TrayItem::setIconifyMinimized);
-    m_optionsMenu->addAction(m_actionIconifyMinimized);
+    action = optionsMenu->addAction(tr("Iconify when obscured"), this, &TrayItem::setIconifyObscured);
+    action->setCheckable(true);
+    action->setChecked(m_settings.getIconifyObscured());
 
-    m_actionIconifyObscured = new QAction(tr("Iconify when obscured"), m_optionsMenu);
-    m_actionIconifyObscured->setCheckable(true);
-    m_actionIconifyObscured->setChecked(m_settings.getIconifyObscured());
-    connect(m_actionIconifyObscured, &QAction::triggered, this, &TrayItem::setIconifyObscured);
-    m_optionsMenu->addAction(m_actionIconifyObscured);
+    action = optionsMenu->addAction(tr("Iconify when focus lost"), this, &TrayItem::setIconifyFocusLost);
+    action->setCheckable(true);
+    action->setChecked(m_settings.getIconifyFocusLost());
 
-    m_actionIconifyFocusLost = new QAction(tr("Iconify when focus lost"), m_optionsMenu);
-    m_actionIconifyFocusLost->setCheckable(true);
-    m_actionIconifyFocusLost->setChecked(m_settings.getIconifyFocusLost());
-    connect(m_actionIconifyFocusLost, &QAction::toggled, this, &TrayItem::setIconifyFocusLost);
-    m_optionsMenu->addAction(m_actionIconifyFocusLost);
+    action = optionsMenu->addAction(tr("Lock to desktop"), this, &TrayItem::setLockToDesktop);
+    action->setCheckable(true);
+    action->setChecked(m_settings.getLockToDesktop());
 
-    m_actionLockToDesktop = new QAction(tr("Lock to desktop"), m_optionsMenu);
-    m_actionLockToDesktop->setCheckable(true);
-    m_actionLockToDesktop->setChecked(m_settings.getLockToDesktop());
-    connect(m_actionLockToDesktop, &QAction::toggled, this, &TrayItem::setLockToDesktop);
-    m_optionsMenu->addAction(m_actionLockToDesktop);
-
-    m_actionBalloonTitleChanges = new QAction(tr("Balloon title changes"), m_optionsMenu);
-    m_actionBalloonTitleChanges->setCheckable(true);
-    m_actionBalloonTitleChanges->setChecked(m_settings.getNotifyTime() ? true : false);
-    connect(m_actionBalloonTitleChanges, &QAction::triggered, this, qOverload<bool>(&TrayItem::setBalloonTimeout));
-    m_optionsMenu->addAction(m_actionBalloonTitleChanges);
-
-    m_contextMenu->addMenu(m_optionsMenu);
+    action = optionsMenu->addAction(tr("Balloon title changes"), this, &TrayItem::setBalloonTimeout);
+    action->setCheckable(true);
+    action->setChecked(m_settings.getNotifyTime() ? true : false);
 
     // Save settings menu
-    m_optionsMenu->addSeparator();
-    m_defaultsMenu = new QMenu(tr("Save settings"), m_optionsMenu);
-    m_defaultsMenu->setIcon(QIcon(":/menu/savesettings.png"));
+    optionsMenu->addSeparator();
+    QMenu *menu = optionsMenu->addMenu(QIcon(":/menu/savesettings.png"), tr("Save settings"));
+    menu->addAction(tr("%1 only").arg(m_dockedAppName), this, &TrayItem::saveSettingsApp);
+    menu->addAction(tr("Global (all new)"), this, &TrayItem::saveSettingsGlobal);
 
-    m_actionSaveSettingsApp = new QAction(tr("%1 only").arg(m_dockedAppName), m_defaultsMenu);
-    connect(m_actionSaveSettingsApp, &QAction::triggered, this, &TrayItem::saveSettingsApp);
-    m_defaultsMenu->addAction(m_actionSaveSettingsApp);
-
-    m_actionSaveSettingsGlobal = new QAction(tr("Global (all new)"), m_defaultsMenu);
-    connect(m_actionSaveSettingsGlobal, &QAction::triggered, this, &TrayItem::saveSettingsGlobal);
-    m_defaultsMenu->addAction(m_actionSaveSettingsGlobal);
-
-    m_optionsMenu->addMenu(m_defaultsMenu);
     // ---
 
-    m_contextMenu->addAction(QIcon(":/menu/another.png"), tr("Dock Another"), this, &TrayItem::selectAnother);
-    m_contextMenu->addAction(QIcon(":/menu/undockall.png"), tr("Undock All"), this, &TrayItem::undockAll);
-    m_contextMenu->addSeparator();
-    m_actionToggle = new QAction(tr("Toggle"), m_contextMenu);
-    connect(m_actionToggle, &QAction::triggered, this, &TrayItem::toggleWindow);
-    m_contextMenu->addAction(m_actionToggle);
-    m_contextMenu->addAction(QIcon(":/menu/undock.png"), tr("Undock"), this, &TrayItem::doUndock);
-    m_contextMenu->addAction(QIcon(":/menu/close.png"), tr("Close"), this, &TrayItem::closeWindow);
+    m_contextMenu.addAction(QIcon(":/menu/another.png"), tr("Dock Another"), this, &TrayItem::selectAnother);
+    m_contextMenu.addAction(QIcon(":/menu/undockall.png"), tr("Undock All"), this, &TrayItem::undockAll);
 
-    setContextMenu(m_contextMenu);
+    m_contextMenu.addSeparator();
+
+    m_actionToggle = m_contextMenu.addAction(tr("Toggle"), this, &TrayItem::toggleWindow);
+    m_contextMenu.addAction(QIcon(":/menu/undock.png"), tr("Undock"), this, &TrayItem::doUndock);
+    m_contextMenu.addAction(QIcon(":/menu/close.png"), tr("Close"), this, &TrayItem::closeWindow);
+
+    setContextMenu(&m_contextMenu);
 }
 
 bool TrayItem::isBadWindow()
