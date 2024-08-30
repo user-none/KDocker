@@ -19,7 +19,7 @@
 
 #include "grabinfo.h"
 
-GrabInfo::GrabInfo()
+GrabInfo::GrabInfo() : m_window(0), m_button(0), m_isGrabbing(false)
 {
     connect(&m_qtimer, &QTimer::timeout, &m_qloop, &QEventLoop::quit);
 }
