@@ -232,8 +232,6 @@ windowid_t XLibUtil::pidToWid(bool checkNormality, pid_t epid)
     return pidToWidEx(getDisplay(), getDefaultRootWindow(), checkNormality, epid);
 }
 
-#include <stdio.h>
-#include <strings.h>
 // Checks if window window has matching name
 static bool analyzeWindow(Display *display, windowid_t window, const QRegularExpression &ename)
 {
@@ -253,6 +251,13 @@ static bool analyzeWindow(Display *display, windowid_t window, const QRegularExp
     XClassHint ch;
     memset(&ch, 0, sizeof(ch));
     if (XGetClassHint(display, window, &ch)) {
+        // Checking res_name first because it is the window title and for
+        // something like a text editor could show the document name or
+        // something like "unsaved". This allows for the user to more
+        // robustly match if there are multiple windows they're trying
+        // to differentiate multiple windows of the same application.
+        //
+        // Fall back to res_class which is the application name.
         if (ch.res_name && QString(ch.res_name).contains(ename)) {
             this_is_our_man = true;
         } else if (ch.res_class && QString(ch.res_class).contains(ename)) {
@@ -763,6 +768,10 @@ QString XLibUtil::getAppName(windowid_t window)
     QString name;
 
     if (XGetClassHint(getDisplay(), window, &ch)) {
+        // res_class is the name of the application
+        //
+        // res_name is the text shown in the window title. Could include document
+        // names or something like "unsaved" like you'll see with a text editor
         if (ch.res_class) {
             name = QString(ch.res_class);
         } else if (ch.res_name) {
