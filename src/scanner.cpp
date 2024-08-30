@@ -44,8 +44,7 @@ void Scanner::enqueueSearch(const QRegularExpression &searchPattern, quint32 max
     if (maxTime == 0)
         maxTime = 1;
 
-    ScannerSearchTitle ssearch(searchPattern, config, maxTime * 1000, checkNormality);
-    m_searchTitle.append(ssearch);
+    m_searchTitle.append(ScannerSearchTitle(searchPattern, config, maxTime * 1000, checkNormality));
     m_timer.start();
 }
 
