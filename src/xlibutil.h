@@ -74,7 +74,7 @@ public:
     static bool isNormalWindow(windowid_t window);
     static bool isValidWindowId(windowid_t window);
 
-    static windowid_t pidToWid(bool checkNormality, pid_t epid, QList<windowid_t> dockedWindows = QList<windowid_t>());
+    static windowid_t pidToWid(bool checkNormality, pid_t epid);
     static windowid_t findWindow(bool checkNormality, const QRegularExpression &ename,
                                  QList<windowid_t> dockedWindows = QList<windowid_t>());
 

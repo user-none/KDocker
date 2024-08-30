@@ -196,8 +196,7 @@ static pid_t pid(Display *display, Window window)
 
 // Walk the window's tree of subwindows until we find the window matching
 // the window with the pid we're looking for.
-static Window pidToWidEx(Display *display, Window window, bool checkNormality, pid_t epid,
-                         QList<windowid_t> dockedWindows = QList<windowid_t>())
+static Window pidToWidEx(Display *display, Window window, bool checkNormality, pid_t epid)
 {
     Window w = 0;
     Window root;
@@ -208,14 +207,12 @@ static Window pidToWidEx(Display *display, Window window, bool checkNormality, p
     if (XQueryTree(display, window, &root, &parent, &child, &num_child) != 0) {
         for (unsigned int i = 0; i < num_child; i++) {
             if (epid == pid(display, child[i])) {
-                if (!dockedWindows.contains(child[i])) {
-                    if (checkNormality) {
-                        if (XLibUtil::isNormalWindow(child[i])) {
-                            return child[i];
-                        }
-                    } else {
+                if (checkNormality) {
+                    if (XLibUtil::isNormalWindow(child[i])) {
                         return child[i];
                     }
+                } else {
+                    return child[i];
                 }
             }
             w = pidToWidEx(display, child[i], checkNormality, epid);
@@ -228,11 +225,11 @@ static Window pidToWidEx(Display *display, Window window, bool checkNormality, p
     return w;
 }
 
-windowid_t XLibUtil::pidToWid(bool checkNormality, pid_t epid, QList<windowid_t> dockedWindows)
+windowid_t XLibUtil::pidToWid(bool checkNormality, pid_t epid)
 {
     // Walk from the top most (root) window going though all of them until we find
     // the one we want. Hopefully find the one we want.
-    return pidToWidEx(getDisplay(), getDefaultRootWindow(), checkNormality, epid, dockedWindows);
+    return pidToWidEx(getDisplay(), getDefaultRootWindow(), checkNormality, epid);
 }
 
 // Checks if window window has matching name
@@ -301,7 +298,7 @@ static Window findWindowEx(Display *display, Window window, bool checkNormality,
                     }
                 }
             }
-            w = findWindowEx(display, child[i], checkNormality, ename);
+            w = findWindowEx(display, child[i], checkNormality, ename, dockedWindows);
             if (w != 0) {
                 break;
             }

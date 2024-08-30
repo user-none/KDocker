@@ -154,7 +154,7 @@ bool TrayItemManager::dockWindowId(uint windowId, const TrayItemOptions &options
 
 bool TrayItemManager::dockPid(int pid, bool checkNormality, const TrayItemOptions &options)
 {
-    windowid_t window = XLibUtil::pidToWid(checkNormality, pid, dockedWindows());
+    windowid_t window = XLibUtil::pidToWid(checkNormality, pid);
     if (!XLibUtil::isValidWindowId(window)) {
         QMessageBox box;
         box.setText(tr("Invalid pid"));
