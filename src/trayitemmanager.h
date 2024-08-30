@@ -38,13 +38,12 @@ class TrayItemManager : public QObject, public QAbstractNativeEventFilter
 {
     Q_OBJECT
 
-    // The Scanner needs to know which windows are docked.
-    friend class Scanner;
-
 public:
     TrayItemManager();
     ~TrayItemManager();
     virtual bool nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result) override;
+
+    QList<windowid_t> dockedWindows();
 
 public slots:
     // Defaults are needed for overloading from DBus.
@@ -84,7 +83,6 @@ signals:
     void quitMouseGrab();
 
 private:
-    QList<windowid_t> dockedWindows();
     bool isWindowDocked(windowid_t window);
 
     Scanner m_scanner;
