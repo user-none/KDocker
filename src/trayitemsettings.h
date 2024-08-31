@@ -17,6 +17,9 @@
  * USA.
  */
 
+#ifndef _TRAYITEMSETTINGS
+#define _TRAYITEMSETTINGS
+
 #include "trayitemoptions.h"
 
 #include <QObject>
@@ -24,8 +27,10 @@
 #include <QString>
 
 // Settings are saved to "/home/<user>/.config/com.kdocker/KDocker.conf"
-class TrayItemSettings : public TrayItemOptions, public QObject
+class TrayItemSettings : public QObject, public TrayItemOptions
 {
+    Q_OBJECT
+
 public:
     void loadSettings(const QString &dockedAppName, const TrayItemOptions &options);
     int nonZeroBalloonTimeout();
@@ -45,3 +50,5 @@ private:
     QString m_dockedAppName;
     QSettings m_settings;
 };
+
+#endif //_TRAYITEMSETTINGS
