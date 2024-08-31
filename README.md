@@ -56,7 +56,7 @@ dockSelectWindow | (b checkNormality, a{ss} windowConfig)                       
 dockFocused      | ()                                                                           | ()
 dockFocused      | (a{ss} windowConfig)                                                         | ()
 
-### pattern
+#### pattern
 
 Pattern is a PCRE regular expression.
 
