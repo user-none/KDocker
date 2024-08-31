@@ -1,6 +1,6 @@
 # KDocker
 
-KDocker will help you dock most applications to the system tray. Just point and
+Dock most applications to the system tray. Just point and
 click!
 
 All you need to do is start KDocker and select an application using the mouse
