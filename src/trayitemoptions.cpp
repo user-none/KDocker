@@ -19,6 +19,8 @@
 
 #include "trayitemoptions.h"
 
+#include <QMetaType>
+
 static const QString DKEY_ICONP = "icon";
 static const QString DKEY_AICOP = "attention-icon";
 static const QString DKEY_ICONFFOC = "iconify-focus-lost";
@@ -214,6 +216,11 @@ TrayItemOptions::TriState TrayItemOptions::getIconifyObscuredState() const
     return m_iconifyObscured;
 }
 
+bool TrayItemOptions::getNotifyTimeState() const
+{
+    return m_notifyTime == -1 ? false : true;
+}
+
 TrayItemOptions::TriState TrayItemOptions::getQuietState() const
 {
     return m_quiet;
@@ -280,6 +287,8 @@ bool TrayItemOptions::getIconifyObscured() const
 
 int TrayItemOptions::getNotifyTime() const
 {
+    if (m_quiet == TrayItemOptions::TriState::SetTrue)
+        return 0;
     return m_notifyTime;
 }
 

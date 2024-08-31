@@ -21,7 +21,6 @@
 #define _TRAYITEMOPTIONS
 
 #include <QDBusArgument>
-#include <QMetaType>
 #include <QString>
 
 class TrayItemOptions
@@ -44,10 +43,11 @@ public:
 
     QString getIconPath() const;
     QString getAttentionIconPath() const;
+    bool getNotifyTimeState() const;
+
     TrayItemOptions::TriState getIconifyFocusLostState() const;
     TrayItemOptions::TriState getIconifyMinimizedState() const;
     TrayItemOptions::TriState getIconifyObscuredState() const;
-    int getNotifyTimeState() const;
     TrayItemOptions::TriState getQuietState() const;
     TrayItemOptions::TriState getSkipPagerState() const;
     TrayItemOptions::TriState getStickyState() const;

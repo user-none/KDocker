@@ -67,6 +67,7 @@ set(SOURCES
     src/trayitem.cpp
     src/trayitemoptions.cpp
     src/trayitemmanager.cpp
+    src/trayitemsettings.cpp
     src/xlibutil.cpp
 )
 

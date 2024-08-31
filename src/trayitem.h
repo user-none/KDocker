@@ -22,6 +22,7 @@
 #define _TRAYITEM_H
 
 #include "trayitemoptions.h"
+#include "trayitemsettings.h"
 #include "xlibtypes.h"
 
 #include <QAction>
@@ -72,8 +73,6 @@ private slots:
 
     void toggleWindow();
     void trayActivated(QSystemTrayIcon::ActivationReason reason = QSystemTrayIcon::Trigger);
-    void saveSettingsGlobal();
-    void saveSettingsApp();
 
     void doUndock();
     void doSkipPager();
@@ -90,15 +89,6 @@ protected:
     bool event(QEvent *e);
 
 private:
-    void loadSettings(const TrayItemOptions &args);
-    bool readSetting(TrayItemOptions::TriState argSetting, const QString &key, bool kdockerDefault);
-    int readSetting(int argSetting, const QString &key, int kdockerDefault);
-    QString readSetting(const QString &argSetting, const QString &key, const QString &kdockerDefault);
-    QVariant readConfigValue(const QString &key, const QVariant &defaultValue);
-    int nonZeroBalloonTimeout();
-    TrayItemOptions readConfigGlobals();
-    void saveSettings();
-
     void minimizeEvent();
     void destroyEvent();
     void obscureEvent();
@@ -122,8 +112,7 @@ private:
     QIcon m_defaultIcon;
     QIcon m_attentionIcon;
 
-    QSettings m_config;
-    TrayItemOptions m_settings;
+    TrayItemSettings m_settings;
 
     // SizeHint of m_window
     XLibUtilSizeHints *m_sizeHint;
