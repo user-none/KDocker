@@ -42,17 +42,6 @@ private:
     void loadSettingsSection();
     void saveSettingsSection();
 
-    QString m_iconPath;
-    QString m_attentionIconPath;
-    bool m_iconifyFocusLost;
-    bool m_iconifyMinimized;
-    bool m_iconifyObscured;
-    int m_notifyTime; // In milliseconds
-    bool m_skipPager;
-    bool m_sticky;
-    bool m_skipTaskbar;
-    bool m_lockToDesktop;
-
     QString m_dockedAppName;
     QSettings m_settings;
 };
