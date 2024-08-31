@@ -475,15 +475,18 @@ void TrayItem::updateToggleAction()
 
 void TrayItem::createContextMenu()
 {
-    m_contextMenu.addAction(QIcon(":/menu/about.png"), tr("About %1").arg(qApp->applicationName()), this, &TrayItem::about);
+    m_contextMenu.addAction(QIcon(":/menu/about.png"), tr("About %1").arg(qApp->applicationName()), this,
+                            &TrayItem::about);
     m_contextMenu.addSeparator();
 
     // Options menu
     QMenu *optionsMenu = m_contextMenu.addMenu(tr("Options"));
     optionsMenu->setIcon(QIcon(":/menu/options.png"));
 
-    QAction *action = optionsMenu->addAction(QIcon(":/menu/seticon.png"), tr("Set icon..."), this, &TrayItem::selectCustomIcon);
-    action = optionsMenu->addAction(QIcon(":/menu/setaicon.png"), tr("Set attention icon..."), this, &TrayItem::selectAttentionIcon);
+    QAction *action =
+        optionsMenu->addAction(QIcon(":/menu/seticon.png"), tr("Set icon..."), this, &TrayItem::selectCustomIcon);
+    action = optionsMenu->addAction(QIcon(":/menu/setaicon.png"), tr("Set attention icon..."), this,
+                                    &TrayItem::selectAttentionIcon);
     optionsMenu->addSeparator();
 
     action = optionsMenu->addAction(tr("Skip taskbar"), this, &TrayItem::setSkipTaskbar);

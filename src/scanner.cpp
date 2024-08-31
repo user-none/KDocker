@@ -70,8 +70,7 @@ void Scanner::enqueueLaunch(const QString &launchCommand, const QStringList &arg
     if (!searchPattern.pattern().isEmpty()) {
         m_searchTitle.append(ScannerSearchTitle(searchPattern, config, maxTime, checkNormality));
     } else {
-        m_searchPid.append(
-            ScannerSearchPid(launchCommand, static_cast<pid_t>(pid), config, maxTime, checkNormality));
+        m_searchPid.append(ScannerSearchPid(launchCommand, static_cast<pid_t>(pid), config, maxTime, checkNormality));
     }
     m_timer.start();
 }
@@ -111,8 +110,7 @@ void Scanner::checkTitle()
         ScannerSearchTitle &search = m_searchTitle[i];
         const QRegularExpression searchPattern = search.searchPattern();
 
-        windowid_t window =
-            XLibUtil::findWindow(search.checkNormality(), searchPattern, m_manager->dockedWindows());
+        windowid_t window = XLibUtil::findWindow(search.checkNormality(), searchPattern, m_manager->dockedWindows());
         if (window != 0) {
             emit windowFound(window, search.config());
             m_searchTitle.remove(i);

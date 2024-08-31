@@ -154,7 +154,7 @@ void TrayItemSettings::loadSettingsOptions(const TrayItemOptions &options)
     tri = options.getSkipPagerState();
     if (tri != TrayItemOptions::TriState::Unset)
         setSkipPager(tri);
-    
+
     tri = options.getSkipTaskbarState();
     if (tri != TrayItemOptions::TriState::Unset)
         setSkipTaskbar(tri);
