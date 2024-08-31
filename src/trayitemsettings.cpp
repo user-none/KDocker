@@ -81,6 +81,10 @@ void TrayItemSettings::loadSettingsSection()
     if (val.isValid())
         setAttentionIconPath(val.toString());
 
+    val = m_settings.value("Quiet");
+    if (val.isValid())
+        setQuiet(val.toBool());
+
     val = m_settings.value("BalloonTimeout");
     if (val.isValid())
         setNotifyTime(val.toInt());
@@ -183,6 +187,7 @@ void TrayItemSettings::loadSettingsOptions(const TrayItemOptions &options)
 void TrayItemSettings::saveSettingsSection()
 {
     // Group is set by caller
+    m_settings.setValue("Quiet", getQuiet());
     m_settings.setValue("BalloonTimeout", getNotifyTime());
     m_settings.setValue("Sticky", getSticky());
     m_settings.setValue("SkipPager", getSkipPager());

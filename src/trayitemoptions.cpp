@@ -287,8 +287,6 @@ bool TrayItemOptions::getIconifyObscured() const
 
 int TrayItemOptions::getNotifyTime() const
 {
-    if (m_quiet == TrayItemOptions::TriState::SetTrue)
-        return 0;
     return m_notifyTime;
 }
 

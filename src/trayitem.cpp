@@ -433,8 +433,11 @@ void TrayItem::updateTitle()
     QString title = XLibUtil::getWindowTitle(m_window);
 
     setToolTip(QString("%1 [%2]").arg(title).arg(m_dockedAppName));
-    if (!m_settings.getQuiet() && m_settings.getNotifyTime() > 0)
-        showMessage(m_dockedAppName, title, QSystemTrayIcon::Information, m_settings.getNotifyTime());
+    if (!m_settings.getQuiet()) {
+        // Using nonZeroBalloonTimeout because previous versions of KDocker settings would't
+        // use Quiet as a separate value and instead would set the time to 0.
+        showMessage(m_dockedAppName, title, QSystemTrayIcon::Information, m_settings.nonZeroBalloonTimeout());
+    }
 
     if (m_iconified && !m_attentionIcon.isNull() && !m_wantsAttention) {
         m_wantsAttention = true;
