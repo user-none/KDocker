@@ -24,9 +24,9 @@
 
 int Application::m_closeSignalFd[2];
 
-Application::Application(int &argc, char **argv) : QApplication(argc, argv)
+Application::Application(int &argc, char **argv) : QApplication(argc, argv), m_trayItemManager(nullptr)
 {
-    m_trayItemManager = 0;
+    setWindowIcon(QIcon(QPixmap(":/logo/kdocker.png")));
 
     // Translate UNIX signals to Qt signals (See https://doc.qt.io/qt-5/unix-signals.html)
     if (::socketpair(AF_UNIX, SOCK_STREAM, 0, m_closeSignalFd))

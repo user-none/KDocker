@@ -58,12 +58,7 @@ void Scanner::enqueueLaunch(const QString &launchCommand, const QStringList &arg
     // Launch the requested application.
     qint64 pid;
     if (!QProcess::startDetached(launchCommand, arguments, "", &pid)) {
-        QMessageBox box;
-        box.setText(tr("'%1' did not start properly.").arg(launchCommand));
-        box.setWindowIcon(QPixmap(":/logo/kdocker.png"));
-        box.setIcon(QMessageBox::Information);
-        box.setStandardButtons(QMessageBox::Ok);
-        box.exec();
+        QMessageBox::warning(nullptr, tr("Launch Error"), tr("'%1' did not start properly.").arg(launchCommand));
         return;
     }
 
@@ -91,13 +86,7 @@ void Scanner::checkPid()
             emit windowFound(window, search.config());
             m_searchPid.remove(i);
         } else if (search.hasExpired()) {
-            QMessageBox box;
-            box.setText(tr("Could not find a window for '%1'").arg(search.launchCommand()));
-            box.setWindowIcon(QPixmap(":/logo/kdocker.png"));
-            box.setIcon(QMessageBox::Information);
-            box.setStandardButtons(QMessageBox::Ok);
-            box.exec();
-
+            QMessageBox::warning(nullptr, tr("Error"), tr("Could not find a window for '%1'").arg(search.launchCommand()));
             m_searchPid.remove(i);
         }
     }
@@ -115,13 +104,7 @@ void Scanner::checkTitle()
             emit windowFound(window, search.config());
             m_searchTitle.remove(i);
         } else if (search.hasExpired()) {
-            QMessageBox box;
-            box.setText(tr("Could not find a window matching '%1'").arg(searchPattern.pattern()));
-            box.setWindowIcon(QPixmap(":/logo/kdocker.png"));
-            box.setIcon(QMessageBox::Information);
-            box.setStandardButtons(QMessageBox::Ok);
-            box.exec();
-
+            QMessageBox::warning(nullptr, tr("Error"), tr("Could not find a window matching for '%1'").arg(searchPattern.pattern()));
             m_searchTitle.remove(i);
         }
     }
