@@ -1,3 +1,38 @@
+for version 6.0
+    - Support for Qt 6
+    - Build system changed to CMake
+    - QSingleApplication removed
+    - DBus interface added
+      - DBus is required
+      - Used for single instance functionality
+      - Exposes a variety of operations that external applications can use to control KDocker
+      - Accessing the DBus interface will auto start KDocker if it's not running
+    - New KDocker icon
+    - New menu icons
+    - Update AppStream information
+    - Standalone packages (local download and install only)
+      - Snap package
+      - Flatpak package
+    - Command line arguments
+      - Support for long options
+      - `-n` name matching option supports a PCRE regular expression
+      - A number of search string modifiers have been removed due to supporting PCRE expressions
+        - `-e` has been removed
+        - `-j` has been removed prepend `(?i)` to search string for case intensieve matching
+        - `-k` has been removed
+      - `-a` option removed
+      - `-m` option behavior fixed
+      - `-x, --pid` accepts numbers as decimal, hex (0x prefix), and octal (0 prefix)
+      - `-w, --window-id` accepts numbers as decimal, hex (0x prefix), and octal (0 prefix)
+      - `-z, --keep-running` option added
+    - KDocker can be set to stay running even when no windows are docked
+      - Most useful for scripting on system that do not support dbus auto start
+    - Major cleanup and large parts rewritten
+      - All X11 code moved fully into helper class
+      - Code updated to C++17 standard
+    - Xmu is no longer a dependency
+    - Readme has been expanded with a large amount of information
+
 for version 5.5
     - Better application icon fetching
 
