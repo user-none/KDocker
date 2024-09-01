@@ -14,6 +14,6 @@
         <file alias="undockall.png">images/menu/undockall.png</file>
     </qresource>
     <qresource prefix="/logo">
-        <file alias="kdocker.png">images/icons/kdocker_256x256.png</file>
+        <file alias="kdocker.png">images/icons/kdocker_512x512.png</file>
     </qresource>
 </RCC>
