@@ -677,9 +677,10 @@ static QImage imageFromX11IconData(unsigned long *iconData, unsigned long dataLe
     return iconImage.copy();
 }
 
-static QImage imageFromX11Pixmap(Display *display, Pixmap pixmap, int width, int height)
+static QImage imageFromX11Pixmap(Display *display, Pixmap pixmap, int x, int y, unsigned int width, unsigned int height)
 {
-    XImage *ximage = XGetImage(display, pixmap, 0, 0, width, height, AllPlanes, ZPixmap);
+qDebug() << "x, y = " << x << y;
+    XImage *ximage = XGetImage(display, pixmap, x, y, width, height, AllPlanes, ZPixmap);
     if (!ximage)
         return QImage();
 
@@ -690,73 +691,87 @@ static QImage imageFromX11Pixmap(Display *display, Pixmap pixmap, int width, int
     return result;
 }
 
+static QPixmap getWindowIconNetWMIcon(windowid_t window)
+{
+qDebug() << __func__;
+    QPixmap appIcon;
+    Display *display = getDisplay();
+    static Atom netWmIcon = XInternAtom(display, "_NET_WM_ICON", false);
+    Atom actualType;
+    int actualFormat;
+    unsigned long nItems, bytesAfter;
+    unsigned char *data = nullptr;
+
+    if (XGetWindowProperty(display, window, netWmIcon, 0, LONG_MAX, false, XA_CARDINAL, &actualType, &actualFormat,
+                &nItems, &bytesAfter, &data) != Success || data == NULL)
+        return appIcon;
+
+qDebug() << "icon format" << actualFormat;
+    if (actualFormat != 32)
+        return appIcon;
+
+    unsigned long *iconData = reinterpret_cast<unsigned long *>(data);
+    unsigned long dataLength = nItems;
+
+    // Extract the largest icon available
+    QImage largestImage;
+    unsigned long maxIconSize = 0;
+
+    for (unsigned long i = 0; i < dataLength;) {
+        unsigned long width = iconData[i];
+        unsigned long height = iconData[i + 1];
+        unsigned long iconSize = width * height;
+
+        if (iconSize > maxIconSize) {
+            largestImage = imageFromX11IconData(&iconData[i], dataLength - i);
+            maxIconSize = iconSize;
+        }
+
+        i += (2 + iconSize);
+    }
+
+    if (!largestImage.isNull())
+        appIcon = QPixmap::fromImage(largestImage);
+
+    XFree(data);
+    return appIcon;
+}
+
+static QPixmap getWindowIconWMHints(windowid_t window)
+{
+qDebug() << __func__;
+    QPixmap appIcon;
+    Display *display = getDisplay();
+
+    XWMHints *wm_hints = XGetWMHints(display, window);
+    if (wm_hints == nullptr)
+        return appIcon;
+
+    if (wm_hints->icon_pixmap) {
+        Window root;
+        int x = 0, y = 0;
+        unsigned int width = 0, height = 0, border_width, depth;
+        XGetGeometry(display, wm_hints->icon_pixmap, &root, &x, &y, &width, &height, &border_width, &depth);
+
+        QImage image = imageFromX11Pixmap(display, wm_hints->icon_pixmap, x, y, width, height);
+        appIcon = QPixmap::fromImage(image);
+    }
+
+    XFree(wm_hints);
+    return appIcon;
+}
+
 QPixmap XLibUtil::getWindowIcon(windowid_t window)
 {
     if (!window)
         return QPixmap();
 
-    Display *display = getDisplay();
-    QPixmap appIcon;
+    // First try _NET_WM_ICON
+    QPixmap appIcon = getWindowIconNetWMIcon(window);
 
-    // First try to get the icon from WM_HINTS
-    XWMHints *wm_hints = XGetWMHints(display, window);
-    if (wm_hints != nullptr) {
-        if (!(wm_hints->flags & IconMaskHint)) {
-            wm_hints->icon_mask = 0;
-        }
-
-        if ((wm_hints->flags & IconPixmapHint) && (wm_hints->icon_pixmap)) {
-            Window root;
-            int x, y;
-            unsigned int width, height, border_width, depth;
-            XGetGeometry(display, wm_hints->icon_pixmap, &root, &x, &y, &width, &height, &border_width, &depth);
-
-            QImage image = imageFromX11Pixmap(display, wm_hints->icon_pixmap, width, height);
-            appIcon = QPixmap::fromImage(image);
-        }
-
-        XFree(wm_hints);
-    }
-
-    // Fallback to _NET_WM_ICON if WM_HINTS icon is not available
-    if (appIcon.isNull()) {
-        static Atom netWmIcon = XInternAtom(display, "_NET_WM_ICON", false);
-        Atom actualType;
-        int actualFormat;
-        unsigned long nItems, bytesAfter;
-        unsigned char *data = nullptr;
-
-        if (XGetWindowProperty(display, window, netWmIcon, 0, LONG_MAX, false, XA_CARDINAL, &actualType, &actualFormat,
-                               &nItems, &bytesAfter, &data) == Success &&
-            data)
-        {
-            unsigned long *iconData = reinterpret_cast<unsigned long *>(data);
-            unsigned long dataLength = nItems;
-
-            // Extract the largest icon available
-            QImage largestImage;
-            unsigned long maxIconSize = 0;
-
-            for (unsigned long i = 0; i < dataLength;) {
-                unsigned long width = iconData[i];
-                unsigned long height = iconData[i + 1];
-                unsigned long iconSize = width * height;
-
-                if (iconSize > maxIconSize) {
-                    largestImage = imageFromX11IconData(&iconData[i], dataLength - i);
-                    maxIconSize = iconSize;
-                }
-
-                i += (2 + iconSize);
-            }
-
-            if (!largestImage.isNull()) {
-                appIcon = QPixmap::fromImage(largestImage);
-            }
-
-            XFree(data);
-        }
-    }
+    // Fallback to WM_HINTS if _NET_WM_ICON wasn't set
+    if (appIcon.isNull())
+        appIcon = getWindowIconWMHints(window);
 
     return appIcon;
 }
