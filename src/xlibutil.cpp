@@ -648,6 +648,17 @@ void XLibUtil::raiseWindow(windowid_t window)
     XFlush(display);
 }
 
+// We only consider images with at least 10% of pixels opaque. There have
+// been issues with completely transparent icons being read.
+// Either we'll try another icon location or we'll fallback to the no icon
+// found icon.
+static bool imageMeetsMinimumOpaque(size_t num_opaque, size_t width, size_t height)
+{
+    if (static_cast<double>(num_opaque) / static_cast<double>(width * height) > 0.1d)
+        return true;
+    return false;
+}
+
 static QRgb convertToQColor(unsigned long pixel)
 {
     return qRgba((pixel & 0x00FF0000) >> 16,  // Red
@@ -667,11 +678,18 @@ static QImage imageFromX11IconData(unsigned long *iconData, unsigned long dataLe
     if (width == 0 || height == 0 || dataLength < width * height + 2)
         return QImage();
 
+    size_t num_opaque = 0;
     QVector<QRgb> pixels(width * height);
     unsigned long *src = iconData + 2;
     for (unsigned long i = 0; i < width * height; ++i) {
         pixels[i] = convertToQColor(src[i]);
+        if (qAlpha(pixels[i]) != 0) {
+            num_opaque++;
+        }
     }
+
+    if (!imageMeetsMinimumOpaque(num_opaque, width, height))
+        return QImage();
 
     QImage iconImage((uchar *)pixels.data(), width, height, QImage::Format_ARGB32);
     return iconImage.copy();
@@ -679,7 +697,6 @@ static QImage imageFromX11IconData(unsigned long *iconData, unsigned long dataLe
 
 static QImage imageFromX11Pixmap(Display *display, Pixmap pixmap, int x, int y, unsigned int width, unsigned int height)
 {
-qDebug() << "x, y = " << x << y;
     XImage *ximage = XGetImage(display, pixmap, x, y, width, height, AllPlanes, ZPixmap);
     if (!ximage)
         return QImage();
@@ -688,12 +705,22 @@ qDebug() << "x, y = " << x << y;
     QImage result = image.copy(); // Make a copy of the image data
     XDestroyImage(ximage);
 
+    size_t num_opaque = 0;
+    for (size_t i = 0; i < width; i++) {
+        for (size_t j = 0; j < height; j++) {
+            if (qAlpha(result.pixel(i, j)) != 0) {
+                num_opaque++;
+            }
+        }
+    }
+
+    if (!imageMeetsMinimumOpaque(num_opaque, width, height))
+        return QImage();
     return result;
 }
 
 static QPixmap getWindowIconNetWMIcon(windowid_t window)
 {
-qDebug() << __func__;
     QPixmap appIcon;
     Display *display = getDisplay();
     static Atom netWmIcon = XInternAtom(display, "_NET_WM_ICON", false);
@@ -706,7 +733,6 @@ qDebug() << __func__;
                 &nItems, &bytesAfter, &data) != Success || data == NULL)
         return appIcon;
 
-qDebug() << "icon format" << actualFormat;
     if (actualFormat != 32)
         return appIcon;
 
@@ -739,7 +765,6 @@ qDebug() << "icon format" << actualFormat;
 
 static QPixmap getWindowIconWMHints(windowid_t window)
 {
-qDebug() << __func__;
     QPixmap appIcon;
     Display *display = getDisplay();
 
