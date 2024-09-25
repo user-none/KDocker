@@ -62,7 +62,9 @@ private slots:
     void setCustomIcon(QString path);
     void setAttentionIcon(QString path);
     void selectCustomIcon(bool value);
+    void clearCustomIcon(bool value);
     void selectAttentionIcon(bool value);
+    void clearAttentionIcon(bool value);
     void setSkipPager(bool value);
     void setSticky(bool value);
     void setIconifyMinimized(bool value);

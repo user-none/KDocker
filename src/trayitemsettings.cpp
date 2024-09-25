@@ -201,10 +201,19 @@ void TrayItemSettings::saveSettingsSection()
 void TrayItemSettings::saveSettingsApp()
 {
     m_settings.beginGroup(m_dockedAppName);
-    if (!getIconPath().isEmpty())
+
+    if (getIconPath().isEmpty()) {
+        m_settings.remove("CustomIcon");
+    } else {
         m_settings.setValue("CustomIcon", getIconPath());
-    if (!getAttentionIconPath().isEmpty())
+    }
+
+    if (getAttentionIconPath().isEmpty()) {
+        m_settings.remove("AttentionIcon");
+    } else {
         m_settings.setValue("AttentionIcon", getAttentionIconPath());
+    }
+
     saveSettingsSection();
     m_settings.endGroup();
 }
