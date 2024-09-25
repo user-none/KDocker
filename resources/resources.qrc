@@ -2,10 +2,13 @@
     <qresource prefix="/menu">
         <file alias="about.png">images/menu/about.png</file>
         <file alias="another.png">images/menu/another.png</file>
+        <file alias="clearaicon.png">images/menu/clearaicon.png</file>
+        <file alias="clearicon.png">images/menu/clearicon.png</file>
         <file alias="close.png">images/menu/close.png</file>
         <file alias="iconify.png">images/menu/iconify.png</file>
+        <file alias="icons.png">images/menu/icons.png</file>
         <file alias="options.png">images/menu/options.png</file>
-        <file alias="question.png">images/menu/question.png</file>
+        <file alias="missing.png">images/menu/missing.png</file>
         <file alias="restore.png">images/menu/restore.png</file>
         <file alias="savesettings.png">images/menu/savesettings.png</file>
         <file alias="seticon.png">images/menu/seticon.png</file>

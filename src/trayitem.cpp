@@ -52,7 +52,15 @@ TrayItem::TrayItem(windowid_t window, const TrayItemOptions &args)
     readDockedAppName();
     m_settings.loadSettings(m_dockedAppName, args);
     updateTitle();
-    updateIcon();
+
+    if (!m_settings.getIconPath().isEmpty()) {
+        setCustomIcon(m_settings.getIconPath());
+    } else {
+        updateIcon();
+    }
+
+    if (!m_settings.getAttentionIconPath().isEmpty())
+        setAttentionIcon(m_settings.getAttentionIconPath());
 
     createContextMenu();
     updateToggleAction();
@@ -248,7 +256,7 @@ void TrayItem::setCustomIcon(QString path)
     if (customIcon.load(path)) {
         m_settings.setIconPath(path);
     } else {
-        customIcon.load(":/menu/question.png");
+        customIcon.load(":/menu/missing.png");
     }
 
     m_defaultIcon = QIcon(customIcon);
@@ -263,7 +271,7 @@ void TrayItem::setAttentionIcon(QString path)
     if (icon.load(path)) {
         m_settings.setAttentionIconPath(path);
     } else {
-        icon.load(":/menu/question.png");
+        icon.load(":/menu/missing.png");
     }
 
     m_attentionIcon = QIcon(icon);
@@ -296,11 +304,25 @@ void TrayItem::selectCustomIcon([[maybe_unused]] bool value)
         setCustomIcon(path);
 }
 
+void TrayItem::clearCustomIcon([[maybe_unused]] bool value)
+{
+    m_customIcon = false;
+    m_settings.setIconPath(QString());
+    updateIcon();
+}
+
 void TrayItem::selectAttentionIcon([[maybe_unused]] bool value)
 {
     QString path = selectIcon(tr("Select Attention Icon"));
     if (!path.isEmpty())
         setAttentionIcon(path);
+}
+
+void TrayItem::clearAttentionIcon([[maybe_unused]] bool value)
+{
+    m_settings.setAttentionIconPath(QString());
+    m_attentionIcon = QIcon();
+    updateIcon();
 }
 
 void TrayItem::setSkipTaskbar(bool value)
@@ -434,7 +456,7 @@ void TrayItem::updateTitle()
 
     setToolTip(QString("%1 [%2]").arg(title).arg(m_dockedAppName));
     if (!m_settings.getQuiet()) {
-        // Using nonZeroBalloonTimeout because previous versions of KDocker settings would't
+        // Using nonZeroBalloonTimeout because previous versions of KDocker settings wouldn't
         // use Quiet as a separate value and instead would set the time to 0.
         showMessage(m_dockedAppName, title, QSystemTrayIcon::Information, m_settings.nonZeroBalloonTimeout());
     }
@@ -452,7 +474,7 @@ void TrayItem::updateIcon()
 
     QPixmap pm = XLibUtil::getWindowIcon(m_window);
     if (pm.isNull())
-        pm.load(":/menu/question.png");
+        pm.load(":/menu/missing.png");
     m_defaultIcon = QIcon(pm);
 
     if (!m_wantsAttention)
@@ -486,12 +508,15 @@ void TrayItem::createContextMenu()
     QMenu *optionsMenu = m_contextMenu.addMenu(tr("Options"));
     optionsMenu->setIcon(QIcon(":/menu/options.png"));
 
-    QAction *action =
-        optionsMenu->addAction(QIcon(":/menu/seticon.png"), tr("Set icon..."), this, &TrayItem::selectCustomIcon);
-    action = optionsMenu->addAction(QIcon(":/menu/setaicon.png"), tr("Set attention icon..."), this,
-                                    &TrayItem::selectAttentionIcon);
+    QMenu *iconsMenu = optionsMenu->addMenu(QIcon(":/menu/icons.png"), tr("Custom Icons"));
+    iconsMenu->addAction(QIcon(":/menu/seticon.png"), tr("Set icon..."), this, &TrayItem::selectCustomIcon);
+    iconsMenu->addAction(QIcon(":/menu/clearicon.png"), tr("Clear icon"), this, &TrayItem::clearCustomIcon);
+    iconsMenu->addSeparator();
+    iconsMenu->addAction(QIcon(":/menu/setaicon.png"), tr("Set attention icon..."), this, &TrayItem::selectAttentionIcon);
+    iconsMenu->addAction(QIcon(":/menu/clearaicon.png"), tr("Clear attention icon"), this, &TrayItem::clearAttentionIcon);
     optionsMenu->addSeparator();
 
+    QAction *action;
     action = optionsMenu->addAction(tr("Skip taskbar"), this, &TrayItem::setSkipTaskbar);
     action->setCheckable(true);
     action->setChecked(m_settings.getSkipTaskbar());
