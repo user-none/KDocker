@@ -702,20 +702,20 @@ static QImage imageFromX11Pixmap(Display *display, Pixmap pixmap, int x, int y, 
         return QImage();
 
     QImage image((uchar *)ximage->data, width, height, QImage::Format_ARGB32);
-    QImage result = image.copy(); // Make a copy of the image data
-    XDestroyImage(ximage);
-
     size_t num_opaque = 0;
     for (size_t i = 0; i < width; i++) {
         for (size_t j = 0; j < height; j++) {
-            if (qAlpha(result.pixel(i, j)) != 0) {
+            if (qAlpha(image.pixel(i, j)) != 0) {
                 num_opaque++;
             }
         }
     }
 
-    if (!imageMeetsMinimumOpaque(num_opaque, width, height))
-        return QImage();
+    QImage result;
+    if (imageMeetsMinimumOpaque(num_opaque, width, height))
+        result = image.copy(); // Make a copy of the image data
+
+    XDestroyImage(ximage);
     return result;
 }
 
@@ -779,7 +779,9 @@ static QPixmap getWindowIconWMHints(windowid_t window)
         XGetGeometry(display, wm_hints->icon_pixmap, &root, &x, &y, &width, &height, &border_width, &depth);
 
         QImage image = imageFromX11Pixmap(display, wm_hints->icon_pixmap, x, y, width, height);
-        appIcon = QPixmap::fromImage(image);
+        if (!image.isNull()) {
+            appIcon = QPixmap::fromImage(image);
+        }
     }
 
     XFree(wm_hints);
