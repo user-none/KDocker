@@ -70,6 +70,7 @@ private slots:
     void setIconifyMinimized(bool value);
     void setIconifyObscured(bool value);
     void setIconifyFocusLost(bool value);
+    void setIconifyDocking(bool value);
     void setLockToDesktop(bool value);
     void setBalloonTimeout(bool value);
 

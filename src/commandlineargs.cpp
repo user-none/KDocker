@@ -64,6 +64,7 @@ bool CommandLineArgs::processArgs(const QStringList &arguments, Command &command
         {{"r", "skip-pager"}, "Remove this application from the pager"},
         {{"s", "sticky"}, "Make the window sticky (appears on all desktops)"},
         {{"t", "skip-taskbar"}, "Remove this application from the taskbar"},
+        {"no-iconify-docking", "Don't iconify the window when docking"},
         // Don't use v or version because they're already handled by the parser object.
         {{"w", "window-id"}, "Window id of the application to dock. Hex number formatted (0x###...)", "window-id"},
         {{"x", "pid"}, "Process id of the application to dock. Decimal number (###...)", "pid"},
@@ -156,6 +157,9 @@ void CommandLineArgs::buildConfig(const QCommandLineParser &parser, TrayItemOpti
 
     if (parser.isSet("skip-taskbar"))
         config.setSkipTaskbar(TrayItemOptions::TriState::SetTrue);
+
+    if (parser.isSet("no-iconify-docking"))
+        config.setIconifyDocking(TrayItemOptions::TriState::SetFalse);
 }
 
 void CommandLineArgs::buildCommand(const QCommandLineParser &parser, Command &command)

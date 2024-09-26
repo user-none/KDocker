@@ -74,6 +74,7 @@ attention-icon     | file path
 iconify-focus-lost | true / false
 iconify-minimized  | true / false
 iconify-obscured   | true / false
+iconify-docking    | true / false
 notify-time        | seconds
 quiet              | true / false
 skip-pager         | true / false

@@ -66,6 +66,7 @@ void TrayItemSettings::loadSettingsDefault()
     setSticky(defaultSticky());
     setSkipTaskbar(defaultSkipTaskbar());
     setLockToDesktop(defaultLockToDesktop());
+    setIconifyDocking(defaultIconifyDocking());
 }
 
 void TrayItemSettings::loadSettingsSection()
@@ -116,6 +117,10 @@ void TrayItemSettings::loadSettingsSection()
     val = m_settings.value("LockToDesktop");
     if (val.isValid())
         setLockToDesktop(val.toBool());
+
+    val = m_settings.value("IconifyDocking");
+    if (val.isValid())
+        setIconifyDocking(val.toBool());
 }
 
 void TrayItemSettings::loadSettingsGlobal()
@@ -179,6 +184,10 @@ void TrayItemSettings::loadSettingsOptions(const TrayItemOptions &options)
     if (tri != TrayItemOptions::TriState::Unset)
         setLockToDesktop(tri);
 
+    tri = options.getIconifyDockingState();
+    if (tri != TrayItemOptions::TriState::Unset)
+        setIconifyDocking(tri);
+
     tri = options.getQuietState();
     if (tri != TrayItemOptions::TriState::Unset)
         setQuiet(tri);
@@ -196,6 +205,7 @@ void TrayItemSettings::saveSettingsSection()
     m_settings.setValue("IconifyObscured", getIconifyObscured());
     m_settings.setValue("IconifyFocusLost", getIconifyFocusLost());
     m_settings.setValue("LockToDesktop", getLockToDesktop());
+    m_settings.setValue("IconifyDocking", getIconifyDocking());
 }
 
 void TrayItemSettings::saveSettingsApp()

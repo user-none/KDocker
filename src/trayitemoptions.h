@@ -53,6 +53,7 @@ public:
     TrayItemOptions::TriState getStickyState() const;
     TrayItemOptions::TriState getSkipTaskbarState() const;
     TrayItemOptions::TriState getLockToDesktopState() const;
+    TrayItemOptions::TriState getIconifyDockingState() const;
 
     bool getIconifyFocusLost() const;
     bool getIconifyMinimized() const;
@@ -63,6 +64,7 @@ public:
     bool getSticky() const;
     bool getSkipTaskbar() const;
     bool getLockToDesktop() const;
+    bool getIconifyDocking() const;
 
     void setIconPath(const QString &v);
     void setAttentionIconPath(const QString &v);
@@ -74,6 +76,7 @@ public:
     void setSticky(TrayItemOptions::TriState v);
     void setSkipTaskbar(TrayItemOptions::TriState v);
     void setLockToDesktop(TrayItemOptions::TriState v);
+    void setIconifyDocking(TrayItemOptions::TriState v);
 
     void setIconifyFocusLost(bool v);
     void setIconifyMinimized(bool v);
@@ -84,6 +87,7 @@ public:
     void setSticky(bool v);
     void setSkipTaskbar(bool v);
     void setLockToDesktop(bool v);
+    void setIconifyDocking(bool v);
 
     static QString defaultIconPath();
     static QString defaultAttentionIconPath();
@@ -96,6 +100,7 @@ public:
     static bool defaultSticky();
     static bool defaultSkipTaskbar();
     static bool defaultLockToDesktop();
+    static bool defaultIconifyDocking();
 
 private:
     QString m_iconPath;
@@ -109,6 +114,7 @@ private:
     TrayItemOptions::TriState m_sticky;
     TrayItemOptions::TriState m_skipTaskbar;
     TrayItemOptions::TriState m_lockToDesktop;
+    TrayItemOptions::TriState m_iconifyDocking;
 };
 
 Q_DECLARE_METATYPE(TrayItemOptions)

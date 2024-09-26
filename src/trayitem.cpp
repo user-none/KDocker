@@ -161,7 +161,8 @@ windowid_t TrayItem::dockedWindow()
 void TrayItem::show()
 {
     doSkipTaskbar();
-    iconifyWindow();
+    if (m_settings.getIconifyDocking())
+        iconifyWindow();
     QSystemTrayIcon::show();
 }
 
@@ -359,6 +360,11 @@ void TrayItem::setIconifyFocusLost(bool value)
     focusLostEvent();
 }
 
+void TrayItem::setIconifyDocking(bool value)
+{
+    m_settings.setIconifyDocking(value);
+}
+
 void TrayItem::setLockToDesktop(bool value)
 {
     m_settings.setLockToDesktop(value);
@@ -540,6 +546,10 @@ void TrayItem::createContextMenu()
     action = optionsMenu->addAction(tr("Iconify when focus lost"), this, &TrayItem::setIconifyFocusLost);
     action->setCheckable(true);
     action->setChecked(m_settings.getIconifyFocusLost());
+
+    action = optionsMenu->addAction(tr("Iconify when docking"), this, &TrayItem::setIconifyDocking);
+    action->setCheckable(true);
+    action->setChecked(m_settings.getIconifyDocking());
 
     action = optionsMenu->addAction(tr("Lock to desktop"), this, &TrayItem::setLockToDesktop);
     action->setCheckable(true);
