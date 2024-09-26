@@ -31,6 +31,7 @@ static const QString DKEY_QUIET = "quiet";
 static const QString DKEY_SKPAG = "skip-pager";
 static const QString DKEY_STICKY = "sticky";
 static const QString DKEY_SKTASK = "skip-taskbar";
+static const QString DKEY_LOCKDESK = "lock-to-desktop";
 
 TrayItemOptions::TrayItemOptions()
     : m_iconifyFocusLost(TrayItemOptions::TriState::Unset), m_iconifyMinimized(TrayItemOptions::TriState::Unset),
@@ -140,6 +141,12 @@ QDBusArgument &operator<<(QDBusArgument &argument, const TrayItemOptions &option
         argument.endMapEntry();
     }
 
+    if (options.m_lockToDesktop != TrayItemOptions::TriState::Unset) {
+        argument.beginMapEntry();
+        argument << DKEY_LOCKDESK << QVariant(options.m_lockToDesktop == TrayItemOptions::TriState::SetTrue).toString();
+        argument.endMapEntry();
+    }
+
     argument.endMap();
     return argument;
 }
@@ -183,6 +190,9 @@ const QDBusArgument &operator>>(const QDBusArgument &argument, TrayItemOptions &
                 QVariant(val).toBool() ? TrayItemOptions::TriState::SetTrue : TrayItemOptions::TriState::SetFalse;
         } else if (QString::compare(key, DKEY_SKTASK, Qt::CaseInsensitive) == 0) {
             options.m_skipTaskbar =
+                QVariant(val).toBool() ? TrayItemOptions::TriState::SetTrue : TrayItemOptions::TriState::SetFalse;
+        } else if (QString::compare(key, DKEY_LOCKDESK, Qt::CaseInsensitive) == 0) {
+            options.m_lockToDesktop =
                 QVariant(val).toBool() ? TrayItemOptions::TriState::SetTrue : TrayItemOptions::TriState::SetFalse;
         }
     }
@@ -344,9 +354,9 @@ bool TrayItemOptions::getSkipTaskbar() const
 
 bool TrayItemOptions::getLockToDesktop() const
 {
-    switch (m_iconifyMinimized) {
+    switch (m_lockToDesktop) {
         case TrayItemOptions::TriState::Unset:
-            return defaultIconifyMinimized();
+            return defaultLockToDesktop();
         case TrayItemOptions::TriState::SetTrue:
             return true;
         case TrayItemOptions::TriState::SetFalse:
