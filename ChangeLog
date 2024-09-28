@@ -1,3 +1,12 @@
+for version 6.1
+    - Rework reading window icons
+    - Fix saving and using the following settings
+      - Custom icon
+      - Custom attention icon
+      - Lock to desktop
+    - Add new command line, menu and dbus option to control iconifying a window when docking
+    - Add menu options to clear custom icon and custom attention icon
+
 for version 6.0
     - Support for Qt 6
     - Build system changed to CMake
