@@ -76,6 +76,7 @@ private slots:
 
     void toggleWindow();
     void trayActivated(QSystemTrayIcon::ActivationReason reason = QSystemTrayIcon::Trigger);
+    void attenionMessageClicked();
 
     void doUndock();
     void doSkipPager();

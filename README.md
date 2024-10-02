@@ -15,13 +15,15 @@ work differently than you expect. The behavior of the system try is defined by
 the desktop environment and KDocker has no control over these differences in
 behavior.
 
-Desktop | Left Click  | Right Click            | Double Click | Scroll Wheel
-------- | ----------- | ---------------------- | ------------ | ------------
-KDE     | show / hide | opens menu             | show / hide  | nothing
-Gnome   | opens menu  | opens menu             | show / hide  | nothing
-Mate    | opens menu  | opens Mate applet menu | opens menu   | nothing
-LXDE    | show / hide | opens menu             | show / hide  | show / hide
-XFCE    | show / hide | opens menu             | show / hide  | nothing
+Desktop  | Left Click  | Right Click            | Double Click | Scroll Wheel | Notify Click
+-------- | ----------- | ---------------------- | ------------ | ------------ | ------------
+KDE      | show / hide | opens menu             | show / hide  | nothing      | nothing
+Gnome    | opens menu  | opens menu             | show / hide  | nothing      | show
+Cinnamon | show / hide | opens menu             | show / hide  | nothing      | nothing
+Mate     | opens menu  | opens Mate applet menu | opens menu   | nothing      | show
+LXDE     | show / hide | opens menu             | show / hide  | show / hide  | show
+XFCE     | show / hide | opens menu             | show / hide  | nothing      | nothing
+
 
 ### Notes
 

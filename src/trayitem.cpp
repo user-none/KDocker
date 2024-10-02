@@ -71,6 +71,7 @@ TrayItem::TrayItem(windowid_t window, const TrayItemOptions &args)
     focusLostEvent();
 
     connect(this, &TrayItem::activated, this, &TrayItem::trayActivated);
+    connect(this, &TrayItem::messageClicked, this, &TrayItem::attenionMessageClicked);
 }
 
 TrayItem::~TrayItem()
@@ -392,6 +393,11 @@ void TrayItem::trayActivated(QSystemTrayIcon::ActivationReason reason)
 {
     if (reason == QSystemTrayIcon::Trigger)
         toggleWindow();
+}
+
+void TrayItem::attenionMessageClicked()
+{
+    toggleWindow();
 }
 
 bool TrayItem::event(QEvent *e)
