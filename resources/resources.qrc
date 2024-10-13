@@ -9,6 +9,7 @@
         <file alias="icons.png">images/menu/icons.png</file>
         <file alias="options.png">images/menu/options.png</file>
         <file alias="missing.png">images/menu/missing.png</file>
+        <file alias="missingb.png">images/menu/missingb.png</file>
         <file alias="restore.png">images/menu/restore.png</file>
         <file alias="savesettings.png">images/menu/savesettings.png</file>
         <file alias="seticon.png">images/menu/seticon.png</file>

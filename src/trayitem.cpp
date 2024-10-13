@@ -258,7 +258,7 @@ void TrayItem::setCustomIcon(QString path)
     if (customIcon.load(path)) {
         m_settings.setIconPath(path);
     } else {
-        customIcon.load(":/menu/missing.png");
+        customIcon.load(":/menu/missingb.png");
     }
 
     m_defaultIcon = QIcon(customIcon);
@@ -273,7 +273,7 @@ void TrayItem::setAttentionIcon(QString path)
     if (icon.load(path)) {
         m_settings.setAttentionIconPath(path);
     } else {
-        icon.load(":/menu/missing.png");
+        icon.load(":/menu/missingb.png");
     }
 
     m_attentionIcon = QIcon(icon);
