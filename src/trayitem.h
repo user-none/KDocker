@@ -59,8 +59,10 @@ public slots:
     void setSkipTaskbar(bool value);
 
 private slots:
-    void setCustomIcon(QString path);
-    void setAttentionIcon(QString path);
+    QString getIconCacheDir();
+    QString cacheIcon(const QString &path, bool attenion);
+    void setCustomIcon(const QString &path);
+    void setAttentionIcon(const QString &path);
     void selectCustomIcon(bool value);
     void clearCustomIcon(bool value);
     void selectAttentionIcon(bool value);

@@ -34,6 +34,7 @@ class TrayItemSettings : public QObject, public TrayItemOptions
 public:
     void loadSettings(const QString &dockedAppName, const TrayItemOptions &options);
     int nonZeroBalloonTimeout();
+    QString location();
 
 public slots:
     void saveSettingsApp();

@@ -26,6 +26,7 @@
 #include <QIcon>
 #include <QImageReader>
 #include <QPixmap>
+#include <QStringBuilder>
 #include <QWheelEvent>
 
 #include <xcb/xproto.h>
@@ -250,7 +251,36 @@ QString TrayItem::appName()
     return m_dockedAppName;
 }
 
-void TrayItem::setCustomIcon(QString path)
+QString TrayItem::getIconCacheDir()
+{
+    QString path = m_settings.location() + "/icons";
+    QDir dir;
+    if (dir.mkpath(path))
+        return path;
+    return QString();
+}
+
+QString TrayItem::cacheIcon(const QString &path, bool attention)
+{
+    QString cachePath = getIconCacheDir();
+
+    if (cachePath.isEmpty())
+        return path;
+
+    QPixmap icon(path);
+    if (icon.isNull())
+        return path;
+
+    if (icon.width() > 256)
+        icon = icon.scaledToWidth(256, Qt::SmoothTransformation);
+
+    QString iconPath = cachePath % "/" % m_dockedAppName % (attention ? "_a.png" : ".png");
+    icon.save(iconPath, "png", 100);
+
+    return iconPath;
+}
+
+void TrayItem::setCustomIcon(const QString &path)
 {
     m_customIcon = true;
 
@@ -267,7 +297,7 @@ void TrayItem::setCustomIcon(QString path)
         setIcon(m_defaultIcon);
 }
 
-void TrayItem::setAttentionIcon(QString path)
+void TrayItem::setAttentionIcon(const QString &path)
 {
     QPixmap icon;
     if (icon.load(path)) {
@@ -302,8 +332,10 @@ QString TrayItem::selectIcon(QString title)
 void TrayItem::selectCustomIcon([[maybe_unused]] bool value)
 {
     QString path = selectIcon(tr("Select Icon"));
-    if (!path.isEmpty())
+    if (!path.isEmpty()) {
+        path = cacheIcon(path, false);
         setCustomIcon(path);
+    }
 }
 
 void TrayItem::clearCustomIcon([[maybe_unused]] bool value)
@@ -316,8 +348,10 @@ void TrayItem::clearCustomIcon([[maybe_unused]] bool value)
 void TrayItem::selectAttentionIcon([[maybe_unused]] bool value)
 {
     QString path = selectIcon(tr("Select Attention Icon"));
-    if (!path.isEmpty())
+    if (!path.isEmpty()) {
+        path = cacheIcon(path, true);
         setAttentionIcon(path);
+    }
 }
 
 void TrayItem::clearAttentionIcon([[maybe_unused]] bool value)

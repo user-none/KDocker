@@ -19,6 +19,8 @@
 
 #include "trayitemsettings.h"
 
+#include <QFileInfo>
+
 static const QString GLOBALSKEY = "_GLOBAL_DEFAULTS";
 
 int TrayItemSettings::nonZeroBalloonTimeout()
@@ -233,4 +235,10 @@ void TrayItemSettings::saveSettingsGlobal()
     m_settings.beginGroup(GLOBALSKEY);
     saveSettingsSection();
     m_settings.endGroup();
+}
+
+QString TrayItemSettings::location()
+{
+    QFileInfo fi(m_settings.fileName());
+    return fi.absolutePath();
 }
