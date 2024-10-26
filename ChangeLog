@@ -1,3 +1,10 @@
+for version 6.2
+    - Save and use a local copy of an icon when setting a custom icon
+    - Use a blue missing icon, icon when a previously set custom icon cannot be read
+    - Show application when clicking KDocker title change notification
+      - Does not work on some desktop enviroments
+      - Applies to KDocker created notifications only and not application created notifications
+
 for version 6.1
     - Rework reading window icons
     - Fix saving and using the following settings
