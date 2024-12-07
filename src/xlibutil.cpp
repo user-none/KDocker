@@ -654,7 +654,7 @@ void XLibUtil::raiseWindow(windowid_t window)
 // found icon.
 static bool imageMeetsMinimumOpaque(size_t num_opaque, size_t width, size_t height)
 {
-    if (static_cast<double>(num_opaque) / static_cast<double>(width * height) > 0.1d)
+    if (static_cast<double>(num_opaque) / static_cast<double>(width * height) > 0.1)
         return true;
     return false;
 }
